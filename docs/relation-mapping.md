@@ -1,6 +1,6 @@
 # Đối chiếu 40 quan hệ và chuẩn hóa
 
-Đọc tài liệu 04, mục 5.7, 6.1 và 6.2 ngày 08/11/2026; xem [nguồn](sources.md). 39 entity nghiệp vụ nằm trong `src/CafeManager.Core/Entities.cs`, cấu hình trong `CafeDbContext.cs`. Tên entity = tên bảng `dbo`; giữ nguyên tên PK/FK của từ điển. Tất cả 40 quan hệ dưới đây có trong migration `InitialSchema`; `IntegrityGuards` và `HistoryProtection` bổ sung bảo vệ liên bảng/lịch sử.
+Đọc tài liệu 04, mục 5.7, 6.1 và 6.2 ngày 08/11/2026; xem [nguồn](sources.md). 40 entity nghiệp vụ (39 theo tài liệu và bảng mở rộng AllowedAddon) nằm trong `src/CafeManager.Core/Entities.cs`, cấu hình trong `CafeDbContext.cs`. Tên entity = tên bảng `dbo`; giữ nguyên tên PK/FK của từ điển. Tất cả 40 quan hệ dưới đây có trong migration `InitialSchema`; `IntegrityGuards` và `HistoryProtection` bổ sung bảo vệ liên bảng/lịch sử.
 
 | # | Quan hệ / entity / bảng | PK | Khóa thay thế được khai báo | Trạng thái / khác biệt |
 |---|---|---|---|---|
@@ -45,7 +45,7 @@
 | 39 | ShiftCashEntry | CashEntryId | CashEntryCode | Thu/chi tiền mặt khác ngoài bán hàng |
 | 40 | AspNetUsers / IdentityUser | Id | NormalizedUserName có lọc khác NULL | Framework quản lý xác thực |
 
-IdentityUserContext sinh thêm `AspNetUserClaims`, `AspNetUserLogins`, `AspNetUserTokens`: tổng 43 bảng mô hình. `__EFMigrationsHistory` là bảng kỹ thuật migration thứ 44. Không tạo AspNetRoles, AspNetUserRoles, AspNetRoleClaims; không cấu hình Identity role store. Claims không được dùng làm nguồn quyền nghiệp vụ. Quyền tra từ StaffRole → RolePermission → Permission qua StaffPermissionReader; các API sau này phải gọi cơ chế này.
+IdentityUserContext sinh thêm `AspNetUserClaims`, `AspNetUserLogins`, `AspNetUserTokens`: tổng 44 bảng mô hình (gồm AllowedAddon). `__EFMigrationsHistory` là bảng kỹ thuật migration thứ 45. Không tạo AspNetRoles, AspNetUserRoles, AspNetRoleClaims; không cấu hình Identity role store. Claims không được dùng làm nguồn quyền nghiệp vụ. Quyền tra từ StaffRole → RolePermission → Permission qua StaffPermissionReader; các API sau này phải gọi cơ chế này.
 
 ## Rà 1NF, 2NF, 3NF từng quan hệ
 

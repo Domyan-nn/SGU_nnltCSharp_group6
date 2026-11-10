@@ -53,6 +53,20 @@ CHECK:
 
 Chỉ mục FK do convention EF hỗ trợ join/kiểm tra tham chiếu. Không thêm chỉ mục tìm kiếm tên tự do khi chưa có bằng chứng truy vấn.
 
+## AllowedAddon
+
+Bảng mở rộng (ngoài 40 quan hệ của tài liệu 04), thêm ở migration SchemaGapColumns: tùy chọn được phép cho từng món và giới hạn số lượng trên mỗi ly.
+
+| Trường | Kiểu SQL | NULL | Khóa / tham chiếu |
+|---|---|---|---|
+| ProductId | BIGINT | Không | PK (ghép), FK → Product |
+| AddonVariantId | BIGINT | Không | PK (ghép), FK → ProductVariant |
+| MaxPerUnit | INT | Không | — |
+
+CHECK: `[MaxPerUnit] > 0`.
+
+Trigger `TR_AllowedAddon_Type` (lỗi 51008): AddonVariantId phải là biến thể có VariantType = Addon. Chưa có ràng buộc dữ liệu bắt OrderLineAddon phải nằm trong AllowedAddon; việc này thuộc lớp UC tạo đơn.
+
 ## PriceHistory
 
 Giá theo khoảng nửa mở [từ, đến).
@@ -161,6 +175,12 @@ Chỉ mục FK do convention EF hỗ trợ join/kiểm tra tham chiếu. Không 
 | Status | NVARCHAR(30) | Không | — |
 | CreatedAt | DATETIME2 | Không | — |
 | ExpectedPickupAt | DATETIME2 | Có | — |
+| ContactName | NVARCHAR(200) | Có | — |
+| ContactPhone | NVARCHAR(30) | Có | — |
+| PickupCode | NVARCHAR(20) | Có | — |
+| RejectReason | NVARCHAR(500) | Có | — |
+| RejectedBy | BIGINT | Có | FK → StaffAccount |
+| RejectedAt | DATETIME2 | Có | — |
 | RowVersion | ROWVERSION | Không | Concurrency token |
 
 UNIQUE: OrderCode; SessionId, |[SessionId] IS NOT NULL.
@@ -169,7 +189,9 @@ CHECK:
 
 - `([OrderType] = N'Web' AND [CustomerId] IS NOT NULL AND [SessionId] IS NULL) OR ([OrderType] = N'Table' AND [SessionId] IS NOT NULL)`
 - `[Status] IN (N'Pending',N'Serving',N'Settling',N'Closed',N'Cancelled',N'Rejected')`
+- `([RejectedBy] IS NULL AND [RejectedAt] IS NULL AND [RejectReason] IS NULL) OR ([RejectedBy] IS NOT NULL AND [RejectedAt] IS NOT NULL AND [RejectReason] IS NOT NULL AND [Status] = N'Rejected')` (CK_SalesOrder_3, migration SchemaGapColumns)
 
+Liên hệ nhận món (ContactName, ContactPhone) và PickupCode là tùy chọn; nếu trống, giao diện dùng CustomerProfile và OrderCode. PickupCode không UNIQUE (mã ngắn dễ trùng; xử lý ở lớp UC).
 Chỉ mục FK do convention EF hỗ trợ join/kiểm tra tham chiếu. Thêm (Status,CreatedAt) cho hàng đợi tác nghiệp. Không thêm chỉ mục tìm kiếm tên tự do khi chưa có bằng chứng truy vấn.
 
 ## OrderRound
@@ -271,6 +293,8 @@ Tiến độ từng đơn vị món.
 | UnitNumber | INT | Không | — |
 | Status | NVARCHAR(30) | Không | — |
 | RecipeVersionId | BIGINT | Không | FK → RecipeVersion |
+| DeliveredBy | BIGINT | Có | FK → StaffAccount |
+| DeliveredAt | DATETIME2 | Có | — |
 | RowVersion | ROWVERSION | Không | Concurrency token |
 
 UNIQUE: LineId, UnitNumber.
@@ -279,6 +303,7 @@ CHECK:
 
 - `[Status] IN (N'Waiting',N'Preparing',N'Ready',N'Delivered',N'Cancelled')`
 - `[UnitNumber] > 0`
+- `([DeliveredBy] IS NULL AND [DeliveredAt] IS NULL) OR ([DeliveredBy] IS NOT NULL AND [DeliveredAt] IS NOT NULL AND [Status] = N'Delivered')` (CK_PreparationUnit_3, migration SchemaGapColumns)
 
 Chỉ mục FK do convention EF hỗ trợ join/kiểm tra tham chiếu. Không thêm chỉ mục tìm kiếm tên tự do khi chưa có bằng chứng truy vấn.
 
@@ -378,8 +403,9 @@ Chứng từ thu.
 | PaidAt | DATETIME2 | Có | — |
 | RequestId | UNIQUEIDENTIFIER | Không | FK → IdempotencyRecord |
 | CreatedBy | BIGINT | Không | FK → StaffAccount |
+| ExternalReference | NVARCHAR(100) | Có | — |
 
-UNIQUE: PaymentCode; RequestId.
+UNIQUE: PaymentCode; RequestId; ExternalReference có lọc `[ExternalReference] IS NOT NULL` (mã tham chiếu chuyển khoản không dùng lại). Chưa có CHECK bắt buộc mã cho chuyển khoản thành công; xử lý ở lớp UC.
 
 CHECK:
 

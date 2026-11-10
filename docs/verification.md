@@ -11,12 +11,12 @@ Ngày 08/11/2026, workspace local trên nhánh main chưa có commit. Đây là 
 | SQL Server đã kết nối | (localdb)\\MSSQLLocalDB, SQL Server 2025 Express LocalDB 17.0.4025.3 |
 | CSDL phát triển | CafeManager_Group6_Dev; xác nhận chưa tồn tại trước lần tạo, không reset/drop CSDL cũ |
 | Build toàn solution | 5 project thành công, 0 warning, 0 error; dotnet build CafeManager.sln --no-restore |
-| Migration đã tạo và áp dụng | 20261108055627_InitialSchema; 20261108055637_IntegrityGuards; 20261108060223_HistoryProtection |
+| Migration đã tạo và áp dụng | 20261108055627_InitialSchema; 20261108055637_IntegrityGuards; 20261108060223_HistoryProtection; 20261110082113_SchemaGapColumns (thêm cột/bảng, áp dụng 10/11/2026) |
 | So sánh model/migration | dotnet ef migrations has-pending-model-changes: không có thay đổi chưa đưa vào migration |
-| Schema thực | 39 bảng nghiệp vụ + 4 Identity + 1 lịch sử migration = 44; 64 FK NO ACTION, 49 CHECK, 12 trigger; 8 cột RowVersion |
+| Schema thực | 40 bảng nghiệp vụ + 4 Identity + 1 lịch sử migration = 45; 68 FK NO ACTION, 52 CHECK, 13 trigger; 8 cột RowVersion (số liệu CSDL Dev sau migration thứ 4, 10/11/2026) |
 | Dữ liệu mẫu | 1 Category, 3 Product/Variant, 2 Ingredient, công thức/giá, 3 CafeTable, 1 Counter; seed đã chạy lại; 0 AspNetUsers ở CSDL phát triển |
-| Kiểm thử SQL Server | undefined/undefined Passed, undefined Failed, undefined Skipped; exit 0 |
-| CSDL kiểm thử | Fixture tự tạo CafeManager_Group6_Test_<GUID>, áp dụng 3 migration từ schema rỗng; cleanup hoàn tất; truy vấn sau chạy chỉ còn CafeManager_Group6_Dev với tiền tố dự án |
+| Kiểm thử SQL Server | 33/33 Passed, 0 Failed, 0 Skipped (theo TRX chạy lại 10/11/2026 sau migration thứ 4; lần chạy 08/11/2026 là 29/29); exit 0 |
+| CSDL kiểm thử | Fixture tự tạo CafeManager_Group6_Test_<GUID>, áp dụng 4 migration từ schema rỗng; cleanup hoàn tất; truy vấn sau chạy chỉ còn CafeManager_Group6_Dev với tiền tố dự án |
 | Audit gói phụ thuộc | dotnet list CafeManager.sln package --vulnerable --include-transitive: không có gói được báo có lỗ hổng theo nguồn NuGet tại thời điểm kiểm tra |
 
 Lần restore ban đầu thất bại NU1902/NU1903 cho phụ thuộc Pkcs 9.0.11. Đã thêm tham chiếu Pkcs 10.0.14, restore/build/audit cuối đều thành công. Lệnh migration không đặt Development bị guard từ chối trước khi thay đổi dữ liệu; lần chạy đúng Development áp dụng thành công. Không xem các lần lỗi là kết quả đạt.
@@ -25,7 +25,7 @@ Lần restore ban đầu thất bại NU1902/NU1903 cho phụ thuộc Pkcs 9.0.1
 
 | # | Nhóm yêu cầu | Bằng chứng và giới hạn |
 |---|---|---|
-| 1 | Migration từ đầu | Fixture tạo CSDL riêng và áp dụng 3 migration; kiểm tra 43 bảng mô hình, PK, trigger, RowVersion, trusted FK và model đồng bộ |
+| 1 | Migration từ đầu | Fixture tạo CSDL riêng và áp dụng 4 migration; kiểm tra 44 bảng mô hình, PK, trigger, RowVersion, trusted FK và model đồng bộ |
 | 2 | PK/FK/UNIQUE/CHECK/khóa ghép | Chèn trùng RecipeDetail/OrderRound/CancellationItem; sai FK, xóa danh mục có tham chiếu; số lượng không dương đều bị SQL từ chối |
 | 3 | Phiên/ca mở không trùng | Lệnh SQL và kiểm thử hai context cùng mở bàn; một phiên thắng. Ca mở trùng bị filtered UNIQUE chặn; chưa có handler mở/đóng ca hoàn chỉnh |
 | 4 | Khoảng giá/công thức | INSERT chồng bị trigger chặn, giá cạnh tranh chỉ một commit, khoảng tiếp giáp hợp lệ; chưa stress concurrent update nhiều phiên bản/công thức |
@@ -42,11 +42,11 @@ Các ca về khóa đơn vị hủy, người duyệt độc lập, hủy cùng 
 
 ## Bằng chứng lần chạy cuối
 
-- Bắt đầu TRX: undefined.
-- Kết thúc TRX: undefined.
+- Bắt đầu TRX: 2026-11-10T15:21:38+07:00.
+- Kết thúc TRX: 2026-11-10T15:21:52+07:00.
 - Lệnh: `dotnet test CafeManager.sln --no-build --no-restore --logger 'trx;LogFileName=database-tests.trx' --results-directory TestResults` với CAFE_TEST_SQLSERVER trỏ LocalDB, Windows Authentication.
 - TRX local: `TestResults/database-tests.trx` (không track artifact sinh ra).
-- SHA-256 TRX: `D5E91E764B60EB3E2C2844A67E7C83ACA56DC73BDE43D9071822C16533F389FE`.
+- SHA-256 TRX: `3D04878B1A82C1FAA3FCCDB0E0F77614B7F09FB6C1CBD4ABC640CF620413898A`.
 - Không dùng SQLite hay EF InMemory. Các ca cạnh tranh là cặp tác vụ kiểm thử xác định, không là bằng chứng load test hoặc NFR latency.
 
 | Kiểm thử thực tế | Kết quả | Thời gian |

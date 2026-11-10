@@ -22,6 +22,27 @@ namespace CafeManager.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("CafeManager.Core.AllowedAddon", b =>
+                {
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("AddonVariantId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("MaxPerUnit")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProductId", "AddonVariantId");
+
+                    b.HasIndex("AddonVariantId");
+
+                    b.ToTable("AllowedAddon", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_AllowedAddon_1", "[MaxPerUnit] > 0");
+                        });
+                });
+
             modelBuilder.Entity("CafeManager.Core.AuditEvent", b =>
                 {
                     b.Property<long>("AuditId")
@@ -487,6 +508,11 @@ namespace CafeManager.Infrastructure.Migrations
                     b.Property<long>("CreatedBy")
                         .HasColumnType("bigint");
 
+                    b.Property<string>("ExternalReference")
+                        .HasMaxLength(100)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("Method")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -520,6 +546,10 @@ namespace CafeManager.Infrastructure.Migrations
                     b.HasKey("PaymentId");
 
                     b.HasIndex("CreatedBy");
+
+                    b.HasIndex("ExternalReference")
+                        .IsUnique()
+                        .HasFilter("[ExternalReference] IS NOT NULL");
 
                     b.HasIndex("OrderId");
 
@@ -672,6 +702,12 @@ namespace CafeManager.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("UnitId"));
 
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("DeliveredBy")
+                        .HasColumnType("bigint");
+
                     b.Property<long>("LineId")
                         .HasColumnType("bigint");
 
@@ -698,6 +734,8 @@ namespace CafeManager.Infrastructure.Migrations
 
                     b.HasKey("UnitId");
 
+                    b.HasIndex("DeliveredBy");
+
                     b.HasIndex("RecipeVersionId");
 
                     b.HasIndex("TicketId");
@@ -710,6 +748,8 @@ namespace CafeManager.Infrastructure.Migrations
                             t.HasCheckConstraint("CK_PreparationUnit_1", "[Status] IN (N'Waiting',N'Preparing',N'Ready',N'Delivered',N'Cancelled')");
 
                             t.HasCheckConstraint("CK_PreparationUnit_2", "[UnitNumber] > 0");
+
+                            t.HasCheckConstraint("CK_PreparationUnit_3", "([DeliveredBy] IS NULL AND [DeliveredAt] IS NULL) OR ([DeliveredBy] IS NOT NULL AND [DeliveredAt] IS NOT NULL AND [Status] = N'Delivered')");
                         });
 
                     b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
@@ -1083,6 +1123,16 @@ namespace CafeManager.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("OrderId"));
 
+                    b.Property<string>("ContactName")
+                        .HasMaxLength(200)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ContactPhone")
+                        .HasMaxLength(30)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -1103,6 +1153,22 @@ namespace CafeManager.Infrastructure.Migrations
                         .HasMaxLength(30)
                         .IsUnicode(true)
                         .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("PickupCode")
+                        .HasMaxLength(20)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("RejectReason")
+                        .HasMaxLength(500)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("RejectedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("RejectedBy")
+                        .HasColumnType("bigint");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -1126,6 +1192,8 @@ namespace CafeManager.Infrastructure.Migrations
                     b.HasIndex("OrderCode")
                         .IsUnique();
 
+                    b.HasIndex("RejectedBy");
+
                     b.HasIndex("SessionId")
                         .IsUnique()
                         .HasFilter("[SessionId] IS NOT NULL");
@@ -1137,6 +1205,8 @@ namespace CafeManager.Infrastructure.Migrations
                             t.HasCheckConstraint("CK_SalesOrder_1", "([OrderType] = N'Web' AND [CustomerId] IS NOT NULL AND [SessionId] IS NULL) OR ([OrderType] = N'Table' AND [SessionId] IS NOT NULL)");
 
                             t.HasCheckConstraint("CK_SalesOrder_2", "[Status] IN (N'Pending',N'Serving',N'Settling',N'Closed',N'Cancelled',N'Rejected')");
+
+                            t.HasCheckConstraint("CK_SalesOrder_3", "([RejectedBy] IS NULL AND [RejectedAt] IS NULL AND [RejectReason] IS NULL) OR ([RejectedBy] IS NOT NULL AND [RejectedAt] IS NOT NULL AND [RejectReason] IS NOT NULL AND [Status] = N'Rejected')");
                         });
                 });
 
@@ -1647,6 +1717,21 @@ namespace CafeManager.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("CafeManager.Core.AllowedAddon", b =>
+                {
+                    b.HasOne("CafeManager.Core.ProductVariant", null)
+                        .WithMany()
+                        .HasForeignKey("AddonVariantId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("CafeManager.Core.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("CafeManager.Core.AuditEvent", b =>
                 {
                     b.HasOne("CafeManager.Core.StaffAccount", null)
@@ -1810,6 +1895,11 @@ namespace CafeManager.Infrastructure.Migrations
 
             modelBuilder.Entity("CafeManager.Core.PreparationUnit", b =>
                 {
+                    b.HasOne("CafeManager.Core.StaffAccount", null)
+                        .WithMany()
+                        .HasForeignKey("DeliveredBy")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("CafeManager.Core.OrderLine", null)
                         .WithMany()
                         .HasForeignKey("LineId")
@@ -1967,6 +2057,11 @@ namespace CafeManager.Infrastructure.Migrations
                     b.HasOne("CafeManager.Core.CustomerProfile", null)
                         .WithMany()
                         .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("CafeManager.Core.StaffAccount", null)
+                        .WithMany()
+                        .HasForeignKey("RejectedBy")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("CafeManager.Core.ServiceSession", null)

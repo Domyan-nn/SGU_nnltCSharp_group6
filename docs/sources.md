@@ -6,8 +6,10 @@
 |---|---|
 | [Báo cáo chính](https://drive.google.com/file/d/1nIvP3UzitzqKxCALbcIq1BvswWQ-TFMd/view) | Kiến trúc máy chủ MVC/API, Desktop qua HTTPS, một kho/một cửa hàng, trạng thái, snapshot, giao dịch và thu/hoàn |
 | [01 SRS](https://drive.google.com/file/d/1-0vhSZUlfqidM-B42i5ke2a6OJccRvav/view) | FR01–15, BR01–12, NFR và giới hạn tích hợp |
+| 02 Nghiệp vụ và BFD (bản cục bộ, chưa có liên kết Drive) | Quy trình Web/bàn, bảng trạng thái đơn–pha chế–thanh toán–bàn; khảo sát KiotViet/Sapo chỉ là tài liệu giới thiệu công khai |
 | [03 UC/User story](https://drive.google.com/file/d/1oU07u-yvRPXo3mVORRiqqklEIkcS8UlG/view) | UC01–19; nháp chưa giữ kho; tiếp nhận, tiến độ từng ly, duyệt độc lập |
 | [04 Dữ liệu/ERD](https://drive.google.com/file/d/1CSOTZQ2qE1chEOfFBXZuY74CYAjBLA9S/view) | Danh mục 40 quan hệ, mục 5.7 toàn bộ trường/kiểu/null/khóa; mục 6 FD và giới hạn kết luận 3NF |
+| 05 Giao diện (bản cục bộ, chưa có liên kết Drive) | Danh mục màn hình W00–W03, D00–D08, bố cục và quy tắc phản hồi lỗi; chỉ là thiết kế, chưa có giao diện chạy |
 | [06 Truy vết/kiểm thử](https://drive.google.com/file/d/1lFgfum4EUqiOsFB_gT9QcLrbYTjKmnzH/view) | KT01–22 và TC01–11 là kế hoạch; các ca dữ liệu triển khai không thay thế toàn bộ kế hoạch |
 | [Đề tài giảng viên](https://drive.google.com/file/d/1mYhMI5PQq9qPcIE_zcNTrY3SCa_AQub2/view) | Đề tài 11; Desktop C# Windows Forms, Web C#, SQL Server dùng chung; EF/API/phân lớp được khuyến khích |
 

@@ -26,6 +26,13 @@ public sealed class ProductVariant
     public bool IsActive { get; set; }
 }
 
+public sealed class AllowedAddon
+{
+    public long ProductId { get; set; }
+    public long AddonVariantId { get; set; }
+    public int MaxPerUnit { get; set; }
+}
+
 public sealed class PriceHistory
 {
     public long PriceHistoryId { get; set; }
@@ -78,6 +85,12 @@ public sealed class SalesOrder
     public string Status { get; set; } = "";
     public DateTime CreatedAt { get; set; }
     public DateTime? ExpectedPickupAt { get; set; }
+    public string? ContactName { get; set; }
+    public string? ContactPhone { get; set; }
+    public string? PickupCode { get; set; }
+    public string? RejectReason { get; set; }
+    public long? RejectedBy { get; set; }
+    public DateTime? RejectedAt { get; set; }
     public byte[] RowVersion { get; set; } = [];
 }
 
@@ -128,6 +141,8 @@ public sealed class PreparationUnit
     public int UnitNumber { get; set; }
     public string Status { get; set; } = "";
     public long RecipeVersionId { get; set; }
+    public long? DeliveredBy { get; set; }
+    public DateTime? DeliveredAt { get; set; }
     public byte[] RowVersion { get; set; } = [];
 }
 
@@ -181,6 +196,7 @@ public sealed class Payment
     public DateTime? PaidAt { get; set; }
     public Guid RequestId { get; set; }
     public long CreatedBy { get; set; }
+    public string? ExternalReference { get; set; }
 }
 
 public sealed class SalesAdjustment
