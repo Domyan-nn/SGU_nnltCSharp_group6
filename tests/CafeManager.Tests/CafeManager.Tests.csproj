@@ -18,5 +18,8 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
-<ItemGroup><ProjectReference Include="../../src/CafeManager.Infrastructure/CafeManager.Infrastructure.csproj" /></ItemGroup>
+<ItemGroup>
+<ProjectReference Include="../../src/CafeManager.Infrastructure/CafeManager.Infrastructure.csproj" />
+<ProjectReference Include="../../src/CafeManager.Client/CafeManager.Client.csproj" />
+</ItemGroup>
 </Project>

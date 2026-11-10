@@ -22,8 +22,9 @@ Bản cục bộ đọc được ở `../CK_GD1_Nhom11_NgoNguyen_3124411191-.../
 - src/CafeManager.Core — entity, ICafeDataCommands
 - src/CafeManager.Infrastructure — DbContext, migrations (InitialSchema, IntegrityGuards, HistoryProtection, SchemaGapColumns), seed, CafeDataCommands
 - src/CafeManager.Web — host ASP.NET Core (mới là khung)
-- src/CafeManager.Desktop — khung WinForms (mới là khung)
-- tests/CafeManager.Tests — 34 test tích hợp SQL Server (cần env CAFE_TEST_SQLSERVER, nếu không sẽ Skipped)
+- src/CafeManager.Client — ApiClient (HttpClient + CookieContainer riêng, phân loại lỗi 400–409, "chưa xác định" khi mất mạng/hết giờ/5xx); chỉ phụ thuộc Core
+- src/CafeManager.Desktop — WinForms: D00 đăng nhập đã có (cần API của A); các màn hình tác nghiệp chưa làm
+- tests/CafeManager.Tests — 34 test tích hợp SQL Server + 14 test ApiClient (không cần SQL) (cần env CAFE_TEST_SQLSERVER, nếu không sẽ Skipped)
 - docs/: business-rules.md (ma trận BR, quyết định cần nhóm chốt), relation-mapping.md, schema.md, verification.md
 
 ## Hiện trạng

@@ -8,11 +8,11 @@ Toàn bộ `src/CafeManager.Desktop/`. **Desktop không được tham chiếu In
 ## Việc phải làm
 
 ### T3 – 10/11 (tối nay)
-- [ ] Cài môi trường, chạy được `dotnet build`, `dotnet test`, `--migrate --seed` (nếu Windows chặn DLL "Application Control policy", báo ngay cả nhóm).
+- [ ] (C tự xác nhận trên máy mình) Cài môi trường, chạy được `dotnet build`, `dotnet test`, `--migrate --seed` (nếu Windows chặn DLL "Application Control policy", báo ngay cả nhóm).
 - [ ] Dự họp chốt hợp đồng API; đọc kỹ `auth/*`, `staff/orders`, `staff/menu`.
-- [ ] Dựng lớp `ApiClient`: `HttpClient` + `CookieContainer` **riêng cho từng phiên đăng nhập** (không dùng chung giữa các nhân viên), địa chỉ máy chủ lấy từ cấu hình, có thời hạn chờ và hủy; chuyển lỗi 400/401/403/404/409 thành kết quả rõ ràng cho giao diện (không trả HTML đăng nhập vào form). Khóa nút khi đang gửi để tránh bấm hai lần.
-- [ ] Form D00 (tên tài khoản, mật khẩu, nút đăng nhập, báo lỗi), chưa nối thật.
-- [ ] Xong khi: `ApiClient` gọi được một API giả hoặc `GET /api/menu`.
+- [x] Dựng lớp `ApiClient` (đã có trên nhánh `feat/desktop`, nằm ở project mới `CafeManager.Client` để kiểm thử được; 14 test; C đọc lại và tiếp tục từ đây): `HttpClient` + `CookieContainer` **riêng cho từng phiên đăng nhập** (không dùng chung giữa các nhân viên), địa chỉ máy chủ lấy từ cấu hình, có thời hạn chờ và hủy; chuyển lỗi 400/401/403/404/409 thành kết quả rõ ràng cho giao diện (không trả HTML đăng nhập vào form). Khóa nút khi đang gửi để tránh bấm hai lần.
+- [x] Form D00 (tên tài khoản, mật khẩu, nút đăng nhập, báo lỗi): đã có `LoginForm`, gọi `ApiClient.LoginAsync`; khi chưa có máy chủ hiện "chưa xác định" thay vì báo sai mật khẩu. Chờ API đăng nhập của A để đăng nhập thật.
+- [x] Xong khi: `ApiClient` gọi được một API giả (đã kiểm thử bằng handler giả; chạy thử form D00 trên Windows với máy chủ không tồn tại).
 
 ### T4 – 11/11: D00 đăng nhập thật (UC19)
 - [ ] Nối D00 với `POST /api/auth/login`; xử lý đúng: sai mật khẩu, tài khoản khóa, mất kết nối (hiện rõ "chưa xác định", không tự coi là thành công); mật khẩu không lưu trên máy, không ghi vào log.
