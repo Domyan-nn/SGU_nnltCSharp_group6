@@ -97,6 +97,12 @@ public sealed class DatabaseTests(SqlServerFixture fixture) : IClassFixture<SqlS
 
     private static readonly DateTime Now = new(2026, 11, 8, 0, 0, 0, DateTimeKind.Utc);
     private CafeDbContext Open() => fixture.Open();
+    private static int? SqlErrorIn(Exception? error)
+    {
+        for (var e = error; e != null; e = e.InnerException) if (e is SqlException sql) return sql.Number;
+        return null;
+    }
+
     private static async Task Rejected(Func<Task> action, params int[] numbers)
     {
         var error = await Record.ExceptionAsync(action);
@@ -256,7 +262,8 @@ public sealed class DatabaseTests(SqlServerFixture fixture) : IClassFixture<SqlS
                 db.Add(new PriceHistory { VariantId = s.Variant, UnitPrice = 1, EffectiveFrom = from });
                 await db.SaveChangesAsync(); return true;
             }
-            catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 51001 or 1205 }) { return false; }
+            // Deadlock victim (1205) is a valid "did not commit" outcome; EF may wrap it in InvalidOperationException.
+            catch (Exception ex) when (SqlErrorIn(ex) is 51001 or 1205) { return false; }
         }
         Assert.Single(await Task.WhenAll(Insert(Now), Insert(Now.AddHours(1))), x => x);
     }
@@ -572,5 +579,36 @@ public sealed class DatabaseTests(SqlServerFixture fixture) : IClassFixture<SqlS
         var sql = error?.InnerException as SqlException;
         Assert.NotNull(sql); Assert.Contains(sql.Number, new[] { 2601, 2627 });
     }
-}
 
+    [SqlServerFact]
+    public async Task Dev_accounts_seed_creates_roles_permissions_and_is_repeatable()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddScoped(_ => Open());
+        services.AddIdentityCore<IdentityUser>().AddEntityFrameworkStores<CafeDbContext>();
+        await using var provider = services.BuildServiceProvider();
+        var users = provider.GetRequiredService<UserManager<IdentityUser>>();
+        var db = provider.GetRequiredService<CafeDbContext>();
+        var first = await DevelopmentAccountSeeder.SeedAsync(db, users);
+        Assert.Equal(3, first.Count);
+        Assert.All(first, a => Assert.False(string.IsNullOrEmpty(a.Password)));
+        Assert.Equal(first.Count, first.Select(a => a.Password).Distinct().Count());
+        var cashier = await users.FindByNameAsync("dev.cashier");
+        var manager = await users.FindByNameAsync("dev.manager");
+        var customer = await users.FindByNameAsync("dev.customer");
+        Assert.True(await users.CheckPasswordAsync(cashier!, first.Single(a => a.UserName == "dev.cashier").Password!));
+        Assert.NotEqual(first.Single(a => a.UserName == "dev.cashier").Password, cashier!.PasswordHash);
+        var reader = new StaffPermissionReader(db);
+        Assert.True(await reader.HasAsync(cashier.Id, Permissions.OrderReceive));
+        Assert.False(await reader.HasAsync(cashier.Id, Permissions.MenuManage));
+        Assert.True(await reader.HasAsync(manager!.Id, Permissions.MenuManage));
+        Assert.False(await reader.HasAsync(customer!.Id, Permissions.OrderReceive));
+        Assert.Equal(1, await db.CustomerProfile.CountAsync(x => x.IdentityUserId == customer.Id));
+        var second = await DevelopmentAccountSeeder.SeedAsync(db, users);
+        Assert.All(second, a => Assert.Null(a.Password));
+        Assert.Equal(2, await db.StaffAccount.CountAsync(x => x.IdentityUserId == cashier.Id || x.IdentityUserId == manager.Id));
+        Assert.Equal(1, await db.Role.CountAsync(x => x.RoleName == "Cashier"));
+        Assert.Equal(1, await db.Permission.CountAsync(x => x.PermissionCode == Permissions.OrderReceive));
+    }
+}
