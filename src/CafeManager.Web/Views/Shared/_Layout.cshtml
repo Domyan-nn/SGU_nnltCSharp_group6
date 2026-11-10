@@ -1,0 +1,33 @@
+@{
+    var nav = ViewData["Nav"] as string;
+    string Active(string key) => nav == key ? "active" : "";
+    string Current(string key) => nav == key ? "page" : "false";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@(ViewData["Title"] ?? "Quán cà phê") – Cà phê Nhóm 6</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <a class="skip" href="#main">Bỏ qua điều hướng</a>
+    <header class="site-header">
+        <div class="wrap bar">
+            <a class="brand" href="/">Cà phê Nhóm 6</a>
+            <nav aria-label="Điều hướng chính">
+                <a class="@Active("home")" aria-current="@Current("home")" href="/">Trang chủ</a>
+                <a class="@Active("orders")" aria-current="@Current("orders")" href="/don-cua-toi">Đơn của tôi</a>
+                <a class="@Active("account")" aria-current="@Current("account")" href="/tai-khoan">Tài khoản</a>
+            </nav>
+        </div>
+    </header>
+    <main id="main" class="wrap">
+        @RenderBody()
+    </main>
+    <footer class="site-footer wrap">
+        <small>Đồ án C# – Nhóm 6. Giá và đơn hàng do máy chủ xác nhận; giá trên trang này chỉ để tham khảo.</small>
+    </footer>
+</body>
+</html>
