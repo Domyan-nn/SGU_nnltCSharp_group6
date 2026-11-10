@@ -1,0 +1,70 @@
+@model MenuPageModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Thực đơn";
+    var vi = CultureInfo.GetCultureInfo("vi-VN");
+    string Money(decimal v) => v.ToString("N0", vi) + " đ";
+    var filtered = !string.IsNullOrWhiteSpace(Model.Query) || Model.CategoryId is not null;
+}
+<h1>Thực đơn</h1>
+<p class="note">Dữ liệu minh họa theo hợp đồng API; sẽ nối với thực đơn thật khi máy chủ sẵn sàng.</p>
+
+<form class="filters" method="get" action="/" role="search">
+    <div class="field">
+        <label for="q">Tìm theo tên món</label>
+        <input id="q" name="q" type="search" value="@Model.Query" maxlength="100" autocomplete="off" />
+    </div>
+    <div class="field">
+        <label for="categoryId">Danh mục</label>
+        <select id="categoryId" name="categoryId">
+            <option value="">Tất cả</option>
+            @foreach (var c in Model.Categories)
+            {
+                <option value="@c.Id" selected="@(Model.CategoryId == c.Id)">@c.Name</option>
+            }
+        </select>
+    </div>
+    <div class="actions">
+        <button type="submit">Tìm</button>
+        @if (filtered)
+        {
+            <a class="button secondary" href="/">Xóa bộ lọc</a>
+        }
+    </div>
+</form>
+
+@if (Model.Products.Count == 0)
+{
+    <div class="empty" role="status">
+        <p>Không tìm thấy món phù hợp.</p>
+        <a class="button secondary" href="/">Quay về thực đơn</a>
+    </div>
+}
+else
+{
+    <p class="count" role="status">@Model.Products.Count món</p>
+    <ul class="cards">
+        @foreach (var p in Model.Products)
+        {
+            <li class="card">
+                <h2>@p.ProductName</h2>
+                <p class="cat">@p.CategoryName</p>
+                <ul class="variants">
+                    @foreach (var v in p.Variants)
+                    {
+                        <li>
+                            <span class="vname">@v.VariantName</span>
+                            <span class="price">@Money(v.UnitPrice)</span>
+                            @if (v.Addons.Count > 0)
+                            {
+                                <span class="addons">Tùy chọn thêm (mỗi ly):
+                                    @string.Join("; ", v.Addons.Select(a => $"{a.Name} +{Money(a.UnitPrice)}, tối đa {a.MaxPerUnit}"))
+                                </span>
+                            }
+                        </li>
+                    }
+                </ul>
+            </li>
+        }
+    </ul>
+}

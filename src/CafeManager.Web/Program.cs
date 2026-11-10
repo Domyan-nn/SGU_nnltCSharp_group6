@@ -35,6 +35,6 @@ if (args.Contains("--migrate") || args.Contains("--seed") || args.Contains("--se
     return;
 }
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.MapControllers();
-app.MapGet("/", () => "CafeManager Nhóm 6 — máy chủ dữ liệu. Các màn hình và API tác nghiệp sẽ được bổ sung sau.");
 app.Run();

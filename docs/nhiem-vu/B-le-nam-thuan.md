@@ -8,10 +8,10 @@ Hạn: thứ 7 14/11/2026 (đóng băng chức năng thứ 6 18:00). Xem phạm 
 ## Việc phải làm
 
 ### T3 – 10/11 (tối nay)
-- [ ] Cài môi trường, chạy được `dotnet build`, `dotnet test`, `--migrate --seed` trên LocalDB máy mình (nếu Windows chặn DLL "Application Control policy", báo ngay cả nhóm).
+- [ ] (B tự xác nhận trên máy mình) Cài môi trường, chạy được `dotnet build`, `dotnet test`, `--migrate --seed` trên LocalDB máy mình (nếu Windows chặn DLL "Application Control policy", báo ngay cả nhóm).
 - [ ] Dự họp chốt hợp đồng API; đọc kỹ `POST /api/orders` và `GET /api/menu`.
-- [ ] Dựng layout chung: thanh điều hướng (Trang chủ | Danh mục | Đơn của tôi | Tài khoản), trang gốc thay trang chữ hiện tại; dùng dữ liệu giả theo hợp đồng để không phải chờ A.
-- [ ] Xong khi: chạy Web thấy được layout và một danh sách món giả.
+- [x] Dựng layout chung: thanh điều hướng (Trang chủ | Đơn của tôi | Tài khoản), trang gốc thay trang chữ cũ; dùng dữ liệu giả theo hợp đồng (`Web/Models/SampleMenu.cs`) để không phải chờ A. Đã có sẵn trên nhánh `feat/web`: trang thực đơn có tìm theo tên và lọc danh mục, trạng thái rỗng, 360 px không tràn ngang; B đọc lại, chỉnh và tiếp tục từ đây (T4).
+- [x] Xong khi: chạy Web thấy được layout và một danh sách món giả (đã kiểm tra bằng trình duyệt 360 px và curl).
 
 ### T4 – 11/11: W01 thực đơn và giỏ (UC01)
 - [ ] Trang thực đơn: danh mục, ô tìm theo tên, nút xóa bộ lọc; thẻ món có tên, giá, tình trạng; chọn biến thể (kích cỡ), tùy chọn thêm (số lượng **trên mỗi ly**, không vượt `maxPerUnit`) và số lượng nguyên dương.
