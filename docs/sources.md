@@ -13,7 +13,7 @@
 | [06 Truy vết/kiểm thử](https://drive.google.com/file/d/1lFgfum4EUqiOsFB_gT9QcLrbYTjKmnzH/view) | KT01–22 và TC01–11 là kế hoạch; các ca dữ liệu triển khai không thay thế toàn bộ kế hoạch |
 | [Đề tài giảng viên](https://drive.google.com/file/d/1mYhMI5PQq9qPcIE_zcNTrY3SCa_AQub2/view) | Đề tài 11; Desktop C# Windows Forms, Web C#, SQL Server dùng chung; EF/API/phân lớp được khuyến khích |
 
-Repo có remote đúng https://github.com/Domyan-nn/doan_CSharp, nhánh main chưa có commit, chưa có solution/mã nguồn/tài liệu cục bộ. Chỉ thấy .vs/ chưa track; được giữ nguyên và đưa vào gitignore. Không tải đè checkout, không commit, push, tạo PR hoặc deploy.
+Repo có remote đúng https://github.com/Domyan-nn/doan_CSharp, tại thời điểm đầu (08/11/2026) nhánh main chưa có commit, chưa có solution/mã nguồn/tài liệu cục bộ; .vs/ chưa track được đưa vào gitignore. Cập nhật 10/11/2026: main có 2 commit cục bộ (08/11 và 10/11) nhưng origin/main chưa có trên GitHub (trạng thái "gone"), nghĩa là chưa đẩy lên.
 
 Tham khảo kỹ thuật chính thức:
 

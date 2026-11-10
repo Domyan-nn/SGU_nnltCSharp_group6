@@ -1,6 +1,6 @@
 # Kết quả kiểm chứng phần dữ liệu
 
-Ngày 08/11/2026, workspace local trên nhánh main chưa có commit. Đây là bằng chứng phạm vi dữ liệu, không là nghiệm thu 19 UC hay sản phẩm Web–Desktop.
+Ngày 08/11/2026, workspace local trên nhánh main chưa có commit (đến 10/11/2026 đã có 2 commit cục bộ, chưa đẩy lên GitHub). Đây là bằng chứng phạm vi dữ liệu, không là nghiệm thu 19 UC hay sản phẩm Web–Desktop.
 
 ## Kết quả thực tế
 
@@ -15,7 +15,7 @@ Ngày 08/11/2026, workspace local trên nhánh main chưa có commit. Đây là 
 | So sánh model/migration | dotnet ef migrations has-pending-model-changes: không có thay đổi chưa đưa vào migration |
 | Schema thực | 40 bảng nghiệp vụ + 4 Identity + 1 lịch sử migration = 45; 68 FK NO ACTION, 52 CHECK, 13 trigger; 8 cột RowVersion (số liệu CSDL Dev sau migration thứ 4, 10/11/2026) |
 | Dữ liệu mẫu | 1 Category, 3 Product/Variant, 2 Ingredient, công thức/giá, 3 CafeTable, 1 Counter; seed đã chạy lại; 0 AspNetUsers ở CSDL phát triển |
-| Kiểm thử SQL Server | 33/33 Passed, 0 Failed, 0 Skipped (theo TRX chạy lại 10/11/2026 sau migration thứ 4; lần chạy 08/11/2026 là 29/29); exit 0 |
+| Kiểm thử SQL Server | 34/34 Passed, 0 Failed, 0 Skipped (theo TRX 10/11/2026 sau migration thứ 4 và lệnh tài khoản mẫu; lần chạy 08/11/2026 là 29/29); exit 0 |
 | CSDL kiểm thử | Fixture tự tạo CafeManager_Group6_Test_<GUID>, áp dụng 4 migration từ schema rỗng; cleanup hoàn tất; truy vấn sau chạy chỉ còn CafeManager_Group6_Dev với tiền tố dự án |
 | Audit gói phụ thuộc | dotnet list CafeManager.sln package --vulnerable --include-transitive: không có gói được báo có lỗ hổng theo nguồn NuGet tại thời điểm kiểm tra |
 
@@ -42,11 +42,11 @@ Các ca về khóa đơn vị hủy, người duyệt độc lập, hủy cùng 
 
 ## Bằng chứng lần chạy cuối
 
-- Bắt đầu TRX: 2026-11-10T15:21:38+07:00.
-- Kết thúc TRX: 2026-11-10T15:21:52+07:00.
+- Bắt đầu TRX: 2026-11-10T16:32:09+07:00.
+- Kết thúc TRX: 2026-11-10T16:32:21+07:00.
 - Lệnh: `dotnet test CafeManager.sln --no-build --no-restore --logger 'trx;LogFileName=database-tests.trx' --results-directory TestResults` với CAFE_TEST_SQLSERVER trỏ LocalDB, Windows Authentication.
 - TRX local: `TestResults/database-tests.trx` (không track artifact sinh ra).
-- SHA-256 TRX: `3D04878B1A82C1FAA3FCCDB0E0F77614B7F09FB6C1CBD4ABC640CF620413898A`.
+- SHA-256 TRX: `F5DF258CFFD46131B5C89784C92215CC3CF9D64D2D3FD20D31F76EDCB945D564`.
 - Không dùng SQLite hay EF InMemory. Các ca cạnh tranh là cặp tác vụ kiểm thử xác định, không là bằng chứng load test hoặc NFR latency.
 
 | Kiểm thử thực tế | Kết quả | Thời gian |
