@@ -1,6 +1,6 @@
 # Quản lý quán cà phê — Nhóm 6
 
-Phần dữ liệu dùng **.NET 10, EF Core 10.0.14, SQL Server và ASP.NET Core Identity**. Đã xây dựng 40 quan hệ theo tài liệu, migration, dữ liệu thử và kiểm thử SQL Server. Web/WinForms hiện là khung khởi động; chưa hoàn thiện 19 UC hay giao diện sản phẩm.
+Phần dữ liệu dùng **.NET 10, EF Core 10.0.14, SQL Server và ASP.NET Core Identity**. Đã xây dựng 40 quan hệ theo tài liệu (cộng bảng mở rộng AllowedAddon), migration, dữ liệu thử và kiểm thử SQL Server. Web/WinForms hiện là khung khởi động; chưa hoàn thiện 19 UC hay giao diện sản phẩm.
 
 Xem [kết quả kiểm chứng](docs/verification.md), [đối chiếu 40 quan hệ và chuẩn hóa](docs/relation-mapping.md), [từ điển lược đồ](docs/schema.md), [quy tắc và giới hạn](docs/business-rules.md), [tài liệu nguồn](docs/sources.md).
 
@@ -14,7 +14,7 @@ src/
   CafeManager.Web/              Host ASP.NET Core, DI, nền MVC/API, lệnh dữ liệu Development
   CafeManager.Desktop/          Khung Windows Forms
 tests/
-  CafeManager.Tests/            29 kiểm thử tích hợp SQL Server
+  CafeManager.Tests/            33 kiểm thử tích hợp SQL Server
 docs/                          Thiết kế, đối chiếu và bằng chứng
 database/                      Truy vấn kiểm tra chỉ đọc
 ```
@@ -91,7 +91,7 @@ dotnet ef database update --project src/CafeManager.Infrastructure --startup-pro
 dotnet ef migrations has-pending-model-changes --project src/CafeManager.Infrastructure --startup-project src/CafeManager.Web
 ```
 
-Các file migration đã có: InitialSchema → IntegrityGuards → HistoryProtection. Không tạo lại InitialSchema ở máy khác. Khi đổi mô hình, tạo migration mới, đọc Up/Down/SQL và kiểm thử trên CSDL thử trước. Không chạy database drop, migration về 0 hay xóa migration để thay thế CSDL đang dùng.
+Các file migration đã có: InitialSchema → IntegrityGuards → HistoryProtection → SchemaGapColumns. Không tạo lại InitialSchema ở máy khác. Khi đổi mô hình, tạo migration mới, đọc Up/Down/SQL và kiểm thử trên CSDL thử trước. Không chạy database drop, migration về 0 hay xóa migration để thay thế CSDL đang dùng.
 
 Seed là tùy chọn, chạy lặp lại an toàn trong transaction có khóa: 1 danh mục, 3 món/biến thể (cà phê đen, cà phê sữa, thêm sữa), giá, 2 nguyên liệu, công thức, 3 bàn, 1 quầy và tồn thử có chứng từ mở đầu. Tên có [THỬ], mã DEMO-. Chỉ thêm đối tượng thiếu; không sửa giá/tồn/món đã tồn tại. Nếu người dùng đã sửa bản mẫu hoặc làm dữ liệu mẫu không đầy đủ, seed không tự sửa lại. Không tạo tài khoản, vai trò có quyền quản trị hoặc mật khẩu cố định. Các tài khoản trong tests nằm ở CSDL thử và được dọn cùng CSDL.
 
@@ -100,7 +100,7 @@ Seed là tùy chọn, chạy lặp lại an toàn trong transaction có khóa: 1
 1. Mở `CafeManager.sln`. Chờ NuGet restore; chọn Build → Build Solution.
 2. View → Terminal, chạy các lệnh migration/seed phía trên tại gốc repo.
 3. View → SQL Server Object Explorer → Add SQL Server: `(localdb)\MSSQLLocalDB`, Windows Authentication.
-4. Mở Databases → CafeManager_Group6_Dev → Tables. Có 39 bảng nghiệp vụ, 4 bảng Identity và __EFMigrationsHistory: tổng 44.
+4. Mở Databases → CafeManager_Group6_Dev → Tables. Có 40 bảng nghiệp vụ, 4 bảng Identity và __EFMigrationsHistory: tổng 45.
 5. New Query trên đúng CSDL; chạy [database/inspect.sql](database/inspect.sql) để xem cột, FK, CHECK, chỉ mục, trigger, seed và các migration. Có thể làm tương tự trong SSMS.
 6. Trong Solution Explorer chọn Web làm Startup Project, profile https, F5: hiện thông báo khung máy chủ; không tự thay đổi CSDL. Desktop làm Startup Project sẽ mở khung WinForms, chưa có màn hình nghiệp vụ.
 7. Để chạy Test Explorer có SQL, khởi động Visual Studio từ PowerShell đã đặt `CAFE_TEST_SQLSERVER`, hoặc chạy lệnh terminal dưới đây. Không có biến này thì 29 ca SQL đánh dấu **Skipped**, không phải Pass.

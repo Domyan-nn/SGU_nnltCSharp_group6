@@ -165,9 +165,9 @@ public sealed class DatabaseTests(SqlServerFixture fixture) : IClassFixture<SqlS
         await using var db = Open();
         Assert.Empty(await db.Database.GetPendingMigrationsAsync());
         Assert.False(db.Database.HasPendingModelChanges());
-        Assert.Equal(43, await db.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS [Value] FROM sys.tables WHERE name<>N'__EFMigrationsHistory'").SingleAsync());
-        Assert.Equal(43, await db.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS [Value] FROM sys.key_constraints WHERE type='PK' AND OBJECT_NAME(parent_object_id)<>N'__EFMigrationsHistory'").SingleAsync());
-        Assert.Equal(12, await db.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS [Value] FROM sys.triggers WHERE is_ms_shipped=0").SingleAsync());
+        Assert.Equal(44, await db.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS [Value] FROM sys.tables WHERE name<>N'__EFMigrationsHistory'").SingleAsync());
+        Assert.Equal(44, await db.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS [Value] FROM sys.key_constraints WHERE type='PK' AND OBJECT_NAME(parent_object_id)<>N'__EFMigrationsHistory'").SingleAsync());
+        Assert.Equal(13, await db.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS [Value] FROM sys.triggers WHERE is_ms_shipped=0").SingleAsync());
         Assert.True(await db.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS [Value] FROM sys.check_constraints").SingleAsync() >= 40);
         Assert.Equal(8, await db.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS [Value] FROM sys.columns WHERE system_type_id=189").SingleAsync());
         Assert.Equal(0, await db.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS [Value] FROM sys.foreign_keys WHERE delete_referential_action<>0 OR is_disabled=1 OR is_not_trusted=1").SingleAsync());
@@ -508,6 +508,69 @@ public sealed class DatabaseTests(SqlServerFixture fixture) : IClassFixture<SqlS
         check.Add(new CancellationItem { CancellationId = request.CancellationId, UnitId = unit.UnitId }); await check.SaveChangesAsync();
         await Rejected(() => check.Database.ExecuteSqlInterpolatedAsync($"INSERT dbo.CancellationItem(CancellationId,UnitId) VALUES({request.CancellationId},{unit.UnitId})"), 2601, 2627);
         await Rejected(() => check.Database.ExecuteSqlInterpolatedAsync($"UPDATE dbo.CancellationRequest SET Status=N'Approved',ApprovedBy={s.Staff},ApprovedAt={Now} WHERE CancellationId={request.CancellationId}"), 547);
+    }
+
+    [SqlServerFact]
+    public async Task Allowed_addon_requires_addon_variant_and_positive_limit()
+    {
+        var s = await CreateAsync();
+        await using var db = Open();
+        var productId = (await db.ProductVariant.SingleAsync(x => x.VariantId == s.Variant)).ProductId;
+        var addon = new ProductVariant { ProductId = productId, VariantName = "Thêm shot", VariantType = "Addon", IsActive = true };
+        db.Add(addon); await db.SaveChangesAsync();
+        await Rejected(() => db.Database.ExecuteSqlInterpolatedAsync($"INSERT dbo.AllowedAddon(ProductId,AddonVariantId,MaxPerUnit) VALUES({productId},{s.Variant},2)"), 51008);
+        await Rejected(() => db.Database.ExecuteSqlInterpolatedAsync($"INSERT dbo.AllowedAddon(ProductId,AddonVariantId,MaxPerUnit) VALUES({productId},{addon.VariantId},0)"), 547);
+        await db.Database.ExecuteSqlInterpolatedAsync($"INSERT dbo.AllowedAddon(ProductId,AddonVariantId,MaxPerUnit) VALUES({productId},{addon.VariantId},2)");
+        await Rejected(() => db.Database.ExecuteSqlInterpolatedAsync($"INSERT dbo.AllowedAddon(ProductId,AddonVariantId,MaxPerUnit) VALUES({productId},{addon.VariantId},3)"), 2627, 2601);
+        Assert.Equal(1, await db.AllowedAddon.CountAsync(x => x.ProductId == productId));
+    }
+
+    [SqlServerFact]
+    public async Task Order_rejection_fields_are_all_or_nothing_and_need_rejected_status()
+    {
+        var s = await CreateAsync();
+        await using var db = Open();
+        await Rejected(() => db.Database.ExecuteSqlInterpolatedAsync($"UPDATE dbo.SalesOrder SET RejectReason=N'Hết nguyên liệu' WHERE OrderId={s.Order}"), 547);
+        await Rejected(() => db.Database.ExecuteSqlInterpolatedAsync($"UPDATE dbo.SalesOrder SET RejectReason=N'Hết nguyên liệu',RejectedBy={s.Staff},RejectedAt={Now} WHERE OrderId={s.Order}"), 547);
+        await db.Database.ExecuteSqlInterpolatedAsync($"UPDATE dbo.SalesOrder SET Status=N'Rejected',RejectReason=N'Hết nguyên liệu',RejectedBy={s.Staff},RejectedAt={Now},ContactName=N'Khách nhận',ContactPhone=N'0900000000',PickupCode=N'A01' WHERE OrderId={s.Order}");
+        var order = await db.SalesOrder.AsNoTracking().SingleAsync(x => x.OrderId == s.Order);
+        Assert.Equal("Rejected", order.Status); Assert.Equal(s.Staff, order.RejectedBy); Assert.Equal("A01", order.PickupCode);
+    }
+
+    [SqlServerFact]
+    public async Task Unit_delivery_fields_are_paired_and_need_delivered_status()
+    {
+        var s = await CreateAsync();
+        await using (var db = Open()) await new CafeDataCommands(db).AcceptRoundAsync(s.Round, Now);
+        await using var check = Open();
+        var unit = await check.PreparationUnit.SingleAsync(x => x.LineId == s.Line);
+        await Rejected(() => check.Database.ExecuteSqlInterpolatedAsync($"UPDATE dbo.PreparationUnit SET DeliveredBy={s.Staff} WHERE UnitId={unit.UnitId}"), 547);
+        await Rejected(() => check.Database.ExecuteSqlInterpolatedAsync($"UPDATE dbo.PreparationUnit SET DeliveredBy={s.Staff},DeliveredAt={Now} WHERE UnitId={unit.UnitId}"), 547);
+        await check.Database.ExecuteSqlInterpolatedAsync($"UPDATE dbo.PreparationUnit SET Status=N'Delivered',DeliveredBy={s.Staff},DeliveredAt={Now} WHERE UnitId={unit.UnitId}");
+    }
+
+    [SqlServerFact]
+    public async Task Payment_external_reference_is_unique_when_present()
+    {
+        var s = await CreateAsync();
+        await using var db = Open();
+        var first = Guid.NewGuid(); var second = Guid.NewGuid(); var third = Guid.NewGuid();
+        db.AddRange(new IdempotencyRecord { RequestId = first, RequestHash = "ref-1", CreatedAt = Now },
+            new IdempotencyRecord { RequestId = second, RequestHash = "ref-2", CreatedAt = Now },
+            new IdempotencyRecord { RequestId = third, RequestHash = "ref-3", CreatedAt = Now });
+        await db.SaveChangesAsync();
+        Payment Transfer(Guid request, string? reference) => new() { PaymentCode = Guid.NewGuid().ToString("N"), OrderId = s.Order, ShiftId = s.Shift,
+            Amount = 10000, Method = "BankTransfer", Status = "Pending", RequestId = request, CreatedBy = s.Staff, ExternalReference = reference };
+        db.Add(Transfer(first, "FT-" + first.ToString("N"))); db.Add(Transfer(second, null)); db.Add(Transfer(third, null));
+        await db.SaveChangesAsync();
+        var duplicate = (await db.Payment.AsNoTracking().SingleAsync(x => x.RequestId == first)).ExternalReference;
+        var fourth = Guid.NewGuid(); var fifth = Guid.NewGuid();
+        db.AddRange(new IdempotencyRecord { RequestId = fourth, RequestHash = "ref-4", CreatedAt = Now });
+        await db.SaveChangesAsync();
+        db.Add(Transfer(fourth, duplicate));
+        var error = await Record.ExceptionAsync(() => db.SaveChangesAsync());
+        var sql = error?.InnerException as SqlException;
+        Assert.NotNull(sql); Assert.Contains(sql.Number, new[] { 2601, 2627 });
     }
 }
 

@@ -11,6 +11,7 @@ public sealed class CafeDbContext(DbContextOptions<CafeDbContext> options)
     public DbSet<Category> Category => Set<Category>();
     public DbSet<Product> Product => Set<Product>();
     public DbSet<ProductVariant> ProductVariant => Set<ProductVariant>();
+    public DbSet<AllowedAddon> AllowedAddon => Set<AllowedAddon>();
     public DbSet<PriceHistory> PriceHistory => Set<PriceHistory>();
     public DbSet<CafeTable> CafeTable => Set<CafeTable>();
     public DbSet<CustomerProfile> CustomerProfile => Set<CustomerProfile>();
@@ -143,14 +144,31 @@ public sealed class CafeDbContext(DbContextOptions<CafeDbContext> options)
             e.HasOne<CafeTable>().WithMany().HasForeignKey(x => x.FromTableId).OnDelete(DeleteBehavior.NoAction);
             e.HasOne<CafeTable>().WithMany().HasForeignKey(x => x.ToTableId).OnDelete(DeleteBehavior.NoAction);
         });
+        b.Entity<AllowedAddon>(e =>
+        {
+            e.ToTable("AllowedAddon", t =>
+            {
+                t.HasCheckConstraint("CK_AllowedAddon_1", "[MaxPerUnit] > 0");
+            });
+            e.HasKey(x => new { x.ProductId, x.AddonVariantId });
+            e.HasOne<Product>().WithMany().HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.NoAction);
+            e.HasOne<ProductVariant>().WithMany().HasForeignKey(x => x.AddonVariantId).OnDelete(DeleteBehavior.NoAction);
+        });
         b.Entity<SalesOrder>(e =>
         {
             e.ToTable("SalesOrder", t =>
             {
                 t.HasCheckConstraint("CK_SalesOrder_1", "([OrderType] = N'Web' AND [CustomerId] IS NOT NULL AND [SessionId] IS NULL) OR ([OrderType] = N'Table' AND [SessionId] IS NOT NULL)");
                 t.HasCheckConstraint("CK_SalesOrder_2", "[Status] IN (N'Pending',N'Serving',N'Settling',N'Closed',N'Cancelled',N'Rejected')");
+                t.HasCheckConstraint("CK_SalesOrder_3", "([RejectedBy] IS NULL AND [RejectedAt] IS NULL AND [RejectReason] IS NULL) OR ([RejectedBy] IS NOT NULL AND [RejectedAt] IS NOT NULL AND [RejectReason] IS NOT NULL AND [Status] = N'Rejected')");
             });
             e.HasKey(x => x.OrderId);
+            e.Property(x => x.ContactName).HasMaxLength(200).IsUnicode();
+            e.Property(x => x.ContactPhone).HasMaxLength(30).IsUnicode();
+            e.Property(x => x.PickupCode).HasMaxLength(20).IsUnicode();
+            e.Property(x => x.RejectReason).HasMaxLength(500).IsUnicode();
+            e.Property(x => x.RejectedAt).HasColumnType("datetime2");
+            e.HasOne<StaffAccount>().WithMany().HasForeignKey(x => x.RejectedBy).OnDelete(DeleteBehavior.NoAction);
             e.Property(x => x.OrderCode).HasMaxLength(40).IsUnicode();
             e.Property(x => x.OrderType).HasMaxLength(30).IsUnicode();
             e.Property(x => x.Status).HasMaxLength(30).IsUnicode();
@@ -226,9 +244,12 @@ public sealed class CafeDbContext(DbContextOptions<CafeDbContext> options)
             {
                 t.HasCheckConstraint("CK_PreparationUnit_1", "[Status] IN (N'Waiting',N'Preparing',N'Ready',N'Delivered',N'Cancelled')");
                 t.HasCheckConstraint("CK_PreparationUnit_2", "[UnitNumber] > 0");
+                t.HasCheckConstraint("CK_PreparationUnit_3", "([DeliveredBy] IS NULL AND [DeliveredAt] IS NULL) OR ([DeliveredBy] IS NOT NULL AND [DeliveredAt] IS NOT NULL AND [Status] = N'Delivered')");
                 t.UseSqlOutputClause(false);
             });
             e.HasKey(x => x.UnitId);
+            e.Property(x => x.DeliveredAt).HasColumnType("datetime2");
+            e.HasOne<StaffAccount>().WithMany().HasForeignKey(x => x.DeliveredBy).OnDelete(DeleteBehavior.NoAction);
             e.Property(x => x.Status).HasMaxLength(30).IsUnicode();
             e.Property(x => x.RowVersion).IsRowVersion();
             e.HasOne<PreparationTicket>().WithMany().HasForeignKey(x => x.TicketId).OnDelete(DeleteBehavior.NoAction);
@@ -301,6 +322,8 @@ public sealed class CafeDbContext(DbContextOptions<CafeDbContext> options)
             });
             e.HasKey(x => x.PaymentId);
             e.Property(x => x.PaymentCode).HasMaxLength(40).IsUnicode();
+            e.Property(x => x.ExternalReference).HasMaxLength(100).IsUnicode();
+            e.HasIndex(x => x.ExternalReference).IsUnique().HasFilter("[ExternalReference] IS NOT NULL");
             e.Property(x => x.Amount).HasPrecision(18, 2);
             e.Property(x => x.Method).HasMaxLength(30).IsUnicode();
             e.Property(x => x.Status).HasMaxLength(30).IsUnicode();

@@ -22,7 +22,7 @@
 ## Ranh giới của các ràng buộc
 
 - CHECK: chỉ điều kiện trong một dòng; không chứng minh tổng hoàn hay khoảng thời gian không chồng.
-- FK: hiện thực đủ 64 tham chiếu, không cascade. SourceType/SourceId của StockMovement là tham chiếu đa hình **không có FK đến nguồn**; dịch vụ hiện có ghi PreparationUnit, seed ghi DemoSeed. Các nguồn bổ sung phải được xác minh bởi handler.
+- FK: hiện thực đủ 68 tham chiếu, không cascade. SourceType/SourceId của StockMovement là tham chiếu đa hình **không có FK đến nguồn**; dịch vụ hiện có ghi PreparationUnit, seed ghi DemoSeed. Các nguồn bổ sung phải được xác minh bởi handler.
 - UNIQUE có lọc: bảo vệ ca/phiên đang mở và SessionId không NULL. UNIQUE thời điểm bắt đầu chỉ là khóa thay thế; không đủ chống chồng khoảng.
 - Trigger có UPDLOCK/HOLDLOCK: bảo vệ khoảng PriceHistory/RecipeVersion, hạn mức hoàn và ca khi ghi thu/hoàn. Trigger khác bảo vệ đồng lượt/giới hạn UnitNumber, lịch sử, hủy cùng đơn. Các trigger nằm trong migration, được kiểm thử SQL Server, có thể rollback cả lệnh nhiều dòng.
 - Transaction Serializable và khóa: AcceptRound giữ tồn/tạo phiếu nguyên khối; StartUnit xuất từ snapshot; CashPayment/CashRefund chống trùng với applock và khóa ca/thu gốc. Deadlock/timeout là thất bại cần tra cứu hoặc thử lại toàn command với cùng RequestId khi có; không báo thành công. Không bật retry tự động mù cho giao dịch tiền.
@@ -45,6 +45,7 @@
 | RecipeVersionId trên PreparationUnit | Thêm NOT NULL FK cho công thức chính; snapshot nguyên liệu gộp addon | Mở rộng từ điển để truy vết; dư thừa cần rà FD |
 | Tiền và duyệt | Thêm CreatedBy vào Payment/Refund; CreatedBy/CreatedAt vào Adjustment; RequestedBy/ApprovedBy/ApprovedAt vào RefundRequest | Cần để lưu actor, thời gian và duyệt độc lập |
 | Audit | Thêm EntityReference/Reason tùy chọn, chỉ ghi thêm | Handler sau này phải ghi đủ sự kiện, không đưa bí mật vào lý do |
+| Cột/bảng thêm ở SchemaGapColumns | Payment.ExternalReference (UNIQUE có lọc); SalesOrder.ContactName/ContactPhone/PickupCode và RejectReason/RejectedBy/RejectedAt (CHECK cùng có hoặc cùng trống, chỉ khi Rejected); PreparationUnit.DeliveredBy/DeliveredAt (CHECK cùng có, chỉ khi Delivered); bảng AllowedAddon + trigger TR_AllowedAddon_Type | Bổ sung theo UC02/03/07/08; handler UC chưa xây. Không có CHECK buộc mã chuyển khoản; PickupCode chưa UNIQUE; chưa buộc OrderLineAddon thuộc AllowedAddon |
 | Ngừng sử dụng | Thêm IsActive cho Category, ProductVariant, Ingredient; giữ Product/Staff/Counter.IsActive đã có | Handler CRUD kiểm tra trạng thái; không xóa bản ghi được tham chiếu |
 | Trạng thái | Dùng mã tiếng Anh trong CHECK, theo vòng đời báo cáo; phương thức Cash/BankTransfer | Nhóm xác nhận trước khi xây UI; đổi tập giá trị cần migration |
 | Nghiệp vụ tài chính hiện có | Primitive ghi **tiền mặt đã xác minh**, không tự tính bill, không đóng đơn, không gọi ngân hàng | Chưa thể gọi là UC08/UC12 hoàn chỉnh |
