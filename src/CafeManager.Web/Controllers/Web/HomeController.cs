@@ -1,0 +1,37 @@
+using CafeManager.Core;
+using CafeManager.Web.Models;
+using Microsoft.AspNetCore.Mvc;
+
+namespace CafeManager.Web.Controllers.Web;
+
+// Giao diện khách (MVC). Vùng làm việc của B. Dữ liệu hiện là dữ liệu giả (SampleMenu) theo hợp đồng API.
+public sealed class HomeController : Controller
+{
+    [HttpGet("/")]
+    public IActionResult Index(string? q, long? categoryId)
+    {
+        IEnumerable<MenuProductDto> products = SampleMenu.Products;
+        if (categoryId is long c) products = products.Where(p => p.CategoryId == c);
+        if (!string.IsNullOrWhiteSpace(q))
+            products = products.Where(p => p.ProductName.Contains(q.Trim(), StringComparison.CurrentCultureIgnoreCase));
+        ViewData["Nav"] = "home";
+        return View(new MenuPageModel(products.ToList(), SampleMenu.Categories, q?.Trim(), categoryId));
+    }
+
+    [HttpGet("/don-cua-toi")]
+    public IActionResult Orders()
+    {
+        ViewData["Nav"] = "orders";
+        return View();
+    }
+
+    [HttpGet("/tai-khoan")]
+    public IActionResult Account()
+    {
+        ViewData["Nav"] = "account";
+        return View();
+    }
+}
+
+public sealed record MenuPageModel(IReadOnlyList<MenuProductDto> Products, IReadOnlyList<(long Id, string Name)> Categories,
+    string? Query, long? CategoryId);
