@@ -23,7 +23,7 @@ Bản cục bộ đọc được ở `../CK_GD1_Nhom11_NgoNguyen_3124411191-.../
 - src/CafeManager.Infrastructure — DbContext, migrations (InitialSchema, IntegrityGuards, HistoryProtection, SchemaGapColumns), seed, CafeDataCommands
 - src/CafeManager.Web — host ASP.NET Core (mới là khung)
 - src/CafeManager.Desktop — khung WinForms (mới là khung)
-- tests/CafeManager.Tests — 33 test tích hợp SQL Server (cần env CAFE_TEST_SQLSERVER, nếu không sẽ Skipped)
+- tests/CafeManager.Tests — 34 test tích hợp SQL Server (cần env CAFE_TEST_SQLSERVER, nếu không sẽ Skipped)
 - docs/: business-rules.md (ma trận BR, quyết định cần nhóm chốt), relation-mapping.md, schema.md, verification.md
 
 ## Hiện trạng
@@ -33,7 +33,7 @@ Bản cục bộ đọc được ở `../CK_GD1_Nhom11_NgoNguyen_3124411191-.../
 
 ## Quy tắc làm việc
 - Không dùng EnsureCreated, drop/reset DB, hay hạ migration; thay đổi mô hình = migration mới, đọc Up/Down trước.
-- Migration/seed chỉ chạy qua `dotnet run --project src/CafeManager.Web --no-launch-profile -- --migrate --seed` với ASPNETCORE_ENVIRONMENT=Development, DB CafeManager_Group6_Dev.
+- Migration/seed chỉ chạy qua `dotnet run --project src/CafeManager.Web --no-launch-profile -- --migrate --seed` (tài khoản mẫu: thêm `--seed-accounts`, mật khẩu ngẫu nhiên in một lần) với ASPNETCORE_ENVIRONMENT=Development, DB CafeManager_Group6_Dev.
 - Không commit bí mật; connection string dùng Windows Auth/User Secrets.
 - Không dùng SQLite/InMemory làm bằng chứng; không báo "đạt" khi test bị Skipped.
 - Không đưa ICafeDataCommands ra API công khai trước khi có quyền, validation, snapshot giá từ máy chủ.

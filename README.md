@@ -14,7 +14,7 @@ src/
   CafeManager.Web/              Host ASP.NET Core, DI, nền MVC/API, lệnh dữ liệu Development
   CafeManager.Desktop/          Khung Windows Forms
 tests/
-  CafeManager.Tests/            33 kiểm thử tích hợp SQL Server
+  CafeManager.Tests/            34 kiểm thử tích hợp SQL Server
 docs/                          Thiết kế, đối chiếu và bằng chứng
 database/                      Truy vấn kiểm tra chỉ đọc
 ```
@@ -81,7 +81,16 @@ dotnet run --project src/CafeManager.Web --no-launch-profile -- --migrate
 dotnet run --project src/CafeManager.Web --no-launch-profile -- --seed
 ```
 
-Có thể dùng `--migrate --seed` trong cùng một lần chạy. Lần này đã xác nhận đích chưa tồn tại trước khi tạo. Khi dùng CSDL cùng tên có sẵn trên máy khác, phải kiểm tra lịch sử migration/schema trước; tên đúng không chứng minh CSDL đó thuộc đồ án.
+Có thể dùng `--migrate --seed` trong cùng một lần chạy.
+
+Tài khoản mẫu để đăng nhập (quản lý, thu ngân, khách) tạo bằng lệnh riêng, cùng điều kiện an toàn (Development, đúng CSDL Dev):
+
+```powershell
+$env:ASPNETCORE_ENVIRONMENT='Development'
+dotnet run --project src/CafeManager.Web --no-launch-profile -- --seed-accounts
+```
+
+Lệnh tạo vai trò Manager (quyền MENU_MANAGE) và Cashier (quyền ORDER_RECEIVE), ba tài khoản dev.manager, dev.cashier, dev.customer với **mật khẩu ngẫu nhiên chỉ in ra một lần** trên màn hình (không lưu, không ghi log, không commit). Chạy lại không đổi tài khoản đã có; quên mật khẩu thì phải tạo lại CSDL Dev của riêng bạn. Mỗi máy tự chạy lệnh trên CSDL của mình. Lần này đã xác nhận đích chưa tồn tại trước khi tạo. Khi dùng CSDL cùng tên có sẵn trên máy khác, phải kiểm tra lịch sử migration/schema trước; tên đúng không chứng minh CSDL đó thuộc đồ án.
 
 EF CLI tương đương, **cần tự xác minh đích vì CLI EF không có guard của host**:
 
@@ -103,7 +112,7 @@ Seed là tùy chọn, chạy lặp lại an toàn trong transaction có khóa: 1
 4. Mở Databases → CafeManager_Group6_Dev → Tables. Có 40 bảng nghiệp vụ, 4 bảng Identity và __EFMigrationsHistory: tổng 45.
 5. New Query trên đúng CSDL; chạy [database/inspect.sql](database/inspect.sql) để xem cột, FK, CHECK, chỉ mục, trigger, seed và các migration. Có thể làm tương tự trong SSMS.
 6. Trong Solution Explorer chọn Web làm Startup Project, profile https, F5: hiện thông báo khung máy chủ; không tự thay đổi CSDL. Desktop làm Startup Project sẽ mở khung WinForms, chưa có màn hình nghiệp vụ.
-7. Để chạy Test Explorer có SQL, khởi động Visual Studio từ PowerShell đã đặt `CAFE_TEST_SQLSERVER`, hoặc chạy lệnh terminal dưới đây. Không có biến này thì 29 ca SQL đánh dấu **Skipped**, không phải Pass.
+7. Để chạy Test Explorer có SQL, khởi động Visual Studio từ PowerShell đã đặt `CAFE_TEST_SQLSERVER`, hoặc chạy lệnh terminal dưới đây. Không có biến này thì 34 ca SQL đánh dấu **Skipped**, không phải Pass.
 
 ## Chạy kiểm thử thực
 

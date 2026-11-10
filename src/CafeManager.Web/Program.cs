@@ -12,7 +12,7 @@ builder.Services.AddIdentityCore<IdentityUser>().AddEntityFrameworkStores<CafeDb
 builder.Services.AddScoped<ICafeDataCommands, CafeDataCommands>();
 builder.Services.AddScoped<StaffPermissionReader>();
 var app = builder.Build();
-if (args.Contains("--migrate") || args.Contains("--seed"))
+if (args.Contains("--migrate") || args.Contains("--seed") || args.Contains("--seed-accounts"))
 {
     if (!app.Environment.IsDevelopment()) throw new InvalidOperationException("Development command only.");
     await using var scope = app.Services.CreateAsyncScope();
@@ -23,6 +23,15 @@ if (args.Contains("--migrate") || args.Contains("--seed"))
     Console.WriteLine($"Development database: {target.DataSource} / {target.InitialCatalog}");
     if (args.Contains("--migrate")) await db.Database.MigrateAsync();
     if (args.Contains("--seed")) await DevelopmentSeeder.SeedAsync(db);
+    if (args.Contains("--seed-accounts"))
+    {
+        // Mật khẩu ngẫu nhiên, chỉ in một lần ở đây, không lưu và không ghi log.
+        var users = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var accounts = await DevelopmentAccountSeeder.SeedAsync(db, users);
+        Console.WriteLine("Tài khoản mẫu (mật khẩu chỉ hiện một lần; hãy ghi lại ngay):");
+        foreach (var a in accounts)
+            Console.WriteLine($"  {a.Kind,-9} {a.UserName,-14} {a.Password ?? "(đã tồn tại, giữ nguyên mật khẩu cũ)"}");
+    }
     return;
 }
 app.UseHttpsRedirection();
