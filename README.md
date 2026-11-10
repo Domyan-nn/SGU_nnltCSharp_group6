@@ -12,9 +12,10 @@ src/
   CafeManager.Core/             Entity, ICafeDataCommands, kết quả đối soát
   CafeManager.Infrastructure/   DbContext, Identity store, transaction, seed, migrations
   CafeManager.Web/              Host ASP.NET Core, DI, nền MVC/API, lệnh dữ liệu Development
-  CafeManager.Desktop/          Khung Windows Forms
+  CafeManager.Client/           Máy khách API dùng chung cho Desktop (HttpClient, cookie riêng mỗi phiên); chỉ phụ thuộc Core
+  CafeManager.Desktop/          Windows Forms: đăng nhập D00 (gọi API qua Client), cửa sổ chính dạng khung
 tests/
-  CafeManager.Tests/            34 kiểm thử tích hợp SQL Server
+  CafeManager.Tests/            34 kiểm thử tích hợp SQL Server + 14 kiểm thử máy khách API (không cần SQL Server)
 docs/                          Thiết kế, đối chiếu và bằng chứng
 database/                      Truy vấn kiểm tra chỉ đọc
 ```
