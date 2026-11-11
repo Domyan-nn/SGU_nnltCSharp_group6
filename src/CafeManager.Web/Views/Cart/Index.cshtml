@@ -1,0 +1,68 @@
+@model CartPageModel
+@{
+    ViewData["Title"] = "Giỏ hàng";
+    string Vnd(decimal v) => Money.Vnd(v);
+}
+<h1>Giỏ hàng</h1>
+
+@if (Model.Lines.Count == 0)
+{
+    <div class="empty" role="status">
+        <p>Giỏ hàng đang trống.</p>
+        <a class="button" href="/">Về thực đơn</a>
+    </div>
+}
+else
+{
+    if (Model.HasUnavailable)
+    {
+        <div class="flash error" role="alert">
+            <strong>Có món ngừng bán.</strong> Hãy xóa dòng đó và chọn lại từ thực đơn. Dòng ngừng bán không được tính vào tạm tính.
+        </div>
+    }
+    <ul class="cart">
+        @foreach (var line in Model.Lines)
+        {
+            var qtyId = $"cq-{line.Id}";
+            <li class="cart-line @(line.Available ? "" : "unavailable")">
+                <div class="cl-main">
+                    <strong>@line.ProductName</strong> – @line.VariantName
+                    @if (!line.Available)
+                    {
+                        <span class="badge warn">Ngừng bán</span>
+                        <p class="muted">Món hoặc tùy chọn này không còn bán. Số lượng đã chọn: @line.Quantity.</p>
+                    }
+                    else
+                    {
+                        if (line.Addons.Count > 0)
+                        {
+                            <p class="muted">Thêm (mỗi ly): @string.Join("; ", line.Addons.Select(a => a.Name + " × " + a.QuantityPerUnit))</p>
+                        }
+                        <p>Đơn giá @Vnd(line.UnitPrice) × @line.Quantity = <strong>@Vnd(line.LineTotal)</strong></p>
+                    }
+                </div>
+                <div class="cl-actions">
+                    @if (line.Available)
+                    {
+                        <form method="post" asp-controller="Cart" asp-action="Update" class="inline-form">
+                            <input type="hidden" name="id" value="@line.Id" />
+                            <label for="@qtyId">Số lượng</label>
+                            <input id="@qtyId" name="quantity" type="number" inputmode="numeric" min="1" max="@CartRules.MaxQuantityPerLine" step="1" value="@line.Quantity" required />
+                            <button type="submit" class="secondary">Cập nhật</button>
+                        </form>
+                    }
+                    <form method="post" asp-controller="Cart" asp-action="Remove" class="inline-form">
+                        <input type="hidden" name="id" value="@line.Id" />
+                        <button type="submit" class="secondary" aria-label="@("Xóa " + line.ProductName + " " + line.VariantName + " khỏi giỏ")">Xóa</button>
+                    </form>
+                </div>
+            </li>
+        }
+    </ul>
+    <p class="subtotal">Tạm tính: <strong>@Vnd(Model.Subtotal)</strong></p>
+    <p class="note">Tạm tính chỉ để tham khảo. Máy chủ tính lại giá khi gửi đơn; nếu giá đổi, bạn sẽ được hỏi xác nhận.</p>
+    <p class="actions">
+        <a class="button secondary" href="/">Chọn thêm món</a>
+        <span class="note">Gửi đơn: sẽ làm ở bước tiếp theo (T5).</span>
+    </p>
+}
