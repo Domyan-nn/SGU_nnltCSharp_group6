@@ -44,3 +44,30 @@ button, .button { display: inline-block; padding: .55rem 1rem; font: inherit; bo
 
 .empty { margin: 1.5rem 0; padding: 1.25rem; background: var(--card); border: 1px dashed var(--line); border-radius: .6rem; }
 .site-footer { padding-top: 1rem; padding-bottom: 1.5rem; border-top: 1px solid var(--line); }
+
+/* --- T4: thực đơn có biểu mẫu thêm vào giỏ, giỏ hàng, thông báo --- */
+.badge { display: inline-block; padding: .05rem .5rem; border-radius: .75rem; font-size: .8rem; font-weight: 600; border: 1px solid var(--line); }
+.badge.ok { color: var(--fg); }
+.badge.warn { border-color: #b3261e; color: #b3261e; }
+@media (prefers-color-scheme: dark) { .badge.warn { border-color: #ffb4ab; color: #ffb4ab; } }
+.flash { margin: 1rem 0; padding: .75rem 1rem; border-radius: .5rem; border: 1px solid var(--line); background: var(--card); }
+.flash.error { border-color: #b3261e; }
+.variant-form { width: 100%; }
+.vhead { display: flex; justify-content: space-between; gap: .75rem; }
+.addons { margin: .4rem 0; padding: .4rem .6rem; border: 1px solid var(--line); border-radius: .4rem; }
+.addons legend { font-size: .85rem; color: var(--muted); padding: 0 .25rem; }
+.addon { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .2rem 0; }
+.addon input { width: 4.5rem; }
+.buy { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: .4rem; }
+.buy input { width: 5rem; }
+.variants li.variant { display: block; }
+.cart { list-style: none; margin: 1rem 0; padding: 0; display: grid; gap: .75rem; }
+.cart-line { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .75rem; padding: 1rem; background: var(--card); border: 1px solid var(--line); border-radius: .6rem; }
+.cart-line.unavailable { border-style: dashed; }
+.cart-line p { margin: .25rem 0; }
+.cl-actions { display: flex; flex-wrap: wrap; align-items: end; gap: .5rem; }
+.inline-form { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.inline-form input { width: 5rem; }
+button.secondary { background: transparent; color: var(--accent); }
+.muted { color: var(--muted); }
+.subtotal { font-size: 1.15rem; }
