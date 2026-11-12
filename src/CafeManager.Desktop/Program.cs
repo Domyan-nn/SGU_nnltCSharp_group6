@@ -21,8 +21,8 @@ static class Program
                 if (login.ShowDialog() != DialogResult.OK) return;
             using var main = new Form1(api);
             Application.Run(main);
-            // Hết phiên (401) thì quay về D00; đóng cửa sổ chủ động thì thoát.
-            if (!main.SessionExpired) return;
+            // Đăng xuất hoặc hết phiên thì quay về D00; đóng cửa sổ bình thường thì thoát.
+            if (!main.ReturnToLogin) return;
         }
     }
 }
