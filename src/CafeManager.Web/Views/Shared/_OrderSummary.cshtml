@@ -1,0 +1,21 @@
+@model CartPageModel
+@{
+    string Vnd(decimal v) => Money.Vnd(v);
+}
+<ul class="cart">
+    @foreach (var line in Model.Lines)
+    {
+        <li class="cart-line">
+            <div class="cl-main">
+                <strong>@line.ProductName</strong> – @line.VariantName
+                @if (line.Addons.Count > 0)
+                {
+                    <p class="muted">Thêm (mỗi ly): @string.Join("; ", line.Addons.Select(a => a.Name + " × " + a.QuantityPerUnit))</p>
+                }
+                <p>Số lượng @line.Quantity · tạm tính <strong>@Vnd(line.LineTotal)</strong></p>
+            </div>
+        </li>
+    }
+</ul>
+<p class="subtotal">Tạm tính: <strong>@Vnd(Model.Subtotal)</strong></p>
+<p class="note">Tạm tính chỉ để tham khảo. Máy chủ tính lại giá khi gửi đơn; nếu giá đổi, bạn sẽ được hỏi xác nhận.</p>

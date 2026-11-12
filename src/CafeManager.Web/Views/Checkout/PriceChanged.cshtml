@@ -1,0 +1,26 @@
+@model CheckoutViewModel
+@{
+    ViewData["Title"] = "Giá đã thay đổi";
+    string Vnd(decimal v) => Money.Vnd(v);
+}
+<h1>Giá đã thay đổi</h1>
+<div class="flash error" role="alert">
+    <strong>Đơn chưa được gửi.</strong> Giá một số món đã đổi từ lúc bạn xem. Hãy xem giá mới và chọn có đồng ý hay không.
+</div>
+<ul class="cart">
+    @foreach (var c in Model.Changes)
+    {
+        <li class="cart-line">
+            <div class="cl-main">
+                <strong>@c.Label</strong>
+                <p>Giá cũ: <s>@Vnd(c.OldPrice)</s> → Giá mới: <strong>@Vnd(c.NewPrice)</strong></p>
+            </div>
+        </li>
+    }
+</ul>
+<p class="subtotal">Tạm tính theo giá mới: <strong>@Vnd(Model.NewSubtotal)</strong></p>
+<form method="post" action="/dat-hang" asp-antiforgery="true" class="inline-form">
+    <partial name="_CheckoutHidden" model="Model" />
+    <button type="submit">Đồng ý giá mới và gửi đơn</button>
+    <a class="button secondary" href="/gio-hang">Không đồng ý, quay lại giỏ hàng</a>
+</form>

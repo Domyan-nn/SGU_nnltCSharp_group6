@@ -71,3 +71,14 @@ button, .button { display: inline-block; padding: .55rem 1rem; font: inherit; bo
 button.secondary { background: transparent; color: var(--accent); }
 .muted { color: var(--muted); }
 .subtotal { font-size: 1.15rem; }
+
+/* --- T5: tài khoản và đặt hàng --- */
+.stack > * + * { margin-top: .9rem; }
+.form-card { max-width: 36rem; padding: 1rem; background: var(--card); border: 1px solid var(--line); border-radius: .6rem; }
+.field-error { display: block; min-height: 1.2em; color: #b3261e; font-size: .9rem; }
+@media (prefers-color-scheme: dark) { .field-error { color: #ffb4ab; } }
+.field-error:empty { min-height: 0; }
+input[aria-invalid="true"] { border-color: #b3261e; }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: .25rem 1rem; margin: .75rem 0; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; }

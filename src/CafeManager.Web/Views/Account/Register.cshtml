@@ -1,0 +1,37 @@
+@model RegisterForm
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+<h1>Đăng ký</h1>
+<partial name="_FormErrors" />
+<form method="post" action="/tai-khoan/dang-ky" asp-antiforgery="true" class="stack form-card">
+    <div class="field">
+        <label for="UserName">Tên đăng nhập</label>
+        <input asp-for="UserName" autocomplete="username" maxlength="50" required aria-describedby="UserName-err" />
+        <span asp-validation-for="UserName" id="UserName-err" class="field-error"></span>
+    </div>
+    <div class="field">
+        <label for="Password">Mật khẩu (tối thiểu 6 ký tự)</label>
+        <input asp-for="Password" type="password" autocomplete="new-password" maxlength="100" required aria-describedby="Password-err" />
+        <span asp-validation-for="Password" id="Password-err" class="field-error"></span>
+    </div>
+    <div class="field">
+        <label for="ConfirmPassword">Nhập lại mật khẩu</label>
+        <input asp-for="ConfirmPassword" type="password" autocomplete="new-password" maxlength="100" required aria-describedby="ConfirmPassword-err" />
+        <span asp-validation-for="ConfirmPassword" id="ConfirmPassword-err" class="field-error"></span>
+    </div>
+    <div class="field">
+        <label for="FullName">Họ tên</label>
+        <input asp-for="FullName" autocomplete="name" maxlength="100" required aria-describedby="FullName-err" />
+        <span asp-validation-for="FullName" id="FullName-err" class="field-error"></span>
+    </div>
+    <div class="field">
+        <label for="Phone">Số điện thoại</label>
+        <input asp-for="Phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="12" required aria-describedby="Phone-err" />
+        <span asp-validation-for="Phone" id="Phone-err" class="field-error"></span>
+    </div>
+    <div class="actions">
+        <button type="submit">Đăng ký</button>
+    </div>
+</form>
+<p>Đã có tài khoản? <a href="/tai-khoan/dang-nhap">Đăng nhập</a></p>
