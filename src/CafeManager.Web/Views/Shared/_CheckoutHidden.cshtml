@@ -1,0 +1,9 @@
+@model CheckoutViewModel
+<input type="hidden" name="requestId" value="@Model.RequestId" />
+<input type="hidden" name="pickupAtLocal" value="@Model.PickupAtLocal" />
+<input type="hidden" name="contactName" value="@Model.ContactName" />
+<input type="hidden" name="contactPhone" value="@Model.ContactPhone" />
+@foreach (var kv in Model.ExpectedPrices)
+{
+    <input type="hidden" name="@("exp_" + kv.Key)" value="@kv.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+}

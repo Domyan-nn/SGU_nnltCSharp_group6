@@ -24,13 +24,7 @@ public sealed class HomeController : Controller
     public IActionResult Orders()
     {
         ViewData["Nav"] = "orders";
-        return View();
-    }
-
-    [HttpGet("/tai-khoan")]
-    public IActionResult Account()
-    {
-        ViewData["Nav"] = "account";
+        if (CustomerSession.Current(HttpContext) is null) return Redirect(CustomerSession.LoginUrl("/don-cua-toi"));
         return View();
     }
 }

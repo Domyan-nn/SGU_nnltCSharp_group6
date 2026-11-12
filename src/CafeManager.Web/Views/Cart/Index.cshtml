@@ -63,6 +63,13 @@ else
     <p class="note">Tạm tính chỉ để tham khảo. Máy chủ tính lại giá khi gửi đơn; nếu giá đổi, bạn sẽ được hỏi xác nhận.</p>
     <p class="actions">
         <a class="button secondary" href="/">Chọn thêm món</a>
-        <span class="note">Gửi đơn: sẽ làm ở bước tiếp theo (T5).</span>
+        @if (Model.HasUnavailable)
+        {
+            <span class="note">Xóa món ngừng bán để tiếp tục đặt hàng.</span>
+        }
+        else
+        {
+            <a class="button" href="/dat-hang">Đặt hàng</a>
+        }
     </p>
 }

@@ -1,0 +1,14 @@
+@model CheckoutViewModel
+@{
+    ViewData["Title"] = "Chưa nhận được phản hồi";
+}
+<h1>Chưa nhận được phản hồi</h1>
+<div class="flash" role="status">
+    <p><strong>Chưa biết đơn đã được tạo hay chưa.</strong> Máy chủ chưa trả lời kịp, đơn của bạn có thể đã được ghi nhận.</p>
+    <p>Hãy bấm <strong>Tra cứu kết quả</strong>. Hệ thống dùng lại đúng mã yêu cầu cũ nên sẽ không tạo đơn thứ hai.</p>
+</div>
+<form method="post" action="/dat-hang" asp-antiforgery="true" class="inline-form">
+    <partial name="_CheckoutHidden" model="Model" />
+    <button type="submit">Tra cứu kết quả</button>
+    <a class="button secondary" href="/don-cua-toi">Xem đơn của tôi</a>
+</form>

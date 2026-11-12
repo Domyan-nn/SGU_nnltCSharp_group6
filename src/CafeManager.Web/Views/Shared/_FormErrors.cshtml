@@ -1,0 +1,9 @@
+@{
+    var general = ViewData.ModelState.TryGetValue(string.Empty, out var entry)
+        ? entry.Errors.Select(e => e.ErrorMessage).ToList()
+        : new List<string>();
+}
+@if (general.Count > 0)
+{
+    <div class="flash error" role="alert"><strong>Lỗi:</strong> @string.Join(" ", general)</div>
+}
