@@ -27,10 +27,18 @@ public static class ApiErrorCodes
     public const string PriceChanged = "PRICE_CHANGED";
     public const string InsufficientStock = "INSUFFICIENT_STOCK";
     public const string OverlappingInterval = "OVERLAPPING_INTERVAL";
+    public const string AccountLocked = "ACCOUNT_LOCKED";
 }
 
 public sealed record PriceChange(long VariantId, decimal OldPrice, decimal NewPrice);
 public sealed record ApiError(string Code, string Message, IReadOnlyList<PriceChange>? PriceChanges = null);
+
+// Lỗi nghiệp vụ có mã (ApiErrorCodes) để lớp Web đổi thành mã HTTP; không chứa chi tiết nội bộ.
+public sealed class AppException(string code, string message, IReadOnlyList<PriceChange>? priceChanges = null) : Exception(message)
+{
+    public string Code { get; } = code;
+    public IReadOnlyList<PriceChange>? PriceChanges { get; } = priceChanges;
+}
 
 // --- Xác thực (UC18, UC19) ---
 public sealed record LoginRequest(string UserName, string Password);
@@ -97,3 +105,6 @@ public sealed record StaffMenuResponse(
     IReadOnlyList<StaffProductDto> Products,
     IReadOnlyList<CategoryLookupDto> Categories,
     IReadOnlyList<IngredientLookupDto> Ingredients);
+
+// Kết quả tạo mới (món, biến thể) trong quản lý thực đơn.
+public sealed record IdResponse(long Id);

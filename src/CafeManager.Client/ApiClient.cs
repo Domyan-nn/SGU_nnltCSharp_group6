@@ -59,6 +59,9 @@ public sealed class ApiClient : IDisposable
             return new(false, 403, null, new ApiError(ApiErrorCodes.Forbidden, "Tài khoản này không phải tài khoản nhân viên."), false);
         }
         CurrentUser = result.Value;
+        // Token chống giả mạo gắn với danh tính sau đăng nhập: lấy ngay để các yêu cầu ghi tiếp theo gửi kèm header.
+        var token = await SendAsync<AntiforgeryTokenResponse>(HttpMethod.Get, "api/auth/antiforgery", null, raiseExpired: false, ct);
+        AntiforgeryToken = token.Ok && !string.IsNullOrEmpty(token.Value?.Token) ? token.Value!.Token : null;
         return result;
     }
 
@@ -66,6 +69,7 @@ public sealed class ApiClient : IDisposable
     {
         var result = await SendAsync<Empty>(HttpMethod.Post, "api/auth/logout", null, raiseExpired: false, ct);
         CurrentUser = null;
+        AntiforgeryToken = null;
         return result;
     }
 

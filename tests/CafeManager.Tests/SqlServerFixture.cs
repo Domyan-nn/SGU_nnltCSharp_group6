@@ -18,6 +18,7 @@ public sealed class SqlServerFixture : IAsyncLifetime
     private string? connection;
     private string? master;
     private string? ownedDatabase;
+    public string Connection => connection ?? throw new InvalidOperationException("SQL tests not enabled.");
     public CafeDbContext Open() => new(new DbContextOptionsBuilder<CafeDbContext>().UseSqlServer(
         connection ?? throw new InvalidOperationException("SQL tests not enabled.")).Options);
 

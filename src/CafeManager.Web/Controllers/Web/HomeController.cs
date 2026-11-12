@@ -17,7 +17,7 @@ public sealed class HomeController : Controller
         if (!string.IsNullOrWhiteSpace(q))
             products = products.Where(p => p.ProductName.Contains(q.Trim(), StringComparison.CurrentCultureIgnoreCase));
         ViewData["Nav"] = Request.Path.StartsWithSegments("/danh-muc") ? "catalog" : "home";
-        return View(new MenuPageModel(products.ToList(), SampleMenu.Categories, q?.Trim(), categoryId));
+        return View(new MenuPageModel(products.ToList(), MenuSource.Categories, q?.Trim(), categoryId));
     }
 
     [HttpGet("/don-cua-toi")]

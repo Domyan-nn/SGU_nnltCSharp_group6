@@ -42,6 +42,23 @@ public sealed class ApiClientTests
     }
 
     [Fact]
+    public async Task Staff_login_fetches_the_antiforgery_token_and_sends_it_on_later_writes()
+    {
+        var handler = new FakeHandler((req, _) => Task.FromResult(req.RequestUri!.AbsolutePath.EndsWith("antiforgery")
+            ? Json(HttpStatusCode.OK, new AntiforgeryTokenResponse("tok-123"))
+            : req.RequestUri.AbsolutePath.EndsWith("login")
+                ? Json(HttpStatusCode.OK, new LoginResponse(UserKinds.Staff, "Thu ngân", [Permissions.OrderReceive]))
+                : new HttpResponseMessage(HttpStatusCode.NoContent)));
+        using var api = Client(handler);
+        Assert.True((await api.LoginAsync("dev.cashier", "x")).Ok);
+        Assert.Equal("tok-123", api.AntiforgeryToken);
+        await api.PostAsync("api/staff/orders/1/accept", null);
+        Assert.Equal("tok-123", handler.Calls[^1].Request.Headers.GetValues("X-CSRF-TOKEN").Single());
+        await api.LogoutAsync();
+        Assert.Null(api.AntiforgeryToken);
+    }
+
+    [Fact]
     public async Task Login_with_customer_account_is_rejected_and_logged_out()
     {
         var handler = new FakeHandler((req, _) => Task.FromResult(req.RequestUri!.AbsolutePath.EndsWith("login")

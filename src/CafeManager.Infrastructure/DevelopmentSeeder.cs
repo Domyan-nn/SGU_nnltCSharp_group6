@@ -26,6 +26,16 @@ public static class DevelopmentSeeder
         await ProductAsync(db, category.CategoryId, "[THỬ] Cà phê đen", "Nhỏ", "Drink", 25000, [(coffee, 20m)], ct);
         await ProductAsync(db, category.CategoryId, "[THỬ] Cà phê sữa", "Vừa", "Drink", 30000, [(coffee, 20m), (milk, 25m)], ct);
         await ProductAsync(db, category.CategoryId, "[THỬ] Thêm sữa", "Một phần", "Addon", 5000, [(milk, 10m)], ct);
+        // Tùy chọn "Thêm sữa" được phép cho hai món cà phê, tối đa 2 phần mỗi ly. Chỉ thêm nếu còn thiếu.
+        var addonVariant = await db.ProductVariant.Where(v => v.VariantType == "Addon" && db.Product.Any(p => p.ProductId == v.ProductId && p.ProductName == "[THỬ] Thêm sữa" && p.CategoryId == category.CategoryId))
+            .Select(v => (long?)v.VariantId).FirstOrDefaultAsync(ct);
+        if (addonVariant != null)
+            foreach (var drink in new[] { "[THỬ] Cà phê đen", "[THỬ] Cà phê sữa" })
+            {
+                var productId = await db.Product.Where(p => p.ProductName == drink && p.CategoryId == category.CategoryId).Select(p => (long?)p.ProductId).FirstOrDefaultAsync(ct);
+                if (productId != null && !await db.AllowedAddon.AnyAsync(a => a.ProductId == productId && a.AddonVariantId == addonVariant, ct))
+                    db.Add(new AllowedAddon { ProductId = productId.Value, AddonVariantId = addonVariant.Value, MaxPerUnit = 2 });
+            }
         foreach (var code in new[] { "DEMO-T01", "DEMO-T02", "DEMO-T03" })
             if (!await db.CafeTable.AnyAsync(x => x.TableCode == code, ct))
                 db.Add(new CafeTable { TableCode = code, Status = "Ready" });

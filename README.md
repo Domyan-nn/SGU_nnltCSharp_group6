@@ -15,7 +15,7 @@ src/
   CafeManager.Client/           Máy khách API dùng chung cho Desktop (HttpClient, cookie riêng mỗi phiên); chỉ phụ thuộc Core
   CafeManager.Desktop/          Windows Forms: đăng nhập D00 (gọi API qua Client), cửa sổ chính dạng khung
 tests/
-  CafeManager.Tests/            34 kiểm thử tích hợp SQL Server + 14 kiểm thử máy khách API (không cần SQL Server)
+  CafeManager.Tests/            49 kiểm thử tích hợp SQL Server (CSDL, dịch vụ, API qua HTTP) + 15 kiểm thử máy khách API (không cần SQL Server)
 docs/                          Thiết kế, đối chiếu và bằng chứng
 database/                      Truy vấn kiểm tra chỉ đọc
 ```
