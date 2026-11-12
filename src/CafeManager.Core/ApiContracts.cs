@@ -66,3 +66,34 @@ public sealed record VariantUpsertRequest(long ProductId, string VariantName, st
 public sealed record SetPriceRequest(decimal UnitPrice, DateTime EffectiveFrom);
 public sealed record RecipeLineRequest(long IngredientId, decimal Quantity);
 public sealed record SetRecipeRequest(DateTime EffectiveFrom, IReadOnlyList<RecipeLineRequest> Lines);
+
+// --- CSRF cho client dùng cookie ---
+public sealed record AntiforgeryTokenResponse(string Token);
+
+// --- Danh mục quản trị thực đơn (UC17) ---
+public sealed record CategoryLookupDto(long CategoryId, string CategoryName);
+public sealed record IngredientLookupDto(long IngredientId, string IngredientName, string UnitName);
+
+public sealed record StaffRecipeLineDto(long IngredientId, string IngredientName, string UnitName, decimal Quantity);
+
+public sealed record StaffVariantDto(
+    long VariantId,
+    string VariantName,
+    string VariantType,
+    bool IsActive,
+    decimal? CurrentPrice,
+    DateTime? PriceEffectiveFrom,
+    IReadOnlyList<StaffRecipeLineDto> CurrentRecipe);
+
+public sealed record StaffProductDto(
+    long ProductId,
+    string ProductName,
+    long CategoryId,
+    string CategoryName,
+    bool IsActive,
+    IReadOnlyList<StaffVariantDto> Variants);
+
+public sealed record StaffMenuResponse(
+    IReadOnlyList<StaffProductDto> Products,
+    IReadOnlyList<CategoryLookupDto> Categories,
+    IReadOnlyList<IngredientLookupDto> Ingredients);
