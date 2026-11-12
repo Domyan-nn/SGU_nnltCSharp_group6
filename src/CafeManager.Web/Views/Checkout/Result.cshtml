@@ -1,0 +1,19 @@
+@model CreateOrderResponse
+@{
+    ViewData["Title"] = "Đã gửi đơn";
+}
+<h1>Đã gửi đơn</h1>
+<div class="form-card" role="status">
+    <p>Đơn của bạn đã được ghi nhận và đang <strong>@OrderStatusText.Vietnamese(Model.Status)</strong>.</p>
+    <dl class="kv">
+        <dt>Mã đơn</dt><dd>@Model.OrderCode</dd>
+        <dt>Mã nhận đơn</dt><dd><strong>@Model.PickupCode</strong></dd>
+        <dt>Trạng thái</dt><dd>@OrderStatusText.Vietnamese(Model.Status)</dd>
+        <dt>Tổng tiền</dt><dd>@Money.Vnd(Model.Total)</dd>
+    </dl>
+    <p class="note">Đưa mã nhận đơn cho nhân viên khi đến lấy.</p>
+    <p class="actions">
+        <a class="button" href="/don-cua-toi">Xem đơn của tôi</a>
+        <a class="button secondary" href="/">Về thực đơn</a>
+    </p>
+</div>

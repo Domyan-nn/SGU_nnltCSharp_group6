@@ -1,0 +1,15 @@
+@model CustomerIdentity
+@{
+    ViewData["Title"] = "Tài khoản";
+}
+<h1>Tài khoản</h1>
+<div class="form-card">
+    <p>Xin chào, <strong>@Model.DisplayName</strong>.</p>
+    <p class="muted">Tên đăng nhập: @Model.UserName</p>
+    <div class="actions">
+        <a class="button secondary" href="/don-cua-toi">Đơn của tôi</a>
+        <form method="post" action="/tai-khoan/dang-xuat" asp-antiforgery="true" class="inline-form">
+            <button type="submit">Đăng xuất</button>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,39 @@
+@model CheckoutViewModel
+@{
+    ViewData["Title"] = "Đặt hàng";
+}
+<h1>Đặt hàng</h1>
+@if (Model.Errors.Count > 0)
+{
+    <div class="flash error" role="alert"><strong>Lỗi:</strong> @string.Join(" ", Model.Errors)</div>
+}
+<section aria-labelledby="review">
+    <h2 id="review">Xem lại đơn</h2>
+    <partial name="_OrderSummary" model="Model.Cart" />
+</section>
+<form method="post" action="/dat-hang" asp-antiforgery="true" class="stack form-card">
+    <input type="hidden" name="requestId" value="@Model.RequestId" />
+    @foreach (var kv in Model.ExpectedPrices)
+    {
+        <input type="hidden" name="@("exp_" + kv.Key)" value="@kv.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+    }
+    <div class="field">
+        <label for="pickupAtLocal">Giờ nhận (giờ Việt Nam, phục vụ @OrderRules.ServingHoursText)</label>
+        <input id="pickupAtLocal" name="pickupAtLocal" type="datetime-local" value="@Model.PickupAtLocal" min="@Model.MinPickupLocal" required aria-describedby="pickup-err" />
+        <span id="pickup-err" class="field-error">@Model.PickupError</span>
+    </div>
+    <div class="field">
+        <label for="contactName">Tên liên hệ</label>
+        <input id="contactName" name="contactName" type="text" value="@Model.ContactName" maxlength="100" autocomplete="name" required aria-describedby="name-err" />
+        <span id="name-err" class="field-error">@Model.NameError</span>
+    </div>
+    <div class="field">
+        <label for="contactPhone">Số điện thoại liên hệ</label>
+        <input id="contactPhone" name="contactPhone" type="tel" inputmode="tel" value="@Model.ContactPhone" maxlength="12" autocomplete="tel" required aria-describedby="phone-err" />
+        <span id="phone-err" class="field-error">@Model.PhoneError</span>
+    </div>
+    <div class="actions">
+        <button type="submit">Gửi đơn</button>
+        <a class="button secondary" href="/gio-hang">Quay lại giỏ hàng</a>
+    </div>
+</form>

@@ -126,7 +126,7 @@ public static class CartRules
 public sealed record CartAddonView(string Name, int QuantityPerUnit, decimal UnitPrice);
 
 public sealed record CartLineView(string Id, string ProductName, string VariantName, int Quantity, decimal UnitPrice,
-    IReadOnlyList<CartAddonView> Addons, bool Available)
+    IReadOnlyList<CartAddonView> Addons, bool Available, decimal VariantPrice = 0m)
 {
     public decimal LineTotal => Available ? UnitPrice * Quantity : 0m;
 }
@@ -177,7 +177,7 @@ public static class CartResolver
                 addonViews.Add(new CartAddonView(option.Name, a.QuantityPerUnit, option.UnitPrice));
                 unitPrice += option.UnitPrice * a.QuantityPerUnit;
             }
-            views.Add(new CartLineView(line.Id, product.ProductName, variant.VariantName, line.Quantity, unitPrice, addonViews, available));
+            views.Add(new CartLineView(line.Id, product.ProductName, variant.VariantName, line.Quantity, unitPrice, addonViews, available, variant.UnitPrice));
         }
         return new CartPageModel(views);
     }
