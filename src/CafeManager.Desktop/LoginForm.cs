@@ -66,8 +66,16 @@ public sealed class LoginForm : Form
         try
         {
             var result = await _api.LoginAsync(userName, _password.Text);
-            if (result.Ok) { DialogResult = DialogResult.OK; Close(); return; }
-            _password.Clear();
+            if (result.Ok)
+            {
+                DialogResult = DialogResult.OK;
+                Close();
+                return;
+            }
+
+            if (!result.Unknown)
+                _password.Clear();
+
             ShowStatus(MessageFor(result), error: true);
             _password.Focus();
         }
@@ -78,7 +86,8 @@ public sealed class LoginForm : Form
     internal static string MessageFor<T>(ApiResult<T> result) => result switch
     {
         { Unknown: true } => result.Message,
-        { StatusCode: 401 } => "Sai tên tài khoản hoặc mật khẩu, hoặc tài khoản đã bị khóa.",
+        { Error.Code: "ACCOUNT_LOCKED" } => "Tài khoản đã bị khóa. Vui lòng liên hệ quản lý.",
+        { StatusCode: 401 } => "Sai tên tài khoản hoặc mật khẩu.",
         { StatusCode: 403 } => result.Message,
         _ => result.Message,
     };

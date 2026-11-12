@@ -1,2 +1,8 @@
-# Nhật kí công việc
-12/11/2026 Nguyễn Quốc An bổ sung DTO cho CSRF và dữ liệu D06 src/CafeManager.Core Chưa kiểm chứng
+# Nhật kí công việc (Nguyễn Quốc An)
+Ngày 12/11/2026
+
+Bổ sung DTO cho CSRF và dữ liệu / Vị trí: D06 src/CafeManager.Core/Apicontracts.cs / Chưa kiểm tra
+
+Cập nhật MessageFor trong LoginForm.cs / Vị Trí: src/CafeManager.Desktop/LoginForm.cs / Chưa kiểm tra
+
+Phân biệt tài khoản khóa, lỗi xác thực và mất kết nối, chỉ xoá mật khẩu khi xác định lỗi / Vị Trí: src/CafeManager.Desktop/LoginForm.cs / Chưa kiểm tra
