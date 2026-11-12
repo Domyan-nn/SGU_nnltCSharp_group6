@@ -1,9 +1,8 @@
 @model MenuPageModel
-@using System.Globalization
 @{
     ViewData["Title"] = "Thực đơn";
-    var vi = CultureInfo.GetCultureInfo("vi-VN");
-    string Money(decimal v) => v.ToString("N0", vi) + " đ";
+    string Vnd(decimal v) => Money.Vnd(v);
+    var returnUrl = Context.Request.Path.Add(Context.Request.QueryString);
     var filtered = !string.IsNullOrWhiteSpace(Model.Query) || Model.CategoryId is not null;
 }
 <h1>Thực đơn</h1>
@@ -48,19 +47,39 @@ else
         {
             <li class="card">
                 <h2>@p.ProductName</h2>
-                <p class="cat">@p.CategoryName</p>
+                <p class="cat">@p.CategoryName <span class="badge ok">Đang bán</span></p>
                 <ul class="variants">
                     @foreach (var v in p.Variants)
                     {
-                        <li>
-                            <span class="vname">@v.VariantName</span>
-                            <span class="price">@Money(v.UnitPrice)</span>
-                            @if (v.Addons.Count > 0)
-                            {
-                                <span class="addons">Tùy chọn thêm (mỗi ly):
-                                    @string.Join("; ", v.Addons.Select(a => $"{a.Name} +{Money(a.UnitPrice)}, tối đa {a.MaxPerUnit}"))
-                                </span>
-                            }
+                        var qtyId = $"qty-{v.VariantId}";
+                        <li class="variant">
+                            <form method="post" asp-controller="Cart" asp-action="Add" class="variant-form">
+                                <input type="hidden" name="variantId" value="@v.VariantId" />
+                                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                <div class="vhead">
+                                    <span class="vname">@v.VariantName</span>
+                                    <span class="price">@Vnd(v.UnitPrice)</span>
+                                </div>
+                                @if (v.Addons.Count > 0)
+                                {
+                                    <fieldset class="addons">
+                                        <legend>Tùy chọn thêm (số lượng mỗi ly)</legend>
+                                        @foreach (var a in v.Addons)
+                                        {
+                                            var addonId = $"addon-{v.VariantId}-{a.AddonVariantId}";
+                                            <div class="addon">
+                                                <label for="@addonId">@a.Name (+@Vnd(a.UnitPrice)), tối đa @a.MaxPerUnit</label>
+                                                <input id="@addonId" name="@("addon_" + a.AddonVariantId)" type="number" inputmode="numeric" min="0" max="@a.MaxPerUnit" step="1" value="0" />
+                                            </div>
+                                        }
+                                    </fieldset>
+                                }
+                                <div class="buy">
+                                    <label for="@qtyId">Số lượng</label>
+                                    <input id="@qtyId" name="quantity" type="number" inputmode="numeric" min="1" max="@CartRules.MaxQuantityPerLine" step="1" value="1" required />
+                                    <button type="submit" aria-label="@("Thêm " + p.ProductName + " " + v.VariantName + " vào giỏ")">Thêm vào giỏ</button>
+                                </div>
+                            </form>
                         </li>
                     }
                 </ul>

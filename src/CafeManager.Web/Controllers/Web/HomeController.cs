@@ -7,14 +7,16 @@ namespace CafeManager.Web.Controllers.Web;
 // Giao diện khách (MVC). Vùng làm việc của B. Dữ liệu hiện là dữ liệu giả (SampleMenu) theo hợp đồng API.
 public sealed class HomeController : Controller
 {
+    // "/" và "/danh-muc" cùng là trang thực đơn (mục "Danh mục" trên thanh điều hướng).
     [HttpGet("/")]
+    [HttpGet("/danh-muc")]
     public IActionResult Index(string? q, long? categoryId)
     {
-        IEnumerable<MenuProductDto> products = SampleMenu.Products;
+        IEnumerable<MenuProductDto> products = MenuSource.Current;
         if (categoryId is long c) products = products.Where(p => p.CategoryId == c);
         if (!string.IsNullOrWhiteSpace(q))
             products = products.Where(p => p.ProductName.Contains(q.Trim(), StringComparison.CurrentCultureIgnoreCase));
-        ViewData["Nav"] = "home";
+        ViewData["Nav"] = Request.Path.StartsWithSegments("/danh-muc") ? "catalog" : "home";
         return View(new MenuPageModel(products.ToList(), SampleMenu.Categories, q?.Trim(), categoryId));
     }
 
