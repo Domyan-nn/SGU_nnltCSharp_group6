@@ -2,6 +2,7 @@
     var nav = ViewData["Nav"] as string;
     string Active(string key) => nav == key ? "active" : "";
     string Current(string key) => nav == key ? "page" : "false";
+    var cartCount = CartStore.ItemCount(Context);
 }
 <!DOCTYPE html>
 <html lang="vi">
@@ -18,12 +19,22 @@
             <a class="brand" href="/">Cà phê Nhóm 6</a>
             <nav aria-label="Điều hướng chính">
                 <a class="@Active("home")" aria-current="@Current("home")" href="/">Trang chủ</a>
+                <a class="@Active("catalog")" aria-current="@Current("catalog")" href="/danh-muc">Danh mục</a>
                 <a class="@Active("orders")" aria-current="@Current("orders")" href="/don-cua-toi">Đơn của tôi</a>
                 <a class="@Active("account")" aria-current="@Current("account")" href="/tai-khoan">Tài khoản</a>
+                <a class="@Active("cart")" aria-current="@Current("cart")" href="/gio-hang">Giỏ hàng (@cartCount)</a>
             </nav>
         </div>
     </header>
     <main id="main" class="wrap">
+        @if (TempData["Error"] is string flashError)
+        {
+            <div class="flash error" role="alert"><strong>Lỗi:</strong> @flashError</div>
+        }
+        @if (TempData["Message"] is string flashMessage)
+        {
+            <div class="flash ok" role="status">@flashMessage</div>
+        }
         @RenderBody()
     </main>
     <footer class="site-footer wrap">
