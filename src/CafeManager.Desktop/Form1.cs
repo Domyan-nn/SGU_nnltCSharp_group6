@@ -1,13 +1,19 @@
 using CafeManager.Client;
+using CafeManager.Core;
 
 namespace CafeManager.Desktop;
 
-// Cửa sổ chính (khung). Màn hình tác nghiệp sẽ hiện theo quyền trả về lúc đăng nhập.
 public partial class Form1 : Form
 {
     private readonly ApiClient? _api;
+    private readonly FlowLayoutPanel _actions = new()
+    {
+        AutoSize = true,
+        FlowDirection = FlowDirection.TopDown,
+        WrapContents = false
+    };
 
-    public bool SessionExpired { get; private set; }
+    public bool ReturnToLogin { get; private set; }
 
     public Form1() : this(null) { }
 
@@ -16,27 +22,118 @@ public partial class Form1 : Form
         _api = api;
         InitializeComponent();
         Text = "Quản lý quán cà phê — Nhóm 6";
+
         var user = api?.CurrentUser;
-        var text = user == null
-            ? "Khung WinForms. Các chức năng tác nghiệp sẽ gọi máy chủ qua HTTPS/API.\nChưa triển khai màn hình nghiệp vụ."
-            : $"Xin chào {user.DisplayName}.\nQuyền: {(user.Permissions.Count == 0 ? "(chưa được cấp quyền)" : string.Join(", ", user.Permissions))}\n\nCác màn hình tác nghiệp sẽ hiện theo quyền (bước tiếp theo).";
-        Controls.Add(new Label { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, Text = text });
-        if (api != null)
+        var layout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            AutoSize = true,
+            Padding = new Padding(24),
+            ColumnCount = 1
+        };
+
+        layout.Controls.Add(new Label
+        {
+            AutoSize = true,
+            Font = new Font(Font.FontFamily, 14f, FontStyle.Bold),
+            Text = user is null ? "Chưa đăng nhập." : $"Xin chào {user.DisplayName}"
+        });
+
+        layout.Controls.Add(new Label
+        {
+            AutoSize = true,
+            Margin = new Padding(0, 8, 0, 12),
+            Text = "Chọn chức năng theo quyền được cấp:"
+        });
+
+        if (user?.Permissions.Contains(Permissions.MenuManage) == true)
+            _actions.Controls.Add(CreateActionButton("Quản lý món", OpenMenuManagement));
+
+        if (user?.Permissions.Contains(Permissions.OrderReceive) == true)
+            _actions.Controls.Add(CreateActionButton("Tiếp nhận đơn", OpenOrderReceiving));
+
+        if (_actions.Controls.Count == 0)
+            _actions.Controls.Add(new Label
+            {
+                AutoSize = true,
+                Text = "Tài khoản chưa được cấp quyền tác nghiệp."
+            });
+
+        _actions.Controls.Add(CreateActionButton("Đăng xuất", LogoutAsync));
+        layout.Controls.Add(_actions);
+        Controls.Add(layout);
+
+        if (api is not null)
         {
             api.SessionExpired += OnSessionExpired;
             FormClosed += (_, _) => api.SessionExpired -= OnSessionExpired;
         }
     }
 
-    // Phiên hết hạn hoặc bị thu hồi: báo rõ rồi quay về đăng nhập, không giữ dữ liệu nhạy cảm trên màn hình.
+    private static Button CreateActionButton(string text, EventHandler handler)
+    {
+        var button = new Button
+        {
+            Text = text,
+            AutoSize = true,
+            MinimumSize = new Size(180, 32)
+        };
+        button.Click += handler;
+        return button;
+    }
+
+    private void OpenMenuManagement(object? sender, EventArgs e) =>
+        MessageBox.Show(this, "Màn hình D06 sẽ được nối ở công việc tiếp theo.",
+            Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+    private void OpenOrderReceiving(object? sender, EventArgs e) =>
+        MessageBox.Show(this, "Màn hình D02 sẽ được nối ở công việc tiếp theo.",
+            Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+    private async void LogoutAsync(object? sender, EventArgs e)
+    {
+        if (_api is null) return;
+
+        SetActionsEnabled(false);
+        try
+        {
+            var result = await _api.LogoutAsync();
+            if (!result.Ok && !result.Unknown)
+            {
+                MessageBox.Show(this, result.Message, Text,
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            ReturnToLogin = true;
+            Close();
+        }
+        finally
+        {
+            if (!IsDisposed) SetActionsEnabled(true);
+        }
+    }
+
     private void OnSessionExpired()
     {
-        if (SessionExpired) return;
-        SessionExpired = true;
-        if (IsHandleCreated) BeginInvoke(() =>
+        if (ReturnToLogin) return;
+        ReturnToLogin = true;
+
+        if (IsHandleCreated)
         {
-            MessageBox.Show(this, "Phiên đăng nhập đã hết hạn hoặc bị thu hồi. Vui lòng đăng nhập lại.", Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
-            Close();
-        });
+            BeginInvoke(() =>
+            {
+                MessageBox.Show(this,
+                    "Phiên đăng nhập đã hết hạn hoặc bị thu hồi. Vui lòng đăng nhập lại.",
+                    Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Close();
+            });
+        }
+    }
+
+    private void SetActionsEnabled(bool enabled)
+    {
+        foreach (Control control in _actions.Controls)
+            control.Enabled = enabled;
     }
 }
