@@ -1,0 +1,58 @@
+@model OrderListViewModel
+@{
+    ViewData["Title"] = "Đơn của tôi";
+}
+<h1>Đơn của tôi</h1>
+@if (Model.Error is not null)
+{
+    <div class="flash error" role="alert"><strong>Lỗi:</strong> @Model.Error</div>
+}
+else if (Model.TotalCount == 0)
+{
+    <div class="empty" role="status">
+        <p>Bạn chưa có đơn nào.</p>
+        <a class="button" href="/">Xem thực đơn</a>
+    </div>
+}
+else
+{
+    <p class="muted" role="status">@Model.TotalCount đơn · Trang @Model.Page/@Model.PageCount</p>
+    <ul class="cart">
+        @foreach (var o in Model.Items)
+        {
+            <li class="cart-line">
+                <div class="cl-main">
+                    <strong><a href="/don-cua-toi/@o.OrderId">@o.OrderCode</a></strong>
+                    <span class="badge @OrderStatusText.Css(o.Status)">@OrderStatusText.Vietnamese(o.Status)</span>
+                    <p class="muted">Đặt lúc @OrderRules.LocalText(o.CreatedAt)@(o.PickupAt is DateTime pickup ? " · Giờ nhận " + OrderRules.LocalText(pickup) : "")</p>
+                    <p>Tổng tiền: <strong>@Money.Vnd(o.Total)</strong></p>
+                </div>
+                <div class="cl-actions">
+                    <a class="button secondary" href="/don-cua-toi/@o.OrderId" aria-label="@("Xem chi tiết đơn " + o.OrderCode)">Chi tiết</a>
+                </div>
+            </li>
+        }
+    </ul>
+    @if (Model.PageCount > 1)
+    {
+        <nav class="pager" aria-label="Phân trang đơn hàng">
+            @if (Model.Page > 1)
+            {
+                <a class="button secondary" href="/don-cua-toi?page=@(Model.Page - 1)">‹ Trang trước</a>
+            }
+            else
+            {
+                <span class="note">‹ Trang trước</span>
+            }
+            <span aria-current="page">Trang @Model.Page/@Model.PageCount</span>
+            @if (Model.Page < Model.PageCount)
+            {
+                <a class="button secondary" href="/don-cua-toi?page=@(Model.Page + 1)">Trang sau ›</a>
+            }
+            else
+            {
+                <span class="note">Trang sau ›</span>
+            }
+        </nav>
+    }
+}
