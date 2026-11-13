@@ -30,7 +30,7 @@ Chi tiết từng người: [A – Ngô Nguyên](nhiem-vu/A-ngo-nguyen.md) · [B
 ## Quy tắc làm việc chung
 - **Sở hữu thư mục (tránh xung đột):** A: `Core/`, `Infrastructure/`, `Web/Controllers/Api/`, `Web/Services/`, `Web/Program.cs`, migration. B: `Web/Controllers/Web/`, `Web/Views/`, `Web/wwwroot/`. C: `Desktop/`. Cần sửa thư mục người khác thì nhắn người đó.
 - **Hợp đồng API chốt tối nay, đổi sau đó phải báo cả nhóm.** B và C làm trước với dữ liệu giả theo hợp đồng, không đợi A.
-- **Không dùng EnsureCreated, không xóa DB, thay đổi mô hình = migration mới** (xem `README.md`); chỉ A tạo migration.
+- **Không dùng EnsureCreated, không xóa DB, thay đổi mô hình = migration mới** (xem `docs/quy-uoc-du-an.md`); chỉ A tạo migration.
 - **Mỗi việc xong = mã + test hoặc biên bản chạy tay + ảnh.** Không ghi "Đạt" khi thiếu bằng chứng; kết quả điền vào Chương 5.
 - **Họp 15 phút lúc 20:00 mỗi tối:** làm gì, vướng gì, ngày mai làm gì. Mốc cắt: **thứ 5 22:00** nếu Mức 1 chưa chạy được đầu-cuối thì cắt UC04 và Mức 2, dồn người sửa luồng chính.
 

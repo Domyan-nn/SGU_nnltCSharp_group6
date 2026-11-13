@@ -45,7 +45,7 @@ Hạn: thứ 7 14/11/2026 (đóng băng chức năng thứ 6 18:00). Xem phạm 
 `POST /api/staff/orders/{id}/payments` (UC08, gọi `RecordCashPaymentAsync`, cần mở ca), `POST /api/staff/units/{id}/start` (UC07, `StartUnitAsync`), mở/đóng ca.
 
 ## Quy tắc cần nhớ
-- Không dùng EnsureCreated, không xóa/đặt lại DB, không hạ migration; thay đổi mô hình = migration mới, đọc `Up`/`Down` trước (`README.md`).
+- Không dùng EnsureCreated, không xóa/đặt lại DB, không hạ migration; thay đổi mô hình = migration mới, đọc `Up`/`Down` trước (`docs/quy-uoc-du-an.md`).
 - Không đưa `ICafeDataCommands` ra API thô: luôn qua lớp dịch vụ có kiểm tra quyền, validation, giá từ máy chủ.
 - Thời gian lưu UTC; không ghi mật khẩu, token vào log.
 - Không báo "đạt" khi test bị Skipped; test chạy với `CAFE_TEST_SQLSERVER`.
