@@ -26,6 +26,11 @@ public interface ICustomerGateway
     Task<GatewayResult<LoginResponse>> LoginAsync(LoginRequest request);
     Task<GatewayResult<bool>> RegisterAsync(RegisterCustomerRequest request);
     Task<GatewayResult<CreateOrderResponse>> CreateOrderAsync(string userName, CreateOrderRequest request);
+
+    // UC04 (W03): chỉ thao tác trên đơn của chính khách; đơn người khác hoặc không tồn tại đều trả NOT_FOUND.
+    Task<GatewayResult<IReadOnlyList<OrderSummaryDto>>> ListOrdersAsync(string userName);
+    Task<GatewayResult<OrderDetailDto>> GetOrderAsync(string userName, long orderId);
+    Task<GatewayResult<bool>> CancelOrderAsync(string userName, long orderId);
 }
 
 public static class CustomerGatewayProvider
@@ -48,6 +53,8 @@ public sealed class FakeCustomerGateway : ICustomerGateway
     private static readonly object Gate = new();
     private static readonly Dictionary<string, FakeUser> Users = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Dictionary<Guid, CreateOrderResponse> OrdersByRequest = new();
+    private sealed record FakeOrder(string Owner, OrderDetailDto Detail);
+    private static readonly Dictionary<long, FakeOrder> OrdersById = new();
     private static readonly PasswordHasher<string> Hasher = new();
     private static readonly Regex UserNameRegex = new(@"^[A-Za-z0-9._-]+$");
     private static int _orderSeq;
@@ -109,10 +116,12 @@ public sealed class FakeCustomerGateway : ICustomerGateway
             var menu = MenuSource.Current;
             var total = 0m;
             var changes = new List<PriceChange>();
+            var detailLines = new List<OrderLineDto>();
             foreach (var line in request.Lines)
             {
-                var variant = menu.SelectMany(p => p.Variants).FirstOrDefault(v => v.VariantId == line.VariantId);
-                if (variant is null)
+                var product = menu.FirstOrDefault(p => p.Variants.Any(v => v.VariantId == line.VariantId));
+                var variant = product?.Variants.FirstOrDefault(v => v.VariantId == line.VariantId);
+                if (product is null || variant is null)
                     return Task.FromResult(GatewayResult<CreateOrderResponse>.Fail(ApiErrorCodes.Validation, "Có món không còn bán."));
                 if (line.Quantity < 1)
                     return Task.FromResult(GatewayResult<CreateOrderResponse>.Fail(ApiErrorCodes.Validation, "Số lượng phải là số nguyên dương."));
@@ -122,14 +131,17 @@ public sealed class FakeCustomerGateway : ICustomerGateway
                     changes.Add(new PriceChange(variant.VariantId, line.ExpectedUnitPrice, serverPrice));
 
                 var addonTotal = 0m;
+                var addonDtos = new List<OrderAddonDto>();
                 foreach (var a in line.Addons ?? Array.Empty<OrderAddonRequest>())
                 {
                     var option = variant.Addons.FirstOrDefault(o => o.AddonVariantId == a.AddonVariantId);
                     if (option is null || a.Quantity < 0 || a.Quantity > option.MaxPerUnit)
                         return Task.FromResult(GatewayResult<CreateOrderResponse>.Fail(ApiErrorCodes.Validation, "Tùy chọn thêm không hợp lệ."));
                     addonTotal += option.UnitPrice * a.Quantity;
+                    if (a.Quantity > 0) addonDtos.Add(new OrderAddonDto(option.Name, a.Quantity, option.UnitPrice));
                 }
                 total += (serverPrice + addonTotal) * line.Quantity;
+                detailLines.Add(new OrderLineDto(product.ProductName, variant.VariantName, line.Quantity, serverPrice, addonDtos));
             }
             if (changes.Count > 0)
                 return Task.FromResult(GatewayResult<CreateOrderResponse>.Fail(ApiErrorCodes.PriceChanged, "Giá đã thay đổi.", changes));
@@ -138,6 +150,11 @@ public sealed class FakeCustomerGateway : ICustomerGateway
             var response = new CreateOrderResponse(seq, $"WEB-{DateTime.UtcNow:yyyyMMdd}-{seq:D4}",
                 Random.Shared.Next(1000, 10000).ToString(CultureInfo.InvariantCulture), "Pending", total);
             OrdersByRequest[request.RequestId] = response;
+            // CAFE_FAKE_ORDER_STATUS=Serving tạo đơn ở trạng thái đã tiếp nhận để thử "đơn đã tiếp nhận không tự hủy được".
+            var status = Environment.GetEnvironmentVariable("CAFE_FAKE_ORDER_STATUS") is { Length: > 0 } custom ? custom : "Pending";
+            var summary = new OrderSummaryDto(seq, response.OrderCode, status, DateTime.UtcNow, request.PickupAt, total);
+            OrdersById[seq] = new FakeOrder(userName, new OrderDetailDto(summary, response.PickupCode,
+                request.ContactName, request.ContactPhone, null, detailLines));
 
             if (!_timeoutUsed && Environment.GetEnvironmentVariable("CAFE_FAKE_TIMEOUT_ONCE") == "1")
             {
@@ -145,6 +162,40 @@ public sealed class FakeCustomerGateway : ICustomerGateway
                 return Task.FromResult(GatewayResult<CreateOrderResponse>.Timeout());
             }
             return Task.FromResult(GatewayResult<CreateOrderResponse>.Success(response));
+        }
+    }
+
+    public Task<GatewayResult<IReadOnlyList<OrderSummaryDto>>> ListOrdersAsync(string userName)
+    {
+        lock (Gate)
+        {
+            IReadOnlyList<OrderSummaryDto> list = OrdersById.Values.Where(o => o.Owner == userName)
+                .Select(o => o.Detail.Summary).OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.OrderId).ToList();
+            return Task.FromResult(GatewayResult<IReadOnlyList<OrderSummaryDto>>.Success(list));
+        }
+    }
+
+    public Task<GatewayResult<OrderDetailDto>> GetOrderAsync(string userName, long orderId)
+    {
+        lock (Gate)
+        {
+            if (!OrdersById.TryGetValue(orderId, out var order) || order.Owner != userName)
+                return Task.FromResult(GatewayResult<OrderDetailDto>.Fail(ApiErrorCodes.NotFound, "Không tìm thấy đơn."));
+            return Task.FromResult(GatewayResult<OrderDetailDto>.Success(order.Detail));
+        }
+    }
+
+    public Task<GatewayResult<bool>> CancelOrderAsync(string userName, long orderId)
+    {
+        lock (Gate)
+        {
+            if (!OrdersById.TryGetValue(orderId, out var order) || order.Owner != userName)
+                return Task.FromResult(GatewayResult<bool>.Fail(ApiErrorCodes.NotFound, "Không tìm thấy đơn."));
+            if (order.Detail.Summary.Status != "Pending")
+                return Task.FromResult(GatewayResult<bool>.Fail(ApiErrorCodes.InvalidState,
+                    "Đơn đã được tiếp nhận hoặc đã đóng, không thể tự hủy. Vui lòng liên hệ nhân viên."));
+            OrdersById[orderId] = order with { Detail = order.Detail with { Summary = order.Detail.Summary with { Status = "Cancelled" } } };
+            return Task.FromResult(GatewayResult<bool>.Success(true));
         }
     }
 }

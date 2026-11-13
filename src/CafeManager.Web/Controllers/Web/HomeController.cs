@@ -19,14 +19,6 @@ public sealed class HomeController : Controller
         ViewData["Nav"] = Request.Path.StartsWithSegments("/danh-muc") ? "catalog" : "home";
         return View(new MenuPageModel(products.ToList(), MenuSource.Categories, q?.Trim(), categoryId));
     }
-
-    [HttpGet("/don-cua-toi")]
-    public IActionResult Orders()
-    {
-        ViewData["Nav"] = "orders";
-        if (CustomerSession.Current(HttpContext) is null) return Redirect(CustomerSession.LoginUrl("/don-cua-toi"));
-        return View();
-    }
 }
 
 public sealed record MenuPageModel(IReadOnlyList<MenuProductDto> Products, IReadOnlyList<(long Id, string Name)> Categories,

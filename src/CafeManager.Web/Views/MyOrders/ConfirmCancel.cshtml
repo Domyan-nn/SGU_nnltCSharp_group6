@@ -1,0 +1,13 @@
+@model OrderDetailDto
+@{
+    ViewData["Title"] = "Xác nhận hủy đơn";
+    var s = Model.Summary;
+}
+<h1>Xác nhận hủy đơn</h1>
+<div class="flash error" role="alert">
+    Bạn sắp hủy đơn <strong>@s.OrderCode</strong> (tổng @Money.Vnd(s.Total)). Thao tác này không hoàn tác được.
+</div>
+<form method="post" action="/don-cua-toi/@s.OrderId/huy" asp-antiforgery="true" class="inline-form">
+    <button type="submit" aria-label="@("Xác nhận hủy đơn " + s.OrderCode)">Xác nhận hủy đơn @s.OrderCode</button>
+    <a class="button secondary" href="/don-cua-toi/@s.OrderId">Không hủy</a>
+</form>

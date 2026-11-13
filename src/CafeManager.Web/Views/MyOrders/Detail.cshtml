@@ -1,0 +1,51 @@
+@model OrderDetailDto
+@{
+    ViewData["Title"] = "Đơn " + Model.Summary.OrderCode;
+    var s = Model.Summary;
+}
+<h1>Đơn @s.OrderCode</h1>
+<div class="form-card">
+    <dl class="kv">
+        <dt>Trạng thái</dt><dd><span class="badge @OrderStatusText.Css(s.Status)">@OrderStatusText.Vietnamese(s.Status)</span></dd>
+        @if (!string.IsNullOrEmpty(Model.PickupCode))
+        {
+            <dt>Mã nhận đơn</dt><dd><strong>@Model.PickupCode</strong></dd>
+        }
+        <dt>Giờ đặt</dt><dd>@OrderRules.LocalText(s.CreatedAt)</dd>
+        <dt>Giờ nhận</dt><dd>@(s.PickupAt is DateTime p ? OrderRules.LocalText(p) : "Chưa có")</dd>
+        <dt>Liên hệ</dt><dd>@(string.IsNullOrWhiteSpace(Model.ContactName) ? "Chưa có" : Model.ContactName)@(string.IsNullOrWhiteSpace(Model.ContactPhone) ? "" : " · " + Model.ContactPhone)</dd>
+        @if (s.Status == "Rejected" && !string.IsNullOrWhiteSpace(Model.RejectReason))
+        {
+            <dt>Lý do từ chối</dt><dd>@Model.RejectReason</dd>
+        }
+    </dl>
+</div>
+<h2>Món đã đặt (giá chốt)</h2>
+<ul class="cart">
+    @foreach (var line in Model.Lines)
+    {
+        var addonSum = line.Addons.Sum(a => a.UnitPrice * a.QuantityPerUnit);
+        <li class="cart-line">
+            <div class="cl-main">
+                <strong>@line.ProductName</strong> – @line.VariantName
+                @if (line.Addons.Count > 0)
+                {
+                    <p class="muted">Thêm (mỗi ly): @string.Join("; ", line.Addons.Select(a => a.Name + " × " + a.QuantityPerUnit))</p>
+                }
+                <p>Số lượng @line.Quantity × @Money.Vnd(line.UnitPrice + addonSum) = <strong>@Money.Vnd((line.UnitPrice + addonSum) * line.Quantity)</strong></p>
+            </div>
+        </li>
+    }
+</ul>
+<p class="subtotal">Tổng tiền: <strong>@Money.Vnd(s.Total)</strong></p>
+<p class="actions">
+    @if (s.Status == "Pending")
+    {
+        <a class="button secondary" href="/don-cua-toi/@s.OrderId/huy" aria-label="@("Hủy đơn " + s.OrderCode)">Hủy đơn</a>
+    }
+    else
+    {
+        <span class="note">Đơn không còn chờ tiếp nhận nên không có nút hủy.</span>
+    }
+    <a class="button secondary" href="/don-cua-toi">Về danh sách đơn</a>
+</p>

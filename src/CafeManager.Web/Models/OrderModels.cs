@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using CafeManager.Core;
 
 namespace CafeManager.Web.Models;
 
@@ -18,6 +19,13 @@ public static class OrderRules
     public const string LocalFormat = "yyyy-MM-dd'T'HH:mm";
 
     public static DateTime NowLocal() => DateTime.UtcNow + VietnamOffset;
+
+    /// <summary>Hiển thị thời điểm lưu ở UTC theo giờ Việt Nam (CSDL trả Kind không xác định thì coi là UTC).</summary>
+    public static string LocalText(DateTime value)
+    {
+        var utc = value.Kind == DateTimeKind.Local ? value.ToUniversalTime() : DateTime.SpecifyKind(value, DateTimeKind.Utc);
+        return (utc + VietnamOffset).ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+    }
 
     /// <summary>Kiểm tra giờ nhận người dùng nhập (giờ Việt Nam, định dạng datetime-local). Trả lỗi hoặc null; utc là giờ UTC để gửi API.</summary>
     public static string? ValidatePickup(string? text, out DateTime utc)
@@ -42,9 +50,15 @@ public static class OrderStatusText
     {
         "Pending" => "Chờ tiếp nhận",
         "Serving" => "Đang phục vụ",
+        "Settling" => "Đang thanh toán",
+        "Closed" => "Hoàn tất",
+        "Cancelled" => "Đã hủy",
         "Rejected" => "Bị từ chối",
         _ => status,
     };
+
+    /// <summary>Lớp CSS cho nhãn trạng thái. Nhãn luôn có chữ; màu chỉ bổ trợ.</summary>
+    public static string Css(string status) => (status is "Cancelled" or "Rejected") ? "warn" : "ok";
 }
 
 public sealed record PriceChangeView(string Label, decimal OldPrice, decimal NewPrice);
@@ -66,3 +80,5 @@ public sealed class CheckoutViewModel
     public IReadOnlyList<PriceChangeView> Changes { get; init; } = Array.Empty<PriceChangeView>();
     public decimal NewSubtotal { get; init; }
 }
+
+public sealed record OrderListViewModel(IReadOnlyList<OrderSummaryDto> Items, int Page, int PageCount, int TotalCount, string? Error);
