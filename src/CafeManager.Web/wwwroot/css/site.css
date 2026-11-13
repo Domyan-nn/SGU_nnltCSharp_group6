@@ -82,3 +82,6 @@ input[aria-invalid="true"] { border-color: #b3261e; }
 .kv { display: grid; grid-template-columns: max-content 1fr; gap: .25rem 1rem; margin: .75rem 0; }
 .kv dt { color: var(--muted); }
 .kv dd { margin: 0; }
+
+/* --- T6: phân trang đơn --- */
+.pager { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin: 1rem 0; }

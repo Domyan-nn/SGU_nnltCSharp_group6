@@ -50,6 +50,51 @@ public sealed class RealCustomerGateway(IServiceScopeFactory scopes) : ICustomer
         }
         catch (AppException ex) { return Fail<CreateOrderResponse>(ex); }
     }
+
+    // --- W03 (B, T6): thêm 3 phương thức cho UC04; dịch vụ CustomerOrderService của A đã kiểm tra chủ đơn. ---
+    private static async Task<string?> FindUserIdAsync(IServiceScope scope, string userName) =>
+        (await scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>().FindByNameAsync(userName))?.Id;
+
+    public async Task<GatewayResult<IReadOnlyList<OrderSummaryDto>>> ListOrdersAsync(string userName)
+    {
+        using var scope = scopes.CreateScope();
+        try
+        {
+            var userId = await FindUserIdAsync(scope, userName);
+            if (userId == null) return GatewayResult<IReadOnlyList<OrderSummaryDto>>.Fail(ApiErrorCodes.Unauthorized, "Cần đăng nhập.");
+            var list = await scope.ServiceProvider.GetRequiredService<CustomerOrderService>().ListMineAsync(userId);
+            return GatewayResult<IReadOnlyList<OrderSummaryDto>>.Success(list);
+        }
+        catch (AppException ex) { return Fail<IReadOnlyList<OrderSummaryDto>>(ex); }
+    }
+
+    public async Task<GatewayResult<OrderDetailDto>> GetOrderAsync(string userName, long orderId)
+    {
+        using var scope = scopes.CreateScope();
+        try
+        {
+            var userId = await FindUserIdAsync(scope, userName);
+            if (userId == null) return GatewayResult<OrderDetailDto>.Fail(ApiErrorCodes.Unauthorized, "Cần đăng nhập.");
+            var detail = await scope.ServiceProvider.GetRequiredService<CustomerOrderService>().GetMineAsync(userId, orderId);
+            return detail is null
+                ? GatewayResult<OrderDetailDto>.Fail(ApiErrorCodes.NotFound, "Không tìm thấy đơn.")
+                : GatewayResult<OrderDetailDto>.Success(detail);
+        }
+        catch (AppException ex) { return Fail<OrderDetailDto>(ex); }
+    }
+
+    public async Task<GatewayResult<bool>> CancelOrderAsync(string userName, long orderId)
+    {
+        using var scope = scopes.CreateScope();
+        try
+        {
+            var userId = await FindUserIdAsync(scope, userName);
+            if (userId == null) return GatewayResult<bool>.Fail(ApiErrorCodes.Unauthorized, "Cần đăng nhập.");
+            await scope.ServiceProvider.GetRequiredService<CustomerOrderService>().CancelAsync(userId, orderId);
+            return GatewayResult<bool>.Success(true);
+        }
+        catch (AppException ex) { return Fail<bool>(ex); }
+    }
 }
 
 // Thực đơn thật cho MenuSource: đọc CSDL, lưu đệm ngắn (10 giây) để mỗi lần xem trang không phải truy vấn lại.
