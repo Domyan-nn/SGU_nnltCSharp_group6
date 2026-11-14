@@ -23,15 +23,16 @@ Bản cục bộ đọc được ở `../CK_GD1_Nhom11_NgoNguyen_3124411191-.../
 - src/CafeManager.Infrastructure — DbContext, migrations (InitialSchema, IntegrityGuards, HistoryProtection, SchemaGapColumns), seed, CafeDataCommands; Services/: AccountService, MenuQueryService, CustomerOrderService, StaffOrderService, StaffMenuService
 - src/CafeManager.Web — host ASP.NET Core: Controllers/Api (auth, menu, orders, staff), Controllers/Web (giao diện khách của B), cookie xác thực + antiforgery + session; CAFE_FAKE_GATEWAY=1 chạy giao diện với dữ liệu giả
 - src/CafeManager.Client — ApiClient (HttpClient + CookieContainer riêng, phân loại lỗi 400–409, "chưa xác định" khi mất mạng/hết giờ/5xx); chỉ phụ thuộc Core
-- src/CafeManager.Desktop — WinForms: D00 đăng nhập (gọi API thật); màn hình D06 và D02 đang làm
-- tests/CafeManager.Tests — 49 test tích hợp SQL Server (CSDL, dịch vụ, API qua HTTP) + 15 test ApiClient (không cần SQL) (cần env CAFE_TEST_SQLSERVER, nếu không sẽ Skipped)
+- src/CafeManager.Desktop — WinForms: D00 đăng nhập, D02 tiếp nhận/từ chối đơn Web, D06 quản lý món/giá/công thức (gọi API thật qua Client; logic không cần giao diện nằm ở Client/StaffApi.cs và StaffPresentation.cs)
+- tests/CafeManager.Tests — 105 test: 53 cần SQL Server (CSDL, dịch vụ, API qua HTTP, luồng Desktop qua ApiClient thật) + 52 không cần SQL (ApiClient, logic hiển thị Desktop) (cần env CAFE_TEST_SQLSERVER, nếu không các ca SQL sẽ Skipped)
 - docs/: business-rules.md (ma trận BR, quyết định cần nhóm chốt), relation-mapping.md, schema.md, verification.md
 
 ## Hiện trạng
 - Xong: lược đồ 40 bảng + 4 Identity, 68 FK, 52 CHECK, 13 trigger, 8 RowVersion; seed; các thao tác dữ liệu (AcceptRound, StartUnit, CashPayment, CashRefund, ReconcileShift) có test.
 - Xong (12/11): API UC18/19, UC01, UC02, UC03, UC04 (xem/hủy), UC17 qua HTTP có kiểm tra quyền trong CSDL, antiforgery, khóa tài khoản; 64 test đạt. Web khách (B) dùng dữ liệu thật qua cổng và MenuSource.
-- Chưa làm: màn hình Desktop D06/D02, thu tiền và ca (UC08/14), pha chế/bàn (UC05–07, 09), hủy/hoàn trọn vẹn (UC10–12), kho (UC13), báo cáo/quản trị (UC15/16), hiệu năng, sao lưu.
-- Bước tiếp theo: Desktop D06/D02 nối API, kiểm thử tay KT/TC mức hệ thống, báo cáo Chương 5–6; Mức 2 (thu tiền, pha chế) nếu còn thời gian.
+- Xong (14/11): Desktop D02 (tiếp nhận/từ chối đơn) và D06 (món, biến thể, giá, công thức, bật/ngừng bán); 105 test đạt; điều khiển tự động form thật 22/22 (xem verification.md). Web W03 "Đơn của tôi" (B) đã gộp vào main.
+- Chưa làm: thu tiền và ca (UC08/14), pha chế/bàn (UC05–07, 09), hủy/hoàn trọn vẹn (UC10–12), kho (UC13), báo cáo/quản trị (UC15/16), hiệu năng, sao lưu.
+- Bước tiếp theo: kiểm thử tay KT mức hệ thống theo kiem-thu-tay.md (biên bản + ảnh), báo cáo Chương 5–6 do nhóm tự viết; Mức 2 (thu tiền, pha chế) nếu còn thời gian.
 
 ## Quy tắc làm việc
 - Không dùng EnsureCreated, drop/reset DB, hay hạ migration; thay đổi mô hình = migration mới, đọc Up/Down trước.

@@ -1,6 +1,6 @@
 # Hướng dẫn chuẩn bị và chạy demo
 
-Cập nhật 12/11/2026. Kịch bản liên thông: quản lý tạo món → khách đặt đơn trên Web → thu ngân tiếp nhận trên Desktop. Các bước trên Desktop (D06, D02) phụ thuộc phần của C; API đã sẵn sàng.
+Cập nhật 14/11/2026. Kịch bản liên thông: quản lý tạo món (Desktop D06) → khách đặt đơn trên Web → thu ngân tiếp nhận trên Desktop (D02). Cả ba phần đã có mã; chạy tay và ghi biên bản theo [kiem-thu-tay.md](kiem-thu-tay.md).
 
 ## 1. Chuẩn bị một lần (máy demo)
 ```powershell
@@ -31,13 +31,13 @@ dotnet run --project src/CafeManager.Web --launch-profile http     # http://loca
 $env:CAFE_API_BASE_URL='http://localhost:5055'
 dotnet run --project src/CafeManager.Desktop
 ```
-Đăng nhập bằng dev.manager (quản lý món) hoặc dev.cashier (tiếp nhận đơn).
+Đăng nhập bằng dev.manager (quản lý món) hoặc dev.cashier (tiếp nhận đơn). Dùng HTTPS (`https://localhost:7034`) thì chạy một lần `dotnet dev-certs https --trust`, nếu không Desktop báo lỗi SSL; hoặc đặt `CAFE_API_BASE_URL` về địa chỉ HTTP như trên.
 
 ## 4. Kịch bản demo (5–7 phút)
-1. Desktop, đăng nhập dev.manager: tạo món mới, đặt giá và công thức, bật bán (UC17).
+1. Desktop, đăng nhập dev.manager → Quản lý món: Thêm món → Thêm biến thể → Đổi giá → Công thức → Bật bán (UC17); món hiện trên Web sau vài giây.
 2. Web: đăng ký tài khoản khách rồi đăng nhập (UC18, UC19); xem thực đơn, chọn món và tùy chọn, thêm vào giỏ (UC01).
 3. Web: xác nhận đơn với giờ nhận 07:00–22:00 (giờ Việt Nam); thử đổi giá ở bước 1 để thấy cảnh báo "giá đã thay đổi" (UC02).
-4. Desktop, đăng nhập dev.cashier: mở danh sách đơn chờ, tiếp nhận đơn (UC03); đơn chuyển sang Đang phục vụ.
+4. Desktop, đăng nhập dev.cashier → Tiếp nhận đơn: chọn đơn, xem chi tiết, Tiếp nhận đơn (UC03); đơn chuyển sang Đang phục vụ. Có thể thử Từ chối đơn… (bắt buộc lý do).
 5. Web: "Đơn của tôi" hiện trạng thái mới; thử hủy một đơn còn chờ để thấy đơn đã tiếp nhận không tự hủy được (UC04).
 6. (Tùy chọn) Khóa tài khoản: nhập sai mật khẩu 5 lần để thấy thông báo khóa.
 
