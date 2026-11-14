@@ -1,6 +1,6 @@
 # Quản lý quán cà phê — Nhóm 6
 
-Phần dữ liệu dùng **.NET 10, EF Core 10.0.14, SQL Server và ASP.NET Core Identity**. Đã xây dựng 40 quan hệ theo tài liệu (cộng bảng mở rộng AllowedAddon), migration, dữ liệu thử và kiểm thử SQL Server. Web/WinForms hiện là khung khởi động; chưa hoàn thiện 19 UC hay giao diện sản phẩm.
+Phần dữ liệu dùng **.NET 10, EF Core 10.0.14, SQL Server và ASP.NET Core Identity**. Đã xây dựng 40 quan hệ theo tài liệu (cộng bảng mở rộng AllowedAddon), migration, dữ liệu thử và kiểm thử SQL Server. API, giao diện Web khách (UC01, 02, 04, 18, 19) và Desktop (D00 đăng nhập, D02 tiếp nhận đơn, D06 quản lý món) đã có mã và kiểm thử tự động; chưa nghiệm thu bằng kiểm thử tay có biên bản, và chưa hoàn thiện 19 UC (thu tiền, ca, pha chế, kho, báo cáo chưa có giao diện).
 
 Xem [kết quả kiểm chứng](docs/verification.md), [đối chiếu 40 quan hệ và chuẩn hóa](docs/relation-mapping.md), [từ điển lược đồ](docs/schema.md), [quy tắc và giới hạn](docs/business-rules.md), [tài liệu nguồn](docs/sources.md).
 
@@ -13,16 +13,16 @@ src/
   CafeManager.Infrastructure/   DbContext, Identity store, transaction, seed, migrations
   CafeManager.Web/              Host ASP.NET Core, DI, nền MVC/API, lệnh dữ liệu Development
   CafeManager.Client/           Máy khách API dùng chung cho Desktop (HttpClient, cookie riêng mỗi phiên); chỉ phụ thuộc Core
-  CafeManager.Desktop/          Windows Forms: đăng nhập D00 (gọi API qua Client), cửa sổ chính dạng khung
+  CafeManager.Desktop/          Windows Forms: D00 đăng nhập, cửa sổ chính theo quyền, D02 tiếp nhận/từ chối đơn Web, D06 quản lý món/giá/công thức (gọi API qua Client)
 tests/
-  CafeManager.Tests/            49 kiểm thử tích hợp SQL Server (CSDL, dịch vụ, API qua HTTP) + 15 kiểm thử máy khách API (không cần SQL Server)
+  CafeManager.Tests/            105 kiểm thử: 53 cần SQL Server (CSDL, dịch vụ, API qua HTTP, luồng Desktop qua ApiClient thật) + 52 không cần SQL (máy khách API, logic hiển thị Desktop)
 docs/                          Thiết kế, đối chiếu và bằng chứng
 database/                      Truy vấn kiểm tra chỉ đọc
 ```
 
 Infrastructure → Core; Web → Infrastructure (và Core qua project reference); Tests → Infrastructure. Core không phụ thuộc EF/SQL Server. Gộp Domain và hợp đồng Application vào Core vì phạm vi này chưa cần một project Application riêng. Khi xây UC có thể tách theo nhu cầu thực tế.
 
-Desktop hiện độc lập, không tham chiếu Infrastructure, EF hay SqlClient, không chứa connection string SQL. Các màn hình WinForms sau này dùng HttpClient gọi API HTTPS của Web; controller và MVC dùng cùng dịch vụ máy chủ → EF Core → SQL Server. Chưa có API ghi dữ liệu công khai, phiên đăng nhập cookie hay tích hợp hai giao diện.
+Desktop hiện độc lập, không tham chiếu Infrastructure, EF hay SqlClient, không chứa connection string SQL. Các màn hình WinForms dùng HttpClient (qua `CafeManager.Client`) gọi API của Web với cookie và token chống giả mạo; controller và MVC dùng cùng dịch vụ máy chủ → EF Core → SQL Server. Quyền được kiểm tra trong CSDL ở mỗi yêu cầu. Tích hợp Web–Desktop–SQL Server đã chạy thử tự động ([verification.md](docs/verification.md)); chạy tay theo [kiem-thu-tay.md](docs/kiem-thu-tay.md).
 
 ## Môi trường Windows / Visual Studio
 
@@ -112,8 +112,8 @@ Seed là tùy chọn, chạy lặp lại an toàn trong transaction có khóa: 1
 3. View → SQL Server Object Explorer → Add SQL Server: `(localdb)\MSSQLLocalDB`, Windows Authentication.
 4. Mở Databases → CafeManager_Group6_Dev → Tables. Có 40 bảng nghiệp vụ, 4 bảng Identity và __EFMigrationsHistory: tổng 45.
 5. New Query trên đúng CSDL; chạy [database/inspect.sql](database/inspect.sql) để xem cột, FK, CHECK, chỉ mục, trigger, seed và các migration. Có thể làm tương tự trong SSMS.
-6. Trong Solution Explorer chọn Web làm Startup Project, profile https, F5: hiện thông báo khung máy chủ; không tự thay đổi CSDL. Desktop làm Startup Project sẽ mở khung WinForms, chưa có màn hình nghiệp vụ.
-7. Để chạy Test Explorer có SQL, khởi động Visual Studio từ PowerShell đã đặt `CAFE_TEST_SQLSERVER`, hoặc chạy lệnh terminal dưới đây. Không có biến này thì 34 ca SQL đánh dấu **Skipped**, không phải Pass.
+6. Chạy Web (profile http hoặc https) rồi Desktop theo [huong-dan-demo.md](docs/huong-dan-demo.md): Web phục vụ giao diện khách và API; Desktop có đăng nhập nhân viên, tiếp nhận đơn và quản lý món. Web không tự thay đổi CSDL (chỉ lệnh `--migrate/--seed` ở môi trường Development).
+7. Để chạy Test Explorer có SQL, khởi động Visual Studio từ PowerShell đã đặt `CAFE_TEST_SQLSERVER`, hoặc chạy lệnh terminal dưới đây. Không có biến này thì các ca SQL đánh dấu **Skipped**, không phải Pass.
 
 ## Chạy kiểm thử thực
 
@@ -130,7 +130,7 @@ TRX nằm trong TestResults (gitignore). [verification.md](docs/verification.md)
 
 ## Bước tiếp theo
 
-Nhóm cần xác nhận các [quyết định và phần thiếu](docs/business-rules.md), đặc biệt trạng thái, chính sách quyền/duyệt, idempotency và luồng tiền. Sau đó xây UC18/19 đăng ký/đăng nhập với Identity và transaction hồ sơ; bổ sung cookie/antiforgery riêng cho Web và Desktop; áp dụng StaffPermissionReader tại máy chủ; xây UC17/01/02/03 rồi thu tiền/đóng ca, hủy/hoàn theo đúng thiết kế.
+Nhóm cần xác nhận các [quyết định và phần thiếu](docs/business-rules.md), đặc biệt trạng thái, chính sách quyền/duyệt, idempotency và luồng tiền. UC17/18/19/01/02/03/04 đã có (API, Web, Desktop). Việc còn lại: kiểm thử tay có biên bản, rồi mới đến thu tiền/đóng ca, hủy/hoàn theo đúng thiết kế nếu còn thời gian.
 
-ICafeDataCommands là các thao tác dữ liệu phía máy chủ đã kiểm thử, **không phải bộ UC hoàn chỉnh**. Không đưa chúng ra API ghi công khai trước khi bổ sung quyền, validation, snapshot giá từ máy chủ và các điều kiện còn thiếu. Chưa đo hiệu năng, backup/restore, kết nối thiết bị/ngân hàng hay nghiệm thu Web–Desktop.
+ICafeDataCommands là các thao tác dữ liệu phía máy chủ đã kiểm thử, **không phải bộ UC hoàn chỉnh**. Không đưa chúng ra API ghi công khai trước khi bổ sung quyền, validation, snapshot giá từ máy chủ và các điều kiện còn thiếu. Chưa đo hiệu năng, backup/restore, kết nối thiết bị/ngân hàng; chưa nghiệm thu Web–Desktop bằng kiểm thử tay có biên bản.
 

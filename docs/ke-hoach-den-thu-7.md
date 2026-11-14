@@ -2,7 +2,11 @@
 
 Lập ngày 10/11/2026 (thứ 3). Giả định: hạn là **thứ 7 14/11/2026**; thứ 6 tối đóng băng chức năng, thứ 7 chỉ sửa lỗi, hoàn thiện báo cáo và tập demo. Nếu hạn sớm hơn, giữ nguyên Mức 1 và cắt Mức 2.
 
-## Hiện trạng (đã kiểm tra 10/11/2026)
+## Hiện trạng cập nhật 14/11/2026
+- Xong: API (UC17/18/19/01/02/03/04), Web khách W00–W03 (B), Desktop D00, D02, D06; 105/105 test đạt; điều khiển tự động form D02/D06 trên máy chủ thật 22/22 (xem [verification.md](verification.md)).
+- Còn lại: kiểm thử tay có biên bản và ảnh ([kiem-thu-tay.md](kiem-thu-tay.md)), báo cáo Chương 5–6 do nhóm tự viết, slide và kịch bản demo; HTTPS tin cậy trên từng máy (`dotnet dev-certs https --trust`).
+
+## Hiện trạng ban đầu (đã kiểm tra 10/11/2026)
 - Xong: CSDL 40 bảng + 4 Identity (4 migration), 5 thao tác dữ liệu (AcceptRound, StartUnit, CashPayment, CashRefund, ReconcileShift), 33/33 test đạt.
 - Chưa có: Web (chỉ khung), Desktop (chỉ khung), API, đăng ký/đăng nhập, 19/19 ca sử dụng chưa hoàn chỉnh; Chương 5–6 mới là khung.
 - Git: 2 commit cục bộ, `origin/main` chưa có trên GitHub (chưa đẩy). Tài liệu docx nằm ngoài repo (`bao-cao-da-sua/`).

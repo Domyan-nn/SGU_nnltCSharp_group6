@@ -2,6 +2,9 @@
 
 Hạn: thứ 7 14/11/2026 (đóng băng chức năng thứ 6 18:00). Xem phạm vi chung ở [ke-hoach-den-thu-7.md](../ke-hoach-den-thu-7.md); hợp đồng API nháp ở cuối file [A-ngo-nguyen.md](A-ngo-nguyen.md). Thiết kế màn hình: tài liệu 05 (D00, D02, D06) và mục 3.5 của báo cáo.
 
+> **Cập nhật 14/11/2026:** màn hình D02 (tiếp nhận/từ chối đơn) và D06 (món, biến thể, giá, công thức, bật/ngừng bán) đã được A viết thay trên nhánh `feat/desktop-t6` (chưa gộp vào `main` khi ghi dòng này), kèm test tự động. Các ô trong danh sách dưới đây **chưa được đánh dấu** vì C chưa đọc lại và chưa chạy tay. Việc còn lại của C: đọc mã, chạy D02/D06, chạy tay KT01–KT05, KT08, KT09, KT15, KT18, KT19 và ghi biên bản theo [kiem-thu-tay.md](../kiem-thu-tay.md), viết các mục báo cáo của mình.
+
+
 ## Bạn sở hữu
 Toàn bộ `src/CafeManager.Desktop/`. **Desktop không được tham chiếu Infrastructure, EF hay SqlClient và không chứa chuỗi kết nối SQL**: mọi dữ liệu đi qua API HTTPS của máy chủ (kiến trúc ở Chương 4). Không sửa `Core/`, `Infrastructure/`, `Web/`: cần gì thì nhắn A.
 
