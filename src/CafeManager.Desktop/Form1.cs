@@ -82,13 +82,19 @@ public partial class Form1 : Form
         return button;
     }
 
-    private void OpenMenuManagement(object? sender, EventArgs e) =>
-        MessageBox.Show(this, "Màn hình D06 sẽ được nối ở công việc tiếp theo.",
-            Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+    private void OpenMenuManagement(object? sender, EventArgs e)
+    {
+        if (_api is null) return;
+        using var form = new MenuManagementForm(_api);
+        form.ShowDialog(this);
+    }
 
-    private void OpenOrderReceiving(object? sender, EventArgs e) =>
-        MessageBox.Show(this, "Màn hình D02 sẽ được nối ở công việc tiếp theo.",
-            Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+    private void OpenOrderReceiving(object? sender, EventArgs e)
+    {
+        if (_api is null) return;
+        using var form = new OrderReceivingForm(_api);
+        form.ShowDialog(this);
+    }
 
     private async void LogoutAsync(object? sender, EventArgs e)
     {
@@ -123,6 +129,9 @@ public partial class Form1 : Form
         {
             BeginInvoke(() =>
             {
+                // Đóng các màn hình con (D02/D06 và hộp thoại của chúng) trước, nếu không cửa sổ chính không đóng được.
+                foreach (var form in Application.OpenForms.Cast<Form>().Where(f => f != this).Reverse().ToList())
+                    if (!form.IsDisposed) form.Close();
                 MessageBox.Show(this,
                     "Phiên đăng nhập đã hết hạn hoặc bị thu hồi. Vui lòng đăng nhập lại.",
                     Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
