@@ -198,7 +198,29 @@ Phạm vi: các form Windows Forms `OrderReceivingForm` (D02) và `MenuManagemen
 | D06 bật/ngừng bán | sau Bật bán món có trong `GET /api/menu` giá 35000; Ngừng bán (có xác nhận nêu tên món) làm món biến mất khỏi menu công khai; ngày hiệu lực quá khứ bị máy chủ từ chối kèm cảnh báo |
 | D06 tìm kiếm | gõ "tra dao" (không dấu) lọc ra món "Trà đào" |
 
-Giới hạn (không thay thế KT01–KT19 chạy tay): nút mở D02/D06 trên màn hình chính `Form1`, việc tự đóng cửa sổ con khi hết phiên (KT15), bộ hẹn giờ tự làm mới 5 giây và đăng nhập D00 chưa được điều khiển tự động; chạy bằng HTTP, một lần, một máy, độ phân giải/DPI mặc định; chương trình điều khiển và ảnh chụp không nằm trong repo. Hộp thoại do chương trình điều khiển trả lời, nên cách trình bày thật với người dùng cần kiểm bằng mắt khi chạy tay. Luồng dữ liệu bên dưới các form cũng có test tự động `DesktopFlowTests` (4 ca) và `StaffPresentationTests` (37 ca) trong bộ 105 ca.
+Giới hạn (không thay thế KT01–KT19 chạy tay): lần chạy này chưa điều khiển nút mở D02/D06 trên màn hình chính `Form1`, việc tự đóng cửa sổ con khi hết phiên (KT15), bộ hẹn giờ 5 giây và đăng nhập D00 (các mục đó được bổ sung ở mục "Chạy thử trước kiểm thử tay" bên dưới); chạy bằng HTTP, một lần, một máy, độ phân giải/DPI mặc định; chương trình điều khiển và ảnh chụp không nằm trong repo. Hộp thoại do chương trình điều khiển trả lời, nên cách trình bày thật với người dùng cần kiểm bằng mắt khi chạy tay. Luồng dữ liệu bên dưới các form cũng có test tự động `DesktopFlowTests` (4 ca) và `StaffPresentationTests` (37 ca) trong bộ 105 ca.
+
+## Chạy thử trước kiểm thử tay (14/11/2026, buổi tối)
+
+Mục đích: bắt lỗi của chính hướng dẫn và của luồng giao diện trước khi nhóm chạy tay một lượt; **không phải biên bản KT** và không thay thế việc chạy tay có ảnh. Mọi bước chạy trên bản sao mới `git clone` nhánh `feat/desktop-t6` (commit `72ad2f5`) và một instance LocalDB riêng (`(localdb)\DryRun`, đã xóa sau khi chạy), nên `CafeManager_Group6_Dev` của máy này không bị chạm.
+
+| Hạng mục | Kết quả |
+|---|---|
+| Bản sao mới: `dotnet build CafeManager.sln` | 0 cảnh báo, 0 lỗi |
+| Bản sao mới: `dotnet test` có `CAFE_TEST_SQLSERVER` | 105/105 đạt, 0 Skipped |
+| Đúng các lệnh trong hướng dẫn: `--migrate --seed --seed-accounts`, rồi `--launch-profile http` | chạy được trên CSDL trống (hai lần liên tiếp, dựng lại từ đầu); in 3 tài khoản mẫu; máy chủ nghe `http://localhost:5055` |
+| Các đường dẫn Web trong hướng dẫn (`/`, `/danh-muc`, `/gio-hang`, `/dat-hang`, `/don-cua-toi`, `/tai-khoan/dang-ky`, `/tai-khoan/dang-nhap`) | trả 200, hoặc 302 về đăng nhập khi chưa đăng nhập; đường dẫn lạ trả 404 |
+| Kịch bản API và câu SQL trong KT01–KT03, KT07, KT08, KT10, KT14–KT18, KT21 (script chạy máy chủ thật, mật khẩu không in ra) | **48/48** đạt sau khi sửa hướng dẫn (lần đầu 46/48, xem lỗi bên dưới) |
+| Giao diện Web trong một trình duyệt chạy tự động (không phải kiểm bằng tay): đăng nhập, thêm món có tùy chọn vào giỏ, báo lỗi số điện thoại gần ô và giữ lại giá trị, gửi đơn (70.000 đ, "Chờ tiếp nhận", có mã nhận đơn), "Đơn của tôi", chi tiết, hủy có trang xác nhận nêu mã đơn, đơn người khác trả trang 404, cảnh báo giá đổi (giá cũ 27.000 → mới 29.000, chưa tạo đơn, đồng ý thì đơn lưu 29.000), tìm không ra món | đạt từng bước; SQL xác nhận trạng thái và giá chốt |
+| Bố cục ở 360 px (11 trang) | không có trang nào tràn ngang |
+| Desktop: D00 (sai mật khẩu, bỏ trống, mất kết nối, bị khóa, đúng), màn hình chính theo quyền (quản lý/thu ngân), nút mở D02/D06, Đăng xuất, tự làm mới 5 giây (thấy đơn mới sau 5,1 giây không bấm F5), hết phiên khi nhân viên bị vô hiệu hóa (D02 tự đóng, hộp thoại "Phiên đăng nhập đã hết hạn…", màn hình chính đóng, phiên cũ trả 401) | **27/27** đạt (chương trình điều khiển tạm, `PerformClick` và trả lời hộp thoại tự động) |
+
+Lỗi tìm thấy và đã xử lý:
+- **Hướng dẫn sai ở KT21:** lệnh mở khóa `UPDATE AspNetUsers …` chạy bằng `sqlcmd` báo "UPDATE failed because the following SET options have incorrect settings: 'QUOTED_IDENTIFIER'" và không đổi gì (bảng có chỉ mục lọc). Đã thêm cờ `-I -b` vào mọi lệnh `sqlcmd` trong hướng dẫn và nhắc kiểm tra lại `LockoutEnd`. SSMS không bị lỗi này.
+- **Hướng dẫn sai ở KT18:** đổi giá "bây giờ" khi chưa có giá hẹn trước **không** bị từ chối (giá mẫu hiệu lực từ 01/01/2026, giá mới chỉ thay giá hiện hành). Đã sửa thứ tự: hẹn giá 30 phút sau trước, rồi thử giá "bây giờ" mới bị 409; thêm lưu ý chạy KT18 sau KT09/KT10.
+- **Dòng giữ chỗ trên trang chủ Web:** "Dữ liệu minh họa theo hợp đồng API; sẽ nối với thực đơn thật khi máy chủ sẵn sàng." vẫn hiện dù dữ liệu là thật. Đã xóa dòng này ở `Views/Home/Index.cshtml` (tệp của B; B cần `git pull` trước khi sửa tiếp tệp này).
+
+Giới hạn của lần chạy thử: ảnh chụp màn hình trình duyệt bị lỗi hết giờ nên phần Web kiểm bằng văn bản trang, cây trợ năng và SQL, chưa xem bằng mắt; hộp thoại Desktop do chương trình điều khiển trả lời; chạy HTTP trên một máy; chưa thử HTTPS với chứng chỉ được tin; không chạy lại KT04/KT05/KT09/KT19 trên D06 (đã có 22/22 ở mục trên); không đo hiệu năng, sao lưu hay tải. Việc xem bằng mắt, chụp ảnh và ghi biên bản vẫn là của nhóm.
 
 ## Phần chưa thực hiện
 
