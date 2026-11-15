@@ -2,6 +2,10 @@
 
 Lập ngày 10/11/2026 (thứ 3). Giả định: hạn là **thứ 7 14/11/2026**; thứ 6 tối đóng băng chức năng, thứ 7 chỉ sửa lỗi, hoàn thiện báo cáo và tập demo. Nếu hạn sớm hơn, giữ nguyên Mức 1 và cắt Mức 2.
 
+## Hiện trạng cập nhật 15/11/2026
+- Xong: kiểm thử giao diện chạy **tự động** 18 ca (17 Đạt, 1 Không đạt), biên bản và 99 ảnh ở [bien-ban-kiem-thu.md](bien-ban-kiem-thu.md); 105/105 test chạy lại; báo cáo Chương 5–6 và tài liệu 01–06 đã được hoàn thiện (các đoạn `[Nhóm điền]` đã xóa).
+- Còn lại: đọc soát báo cáo và cập nhật mục lục trong Word; chạy tay có người cho các ca quan trọng (kết quả tự động không thay thế); slide và kịch bản demo; quyết định về KT19; HTTPS tin cậy trên từng máy (`dotnet dev-certs https --trust`).
+
 ## Hiện trạng cập nhật 14/11/2026
 - Xong: API (UC17/18/19/01/02/03/04), Web khách W00–W03 (B), Desktop D00, D02, D06; 105/105 test đạt; điều khiển tự động form D02/D06 trên máy chủ thật 22/22 (xem [verification.md](verification.md)).
 - Còn lại: kiểm thử tay có biên bản và ảnh ([kiem-thu-tay.md](kiem-thu-tay.md)), báo cáo Chương 5–6 do nhóm tự viết, slide và kịch bản demo; HTTPS tin cậy trên từng máy (`dotnet dev-certs https --trust`).

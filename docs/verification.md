@@ -158,6 +158,16 @@ Các ca về khóa đơn vị hủy, người duyệt độc lập, hủy cùng 
 | Unit_delivery_fields_are_paired_and_need_delivered_status | Passed | 00:00:00.3117306 |
 | Wrong_password_is_401_without_session_expired_event_and_not_unknown | Passed | 00:00:00.0011615 |
 
+## Chạy lại bộ kiểm thử (15/11/2026)
+
+Chạy lại trên commit `7dadaad` (nhánh `test/kiem-thu-15-11`; so với `7a8d253` chỉ thêm tài liệu và ảnh bằng chứng) để lấy số liệu cho báo cáo Chương 5.
+
+- Bắt đầu TRX: 2026-11-15T13:43:54.5981527+07:00; kết thúc: 2026-11-15T13:44:08.7911754+07:00.
+- Lệnh: `dotnet build CafeManager.sln --no-restore` (0 cảnh báo, 0 lỗi), rồi `dotnet test CafeManager.sln --no-build --logger 'trx;LogFileName=chuong5.trx'` với `CAFE_TEST_SQLSERVER` trỏ LocalDB, Windows Authentication.
+- TRX local: `TestResults/database-tests-15-11.trx` (không track artifact sinh ra). SHA-256: `42507CE6C2313840384CDB6742BD37031126946EE15041BD759BFDE178F53BD9`.
+- Kết quả: 105 Passed, 0 Failed, 0 Skipped. Theo lớp kiểm thử: DatabaseTests 34, ServiceTests 8, ApiTests 7, DesktopFlowTests 4 (53 ca cần SQL Server); ApiClientTests 15, StaffPresentationTests 37 (52 ca không cần SQL Server).
+- Dùng làm số liệu cho mục 5.2.1 của báo cáo. Bảng chi tiết từng ca ở trên (lần chạy 14/11/2026) không đổi vì tập ca không đổi.
+
 ## Kiểm chứng HTTPS cục bộ (13/11/2026)
 
 Phạm vi: máy chủ Web trên máy phát triển, không phải máy chủ thật. Cách làm: tạo CSDL tạm `CafeManager_Scratch_https`, áp dụng 4 migration, chạy Web từ cùng một bản build ở hai chế độ rồi gọi bằng script; sau khi chạy đã xóa CSDL tạm, `CafeManager_Group6_Dev` không bị chạm. Chế độ Development nghe `https://localhost:7096` và `http://localhost:5097` (`ASPNETCORE_HTTPS_PORT=7096`) bằng chứng chỉ dev của ASP.NET (CN=localhost, SHA-1 `4D2D0416B2E00E6A6237F62DCA10BBADEB8EF01C`, hiệu lực 08/11/2026–08/11/2027). Chế độ Production nghe `http://localhost:5098`. Script gọi HTTPS ở chế độ không xác minh chứng chỉ (chỉ trên loopback, tới máy chủ tạm); việc Windows có tin chứng chỉ hay không được kiểm riêng ở dòng cuối bảng.

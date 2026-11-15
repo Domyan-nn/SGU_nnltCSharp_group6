@@ -32,7 +32,8 @@ Bản cục bộ đọc được ở `../CK_GD1_Nhom11_NgoNguyen_3124411191-.../
 - Xong (12/11): API UC18/19, UC01, UC02, UC03, UC04 (xem/hủy), UC17 qua HTTP có kiểm tra quyền trong CSDL, antiforgery, khóa tài khoản; 64 test đạt. Web khách (B) dùng dữ liệu thật qua cổng và MenuSource.
 - Xong (14/11): Desktop D02 (tiếp nhận/từ chối đơn) và D06 (món, biến thể, giá, công thức, bật/ngừng bán); 105 test đạt; điều khiển tự động form thật 22/22 (xem verification.md). Web W03 "Đơn của tôi" (B) đã gộp vào main.
 - Chưa làm: thu tiền và ca (UC08/14), pha chế/bàn (UC05–07, 09), hủy/hoàn trọn vẹn (UC10–12), kho (UC13), báo cáo/quản trị (UC15/16), hiệu năng, sao lưu.
-- Bước tiếp theo: kiểm thử tay KT mức hệ thống theo kiem-thu-tay.md (biên bản + ảnh), báo cáo Chương 5–6 do nhóm tự viết; Mức 2 (thu tiền, pha chế) nếu còn thời gian.
+- Xong (15/11): kiểm thử giao diện chạy tự động 18 ca theo kiem-thu-tay.md, **17 Đạt, 1 Không đạt** (KT19: không có thao tác xóa món), kèm 99 ảnh và SQL ở [bien-ban-kiem-thu.md](bien-ban-kiem-thu.md); chạy lại 105/105 test; sửa ô chọn ngày giờ D06 bị cắt giờ. Báo cáo Chương 5–6 và tài liệu 01–06 (`../bao-cao-da-sua/`, bản sao lưu trước khi sửa ở `ban-sao-truoc-15-11/`) đã được hoàn thiện theo kết quả này; chưa ai đọc soát.
+- Bước tiếp theo: nhóm đọc soát báo cáo (mở bằng Word, chọn Yes để cập nhật mục lục), chạy tay có người các ca quan trọng thay cho kết quả tự động rồi cập nhật Bảng 5.4, quyết định về KT19; Mức 2 (thu tiền, pha chế) nếu còn thời gian.
 
 ## Quy tắc làm việc
 - Không dùng EnsureCreated, drop/reset DB, hay hạ migration; thay đổi mô hình = migration mới, đọc Up/Down trước.

@@ -39,7 +39,7 @@ Toàn bộ `src/CafeManager.Desktop/`. **Desktop không được tham chiếu In
 
 ### T7 – 14/11: kiểm thử liên thông, báo cáo, demo
 - [ ] Chạy kịch bản liên thông từ đầu trên cơ sở dữ liệu sạch: quản lý tạo món (Desktop) → khách đặt (Web) → thu ngân tiếp nhận (Desktop) → kiểm tra dữ liệu trong SQL Server (KT09). Ghi biên bản và ảnh.
-- [ ] Viết báo cáo: 5.1.5 (Desktop), 5.2.2 (kiểm thử mức hệ thống, điền bảng 5.4 phần Desktop và liên thông), 5.3 (kết quả đạt được và bình luận) và Chương 6 (kết luận, hạn chế, hướng phát triển). Số liệu lấy từ biên bản thật; **không ghi Đạt khi thiếu bằng chứng**; các yêu cầu phi chức năng chưa đo thì ghi chưa thực hiện.
+- [x] Viết báo cáo (đã có trong báo cáo, cập nhật 15/11/2026; C đọc soát cho đúng): 5.1.5 (Desktop), 5.2.2 (kiểm thử mức hệ thống, điền bảng 5.4 phần Desktop và liên thông), 5.3 (kết quả đạt được và bình luận) và Chương 6 (kết luận, hạn chế, hướng phát triển). Số liệu lấy từ biên bản thật; **không ghi Đạt khi thiếu bằng chứng**; các yêu cầu phi chức năng chưa đo thì ghi chưa thực hiện.
 - [ ] Làm slide demo (đã có `Kiến_Trúc_Hệ_Thống_Quản_Lý_Quán_Cà_Phê.pptx` để cập nhật), viết kịch bản demo 5–7 phút, tập cả nhóm.
 
 ## Quy tắc cần nhớ

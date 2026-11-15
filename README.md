@@ -1,6 +1,6 @@
 # Quản lý quán cà phê — Nhóm 6
 
-Phần dữ liệu dùng **.NET 10, EF Core 10.0.14, SQL Server và ASP.NET Core Identity**. Đã xây dựng 40 quan hệ theo tài liệu (cộng bảng mở rộng AllowedAddon), migration, dữ liệu thử và kiểm thử SQL Server. API, giao diện Web khách (UC01, 02, 04, 18, 19) và Desktop (D00 đăng nhập, D02 tiếp nhận đơn, D06 quản lý món) đã có mã và kiểm thử tự động; chưa nghiệm thu bằng kiểm thử tay có biên bản, và chưa hoàn thiện 19 UC (thu tiền, ca, pha chế, kho, báo cáo chưa có giao diện).
+Phần dữ liệu dùng **.NET 10, EF Core 10.0.14, SQL Server và ASP.NET Core Identity**. Đã xây dựng 40 quan hệ theo tài liệu (cộng bảng mở rộng AllowedAddon), migration, dữ liệu thử và kiểm thử SQL Server. API, giao diện Web khách (UC01, 02, 04, 18, 19) và Desktop (D00 đăng nhập, D02 tiếp nhận đơn, D06 quản lý món) đã có mã và kiểm thử tự động; đã có [biên bản kiểm thử giao diện chạy tự động](docs/bien-ban-kiem-thu.md) (17 Đạt, 1 Không đạt), chưa có kiểm thử tay do người thao tác, và chưa hoàn thiện 19 UC (thu tiền, ca, pha chế, kho, báo cáo chưa có giao diện).
 
 Xem [kết quả kiểm chứng](docs/verification.md), [đối chiếu 40 quan hệ và chuẩn hóa](docs/relation-mapping.md), [từ điển lược đồ](docs/schema.md), [quy tắc và giới hạn](docs/business-rules.md), [tài liệu nguồn](docs/sources.md).
 
