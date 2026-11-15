@@ -112,7 +112,7 @@ internal sealed class VariantDialog : EditDialog
 internal sealed class PriceDialog : EditDialog
 {
     private readonly TextBox _price = new() { Width = 200, AccessibleName = "Giá bán" };
-    private readonly DateTimePicker _from = new() { Format = DateTimePickerFormat.Custom, CustomFormat = "dd/MM/yyyy HH:mm", Width = 200, Value = DateTime.Now, AccessibleName = "Hiệu lực từ" };
+    private readonly DateTimePicker _from = new() { Format = DateTimePickerFormat.Custom, CustomFormat = "dd/MM/yyyy HH:mm", Width = 280, Value = DateTime.Now, AccessibleName = "Hiệu lực từ" };
     public decimal Price { get; private set; }
     public DateTime EffectiveFromUtc { get; private set; }
 
@@ -148,7 +148,7 @@ internal sealed class RecipeDialog : EditDialog
         AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, SelectionMode = DataGridViewSelectionMode.CellSelect,
         BackgroundColor = SystemColors.Window, AccessibleName = "Công thức",
     };
-    private readonly DateTimePicker _from = new() { Format = DateTimePickerFormat.Custom, CustomFormat = "dd/MM/yyyy HH:mm", Width = 200, Value = DateTime.Now, AccessibleName = "Hiệu lực từ" };
+    private readonly DateTimePicker _from = new() { Format = DateTimePickerFormat.Custom, CustomFormat = "dd/MM/yyyy HH:mm", Width = 280, Value = DateTime.Now, AccessibleName = "Hiệu lực từ" };
     public DateTime EffectiveFromUtc { get; private set; }
     public List<RecipeLineRequest> Lines { get; private set; } = [];
 
