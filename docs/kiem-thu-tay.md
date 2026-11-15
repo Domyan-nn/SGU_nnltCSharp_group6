@@ -9,6 +9,14 @@ Cập nhật 14/11/2026. Tài liệu này giúp ba người chạy các ca KT tr
 - Ảnh chụp lưu ở `docs/bang-chung/` (thư mục tự tạo), đặt tên `KT07-lan1-01.png`; không chụp mật khẩu. Truy vấn SQL dán vào biên bản kèm kết quả (văn bản).
 
 ## 2. Chuẩn bị môi trường (mỗi người, máy riêng)
+**Bước 0 – lấy đúng mã:** D02 và D06 nằm trên nhánh `feat/desktop-t6` (PR số 7). Khi PR đã gộp thì `git checkout main && git pull`; chưa gộp thì `git fetch && git checkout feat/desktop-t6 && git pull`. Ghi `git rev-parse --short HEAD` vào biên bản.
+
+**Bước 1 – kiểm tra máy (chỉ đọc, ~1 phút):**
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\kiem-tra-may.ps1          # thêm -BoQuaBuild để bỏ bước biên dịch
+```
+Script kiểm .NET SDK, LocalDB, `sqlcmd`, cổng 5055, phiên bản mã, CSDL Dev (đủ migration, đủ 3 tài khoản mẫu, có món đang bán) và biên dịch; dòng LỖI phải sửa trước khi kiểm thử, dòng CHÚ Ý chỉ cần đọc. Hướng dẫn dưới đây đã được chạy thử nguyên văn trên bản sao mới và CSDL trống ngày 14/11 ([verification.md](verification.md), mục "Chạy thử trước kiểm thử tay").
+
 Làm theo [huong-dan-demo.md](huong-dan-demo.md) mục 1–3. Tóm tắt:
 ```powershell
 dotnet build CafeManager.sln
@@ -28,7 +36,7 @@ Desktop (cửa sổ khác): `$env:CAFE_API_BASE_URL='http://localhost:5055'; dot
 - Dùng HTTPS (`https://localhost:7034`) thì chạy một lần `dotnet dev-certs https --trust`; nếu không Desktop báo lỗi SSL.
 - Ngoài tài khoản mẫu, dữ liệu mẫu có vài món cà phê đang bán. Các ca dưới gọi "Món A" là một món đang bán giá 30.000 đ; nếu món mẫu khác thì dùng món đó và ghi rõ tên trong biên bản (hoặc tạo Món A bằng D06 như KT04).
 - Giờ nhận hàng của khách: 07:00–22:00 giờ Việt Nam, không ở quá khứ. Tài khoản nhập sai mật khẩu 5 lần bị khóa 15 phút.
-- Truy vấn SQL: SSMS hoặc `sqlcmd -S "(localdb)\MSSQLLocalDB" -E -C -d CafeManager_Group6_Dev -Q "..."`.
+- Truy vấn SQL: SSMS hoặc `sqlcmd -S "(localdb)\MSSQLLocalDB" -E -C -I -b -d CafeManager_Group6_Dev -Q "..."`. **Bắt buộc có `-I`** (bật QUOTED_IDENTIFIER): thiếu cờ này, lệnh `UPDATE AspNetUsers …` ở KT21 báo lỗi "UPDATE failed because the following SET options have incorrect settings: 'QUOTED_IDENTIFIER'" và không đổi gì (SSMS đã bật sẵn). Cờ `-b` làm `sqlcmd` trả mã lỗi khác 0 khi câu lệnh lỗi, để không tưởng nhầm là đã chạy.
 
 ## 3. Phân công theo kế hoạch
 | Người | Ca |
@@ -153,8 +161,8 @@ SELECT COUNT(*) FROM AspNetUsers u WHERE NOT EXISTS (SELECT 1 FROM CustomerProfi
 - Tự động: `ServiceTests.Register_creates_account_with_profile_and_rejects_duplicates_and_bad_input`, `ApiTests.Register_customer_over_http_then_login`.
 
 ### KT18 – Khoảng hiệu lực giá – C
-1. D06: chọn biến thể đã có giá hiện hành. 2. **Đổi giá** với hiệu lực từ **trùng hoặc trước** thời điểm giá hiện hành (chọn lùi đủ để không bị chặn bởi "quá khứ", tối đa 5 phút trước). 3. **Đổi giá** với hiệu lực sau (ví dụ 30 phút nữa).
-- Mong đợi: bước 2 bị từ chối và hộp báo lỗi hướng dẫn chọn thời điểm muộn hơn; bước 3 được nhận, giá hiện hành chưa đổi cho đến lúc đó.
+1. D06: chọn biến thể đã có giá hiện hành. 2. **Đổi giá** với hiệu lực **30 phút nữa** (ví dụ 31.000): được nhận, giá hiện hành chưa đổi. 3. **Đổi giá** lần nữa với hiệu lực **bây giờ** (hoặc sớm hơn mốc 30 phút đó nhưng không quá 5 phút trước).
+- Mong đợi: bước 2 được nhận; bước 3 bị từ chối vì đã có giá hiệu lực từ cùng hoặc sau thời điểm này, hộp báo lỗi hướng dẫn chọn thời điểm muộn hơn phiên bản hiện có; giá hiện hành vẫn là giá cũ cho đến lúc mốc 30 phút tới. Không làm bước 3 trước bước 2: giá mẫu có hiệu lực từ 01/01/2026 nên một giá "bây giờ" khi chưa có giá hẹn trước chỉ **thay** giá hiện hành, không chồng lấn, nên được nhận chứ không bị từ chối. Sau ca này biến thể đó có một giá hẹn trước 30 phút, nên mọi lần "Đổi giá hiệu lực ngay" trên chính biến thể đó (KT09, KT10) sẽ bị từ chối cho tới khi mốc ấy qua: **chạy KT18 sau KT09 và KT10**, hoặc làm trên một biến thể riêng (ví dụ "[THỬ] Cà phê đen").
 - SQL: không có hai dòng `PriceHistory` của cùng biến thể chồng khoảng: dòng trước có `EffectiveTo` bằng `EffectiveFrom` của dòng sau.
 - Bằng chứng: ảnh thông báo; SQL.
 - Tự động: `DesktopFlowTests.D06_manager_builds_...`, `DatabaseTests.Effective_price_and_recipe_intervals_cannot_overlap`, `DatabaseTests.Concurrent_overlapping_prices_allow_only_one_commit`.
@@ -167,7 +175,7 @@ SELECT COUNT(*) FROM AspNetUsers u WHERE NOT EXISTS (SELECT 1 FROM CustomerProfi
 - Tự động: `DatabaseTests.Foreign_key_and_history_delete_are_rejected`, `DesktopFlowTests.D06_manager_builds_...`.
 
 ### KT21 – Đăng nhập tài khoản khách – B
-1. `/tai-khoan/dang-nhap`: `dev.customer` đúng mật khẩu → có phiên. 2. Đăng xuất. 3. Nhập sai mật khẩu → không có phiên. 4. Nhập sai 5 lần liên tiếp → thông báo khóa; thử mật khẩu **đúng** khi đang khóa. 5. Mở khóa để thử tiếp: `UPDATE AspNetUsers SET LockoutEnd = NULL, AccessFailedCount = 0 WHERE UserName = N'dev.customer';`.
+1. `/tai-khoan/dang-nhap`: `dev.customer` đúng mật khẩu → có phiên. 2. Đăng xuất. 3. Nhập sai mật khẩu → không có phiên. 4. Nhập sai 5 lần liên tiếp → thông báo khóa; thử mật khẩu **đúng** khi đang khóa. 5. Mở khóa để thử tiếp (chạy trong SSMS, hoặc `sqlcmd` **có cờ `-I`**, xem mục 2): `UPDATE AspNetUsers SET LockoutEnd = NULL, AccessFailedCount = 0 WHERE UserName = N'dev.customer';` rồi kiểm tra `SELECT LockoutEnd FROM AspNetUsers WHERE UserName = N'dev.customer'` là NULL. Nếu không chạy được thì chờ 15 phút hết khóa.
 - Mong đợi: sai/khóa không cấp phiên (vào `/don-cua-toi` bị chuyển về đăng nhập); mật khẩu đúng khi đang khóa vẫn bị từ chối; sau KT21 quyền sở hữu đơn vẫn đúng (xem KT16).
 - Bằng chứng: ảnh thông báo sai/khóa; ảnh bị chuyển về đăng nhập.
 - Tự động: `ServiceTests.Login_distinguishes_wrong_password_lockout_and_account_kind`, `ApiTests.Login_errors_lockout_and_logout`.
@@ -203,28 +211,28 @@ Sao chép vào báo cáo hoặc tệp riêng, điền sau khi chạy.
 | Trạng thái | Đạt / Không đạt / Bị chặn / Chưa kiểm thử |
 | Lỗi và chạy lại | mô tả, mức ảnh hưởng, commit sửa, kết quả lần chạy lại |
 
-Bảng điền nhanh (một dòng mỗi ca; mặc định chưa chạy):
+Bảng điền nhanh (một dòng mỗi ca). **Cập nhật 15/11/2026:** các dòng dưới được điền từ [biên bản kiểm thử tự động](bien-ban-kiem-thu.md) (Web điều khiển bằng Edge không đầu, Desktop bằng chương trình điều khiển; **không phải thao tác chuột bằng tay**, xem mục 1 của biên bản về phương pháp và giới hạn). Ca nào nhóm tự chạy tay thì thêm lần chạy mới ("lần 2") thay vì xóa dòng này:
 
 | Ca | Người | Ngày giờ | Commit | Trạng thái | Bằng chứng |
 |---|---|---|---|---|---|
-| KT01 | C | | | Chưa kiểm thử | |
-| KT02 | C | | | Chưa kiểm thử | |
-| KT03 | C | | | Chưa kiểm thử | |
-| KT04 | C | | | Chưa kiểm thử | |
-| KT05 | C | | | Chưa kiểm thử | |
-| KT06 | B | | | Chưa kiểm thử | |
-| KT07 | B | | | Chưa kiểm thử | |
-| KT08 | C | | | Chưa kiểm thử | |
-| KT09 | C | | | Chưa kiểm thử | |
-| KT10 | B | | | Chưa kiểm thử | |
-| KT14 | B | | | Chưa kiểm thử | |
-| KT15 | C | | | Chưa kiểm thử | |
-| KT16 | B | | | Chưa kiểm thử | |
-| KT17 | B | | | Chưa kiểm thử | |
-| KT18 | C | | | Chưa kiểm thử | |
-| KT19 | C | | | Chưa kiểm thử | |
-| KT21 | B | | | Chưa kiểm thử | |
-| LT01 liên thông | A | | | Chưa kiểm thử | |
+| KT01 | C (chạy tự động) | 15/11/2026 09:03 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt01), 2 ảnh, 5/5 kiểm tra |
+| KT02 | C (chạy tự động) | 15/11/2026 09:03 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt02), 2 ảnh, 8/8 kiểm tra |
+| KT03 | C (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt03), 1 ảnh, 5/5 kiểm tra |
+| KT04 | C (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt04), 11 ảnh, 10/10 kiểm tra |
+| KT05 | C (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt05), 4 ảnh, 8/8 kiểm tra |
+| KT06 | B (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt06), 4 ảnh, 4/4 kiểm tra |
+| KT07 | B (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt07), 3 ảnh, 5/5 kiểm tra |
+| KT08 | C (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt08), 7 ảnh, 13/13 kiểm tra |
+| KT09 | C (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt09), 9 ảnh, 11/11 kiểm tra |
+| KT10 | B (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt10), 6 ảnh, 6/6 kiểm tra |
+| KT14 | B (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt14), 6 ảnh, 7/7 kiểm tra |
+| KT15 | C (chạy tự động) | 15/11/2026 09:05 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt15), 2 ảnh, 9/9 kiểm tra |
+| KT16 | B (chạy tự động) | 15/11/2026 09:05 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt16), 3 ảnh, 5/5 kiểm tra |
+| KT17 | B (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt17), 6 ảnh, 9/9 kiểm tra |
+| KT18 | C (chạy tự động) | 15/11/2026 09:05 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt18), 5 ảnh, 5/5 kiểm tra |
+| KT19 | C (chạy tự động) | 15/11/2026 09:05 | 7a8d253 | Không đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt19), 9 ảnh, 10/10 kiểm tra; không có thao tác xóa |
+| KT21 | B (chạy tự động) | 15/11/2026 09:05 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt21), 4 ảnh, 10/10 kiểm tra |
+| LT01 liên thông | A (chạy tự động) | 15/11/2026 09:06 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#lt01), 15 ảnh, 17/17 kiểm tra |
 
 ## 8. Lưu ý khi thử
 - Mỗi lần chạy lại KT07/KT08 nên dùng đơn mới; một đơn đã tiếp nhận không tiếp nhận lại được.

@@ -33,12 +33,12 @@ Hạn: thứ 7 14/11/2026 (đóng băng chức năng thứ 6 18:00). Xem phạm 
 - [x] UC17 API (quyền `MENU_MANAGE`): thêm/sửa món, biến thể, **giá mới theo khoảng hiệu lực**, ngừng bán, công thức. Quy tắc: món/biến thể mới để `IsActive = false` cho đến khi **có giá và công thức** (vì `AcceptRound` đòi công thức hiệu lực); chống chồng khoảng đã có trigger, hãy bắt lỗi 51001 → 409.
 - [x] Giao API UC17 cho C **trước thứ 5 chiều** nếu có thể (C làm màn D06 ở T5).
 - [ ] Sửa lỗi tích hợp với B, C; **đóng băng chức năng 18:00**.
-- [ ] Viết báo cáo: 5.1.2, 5.1.3, 5.1.4 (phần API và bảo mật), 5.2.1.
+- [x] Viết báo cáo: 5.1.2, 5.1.3, 5.1.4 (phần API và bảo mật), 5.2.1 (số liệu 5.2.1 cập nhật 15/11/2026: 105/105).
 
 ### T7 – 14/11
 - [ ] Chạy lại `dotnet build`, toàn bộ test, `has-pending-model-changes`; cập nhật `docs/verification.md` (số test, hash, giờ TRX).
-- [ ] Cập nhật dòng trạng thái ở tài liệu 01–06 và `docs/business-rules.md` theo kết quả thực.
-- [ ] Ghép báo cáo: gộp phần của B, C, xóa các đoạn `[Nhóm điền: ...]`, cập nhật mục lục (Ctrl+A rồi F9), đọc soát chính tả.
+- [ ] Cập nhật dòng trạng thái ở tài liệu 01–06 và `docs/business-rules.md` theo kết quả thực (tài liệu 01–06 đã cập nhật 15/11/2026; `business-rules.md` chưa).
+- [ ] Ghép báo cáo: đã gộp phần của B, C và xóa các đoạn `[Nhóm điền: ...]` (15/11/2026); còn cập nhật mục lục trong Word (mở tệp, chọn Yes khi hỏi cập nhật trường, hoặc Ctrl+A rồi F9) và đọc soát chính tả.
 - [ ] Chuẩn bị bản chạy demo (cơ sở dữ liệu sạch, tài khoản mẫu, kịch bản).
 
 ### Mức 2 (chỉ khi Mức 1 xong trước thứ 5 tối)

@@ -158,6 +158,16 @@ Các ca về khóa đơn vị hủy, người duyệt độc lập, hủy cùng 
 | Unit_delivery_fields_are_paired_and_need_delivered_status | Passed | 00:00:00.3117306 |
 | Wrong_password_is_401_without_session_expired_event_and_not_unknown | Passed | 00:00:00.0011615 |
 
+## Chạy lại bộ kiểm thử (15/11/2026)
+
+Chạy lại trên commit `7dadaad` (nhánh `test/kiem-thu-15-11`; so với `7a8d253` chỉ thêm tài liệu và ảnh bằng chứng) để lấy số liệu cho báo cáo Chương 5.
+
+- Bắt đầu TRX: 2026-11-15T13:43:54.5981527+07:00; kết thúc: 2026-11-15T13:44:08.7911754+07:00.
+- Lệnh: `dotnet build CafeManager.sln --no-restore` (0 cảnh báo, 0 lỗi), rồi `dotnet test CafeManager.sln --no-build --logger 'trx;LogFileName=chuong5.trx'` với `CAFE_TEST_SQLSERVER` trỏ LocalDB, Windows Authentication.
+- TRX local: `TestResults/database-tests-15-11.trx` (không track artifact sinh ra). SHA-256: `42507CE6C2313840384CDB6742BD37031126946EE15041BD759BFDE178F53BD9`.
+- Kết quả: 105 Passed, 0 Failed, 0 Skipped. Theo lớp kiểm thử: DatabaseTests 34, ServiceTests 8, ApiTests 7, DesktopFlowTests 4 (53 ca cần SQL Server); ApiClientTests 15, StaffPresentationTests 37 (52 ca không cần SQL Server).
+- Dùng làm số liệu cho mục 5.2.1 của báo cáo. Bảng chi tiết từng ca ở trên (lần chạy 14/11/2026) không đổi vì tập ca không đổi.
+
 ## Kiểm chứng HTTPS cục bộ (13/11/2026)
 
 Phạm vi: máy chủ Web trên máy phát triển, không phải máy chủ thật. Cách làm: tạo CSDL tạm `CafeManager_Scratch_https`, áp dụng 4 migration, chạy Web từ cùng một bản build ở hai chế độ rồi gọi bằng script; sau khi chạy đã xóa CSDL tạm, `CafeManager_Group6_Dev` không bị chạm. Chế độ Development nghe `https://localhost:7096` và `http://localhost:5097` (`ASPNETCORE_HTTPS_PORT=7096`) bằng chứng chỉ dev của ASP.NET (CN=localhost, SHA-1 `4D2D0416B2E00E6A6237F62DCA10BBADEB8EF01C`, hiệu lực 08/11/2026–08/11/2027). Chế độ Production nghe `http://localhost:5098`. Script gọi HTTPS ở chế độ không xác minh chứng chỉ (chỉ trên loopback, tới máy chủ tạm); việc Windows có tin chứng chỉ hay không được kiểm riêng ở dòng cuối bảng.
@@ -198,7 +208,50 @@ Phạm vi: các form Windows Forms `OrderReceivingForm` (D02) và `MenuManagemen
 | D06 bật/ngừng bán | sau Bật bán món có trong `GET /api/menu` giá 35000; Ngừng bán (có xác nhận nêu tên món) làm món biến mất khỏi menu công khai; ngày hiệu lực quá khứ bị máy chủ từ chối kèm cảnh báo |
 | D06 tìm kiếm | gõ "tra dao" (không dấu) lọc ra món "Trà đào" |
 
-Giới hạn (không thay thế KT01–KT19 chạy tay): nút mở D02/D06 trên màn hình chính `Form1`, việc tự đóng cửa sổ con khi hết phiên (KT15), bộ hẹn giờ tự làm mới 5 giây và đăng nhập D00 chưa được điều khiển tự động; chạy bằng HTTP, một lần, một máy, độ phân giải/DPI mặc định; chương trình điều khiển và ảnh chụp không nằm trong repo. Hộp thoại do chương trình điều khiển trả lời, nên cách trình bày thật với người dùng cần kiểm bằng mắt khi chạy tay. Luồng dữ liệu bên dưới các form cũng có test tự động `DesktopFlowTests` (4 ca) và `StaffPresentationTests` (37 ca) trong bộ 105 ca.
+Giới hạn (không thay thế KT01–KT19 chạy tay): lần chạy này chưa điều khiển nút mở D02/D06 trên màn hình chính `Form1`, việc tự đóng cửa sổ con khi hết phiên (KT15), bộ hẹn giờ 5 giây và đăng nhập D00 (các mục đó được bổ sung ở mục "Chạy thử trước kiểm thử tay" bên dưới); chạy bằng HTTP, một lần, một máy, độ phân giải/DPI mặc định; chương trình điều khiển và ảnh chụp không nằm trong repo. Hộp thoại do chương trình điều khiển trả lời, nên cách trình bày thật với người dùng cần kiểm bằng mắt khi chạy tay. Luồng dữ liệu bên dưới các form cũng có test tự động `DesktopFlowTests` (4 ca) và `StaffPresentationTests` (37 ca) trong bộ 105 ca.
+
+## Chạy thử trước kiểm thử tay (14/11/2026, buổi tối)
+
+Mục đích: bắt lỗi của chính hướng dẫn và của luồng giao diện trước khi nhóm chạy tay một lượt; **không phải biên bản KT** và không thay thế việc chạy tay có ảnh. Mọi bước chạy trên bản sao mới `git clone` nhánh `feat/desktop-t6` (commit `72ad2f5`) và một instance LocalDB riêng (`(localdb)\DryRun`, đã xóa sau khi chạy), nên `CafeManager_Group6_Dev` của máy này không bị chạm.
+
+| Hạng mục | Kết quả |
+|---|---|
+| Bản sao mới: `dotnet build CafeManager.sln` | 0 cảnh báo, 0 lỗi |
+| Bản sao mới: `dotnet test` có `CAFE_TEST_SQLSERVER` | 105/105 đạt, 0 Skipped |
+| Đúng các lệnh trong hướng dẫn: `--migrate --seed --seed-accounts`, rồi `--launch-profile http` | chạy được trên CSDL trống (hai lần liên tiếp, dựng lại từ đầu); in 3 tài khoản mẫu; máy chủ nghe `http://localhost:5055` |
+| Các đường dẫn Web trong hướng dẫn (`/`, `/danh-muc`, `/gio-hang`, `/dat-hang`, `/don-cua-toi`, `/tai-khoan/dang-ky`, `/tai-khoan/dang-nhap`) | trả 200, hoặc 302 về đăng nhập khi chưa đăng nhập; đường dẫn lạ trả 404 |
+| Kịch bản API và câu SQL trong KT01–KT03, KT07, KT08, KT10, KT14–KT18, KT21 (script chạy máy chủ thật, mật khẩu không in ra) | **48/48** đạt sau khi sửa hướng dẫn (lần đầu 46/48, xem lỗi bên dưới) |
+| Giao diện Web trong một trình duyệt chạy tự động (không phải kiểm bằng tay): đăng nhập, thêm món có tùy chọn vào giỏ, báo lỗi số điện thoại gần ô và giữ lại giá trị, gửi đơn (70.000 đ, "Chờ tiếp nhận", có mã nhận đơn), "Đơn của tôi", chi tiết, hủy có trang xác nhận nêu mã đơn, đơn người khác trả trang 404, cảnh báo giá đổi (giá cũ 27.000 → mới 29.000, chưa tạo đơn, đồng ý thì đơn lưu 29.000), tìm không ra món | đạt từng bước; SQL xác nhận trạng thái và giá chốt |
+| Bố cục ở 360 px (11 trang) | không có trang nào tràn ngang |
+| Desktop: D00 (sai mật khẩu, bỏ trống, mất kết nối, bị khóa, đúng), màn hình chính theo quyền (quản lý/thu ngân), nút mở D02/D06, Đăng xuất, tự làm mới 5 giây (thấy đơn mới sau 5,1 giây không bấm F5), hết phiên khi nhân viên bị vô hiệu hóa (D02 tự đóng, hộp thoại "Phiên đăng nhập đã hết hạn…", màn hình chính đóng, phiên cũ trả 401) | **27/27** đạt (chương trình điều khiển tạm, `PerformClick` và trả lời hộp thoại tự động) |
+
+Lỗi tìm thấy và đã xử lý:
+- **Hướng dẫn sai ở KT21:** lệnh mở khóa `UPDATE AspNetUsers …` chạy bằng `sqlcmd` báo "UPDATE failed because the following SET options have incorrect settings: 'QUOTED_IDENTIFIER'" và không đổi gì (bảng có chỉ mục lọc). Đã thêm cờ `-I -b` vào mọi lệnh `sqlcmd` trong hướng dẫn và nhắc kiểm tra lại `LockoutEnd`. SSMS không bị lỗi này.
+- **Hướng dẫn sai ở KT18:** đổi giá "bây giờ" khi chưa có giá hẹn trước **không** bị từ chối (giá mẫu hiệu lực từ 01/01/2026, giá mới chỉ thay giá hiện hành). Đã sửa thứ tự: hẹn giá 30 phút sau trước, rồi thử giá "bây giờ" mới bị 409; thêm lưu ý chạy KT18 sau KT09/KT10.
+- **Dòng giữ chỗ trên trang chủ Web:** "Dữ liệu minh họa theo hợp đồng API; sẽ nối với thực đơn thật khi máy chủ sẵn sàng." vẫn hiện dù dữ liệu là thật. Đã xóa dòng này ở `Views/Home/Index.cshtml` (tệp của B; B cần `git pull` trước khi sửa tiếp tệp này).
+
+Giới hạn của lần chạy thử: ảnh chụp màn hình trình duyệt bị lỗi hết giờ nên phần Web kiểm bằng văn bản trang, cây trợ năng và SQL, chưa xem bằng mắt; hộp thoại Desktop do chương trình điều khiển trả lời; chạy HTTP trên một máy; chưa thử HTTPS với chứng chỉ được tin; không chạy lại KT04/KT05/KT09/KT19 trên D06 (đã có 22/22 ở mục trên); không đo hiệu năng, sao lưu hay tải. Việc xem bằng mắt, chụp ảnh và ghi biên bản vẫn là của nhóm.
+
+## Kiểm thử giao diện chạy tự động theo hướng dẫn (15/11/2026)
+
+Chi tiết từng ca, ảnh và câu SQL nằm ở [bien-ban-kiem-thu.md](bien-ban-kiem-thu.md) và [bang-chung/](bang-chung/). Chạy trên commit `7a8d253` (nhánh `test/kiem-thu-15-11`, kho local), CSDL `CafeManager_Group6_Dev` dựng mới bằng các lệnh trong hướng dẫn trên một instance LocalDB riêng, máy chủ `http://localhost:5055`.
+
+| Phạm vi | Kết quả |
+|---|---|
+| Ca của C (Desktop): KT01–KT05, KT08, KT09, KT15, KT18 | 10/10 ca Đạt |
+| Ca của B (Web): KT06, KT07, KT10, KT14, KT16, KT17, KT21 | 7/7 ca Đạt |
+| KT19 (quản lý danh mục và xóa) | **Không đạt** theo kỳ vọng gốc: ngừng bán, giữ lịch sử đơn và bật bán lại đạt, nhưng hệ thống không có thao tác xóa món (hạn chế do thiết kế) |
+| LT01 (liên thông Desktop → Web → Desktop → SQL, CSDL sạch thứ hai) | Đạt, 15 giây từ tạo món đến đối chiếu SQL |
+| Tổng | 17 Đạt, 1 Không đạt, 0 Chưa kiểm thử trên 18 ca; 99 ảnh chụp |
+
+Cách chạy là **tự động, không phải thao tác tay**: Web bằng Microsoft Edge không đầu điều khiển qua giao thức DevTools; Desktop bằng chương trình điều khiển tạm (`PerformClick`, trả lời hộp thoại, chụp ảnh form và hộp thoại). Vì vậy kết quả này **không thay thế** việc người nhóm nhìn và thao tác thật; nó cho biết luồng chạy đúng trên giao diện thật với bằng chứng ảnh và SQL.
+
+Phát hiện trong lúc chạy:
+- **Ô chọn ngày giờ bị cắt phần giờ:** ở hộp thoại Đổi giá và Công thức, ô "Hiệu lực từ" rộng 200 px nên chỉ thấy ngày, không thấy giờ phút (trên máy này, phông chữ hệ thống lớn hơn). Đã mở rộng lên 280 px (commit `7a8d253`); ảnh KT18 cho thấy đủ "15/11/2026 09:27".
+- **Thực đơn Web có thể còn giá cũ vài giây sau khi đổi giá** (bộ nhớ đệm). Đơn đặt trong khoảng đó bị chặn bằng cảnh báo "Giá đã thay đổi", đúng thiết kế; ghi nhận ở KT09, KT10 và KT14.
+- Hướng dẫn đã được sửa từ lần chạy thử trước (KT18, KT21, cờ `-I` của `sqlcmd`).
+
+Chưa kiểm: cảm nhận trực quan khi thao tác thật, HTTPS với chứng chỉ được tin, giờ biên 07:00/22:00 qua giao diện, hiệu năng, sao lưu và phục hồi, tải.
 
 ## Phần chưa thực hiện
 

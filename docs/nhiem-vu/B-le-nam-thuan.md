@@ -33,11 +33,11 @@ Hạn: thứ 7 14/11/2026 (đóng băng chức năng thứ 6 18:00). Xem phạm 
 - [ ] W03: danh sách đơn của tôi (phân trang), chi tiết đơn (món, giá chốt, giờ nhận, trạng thái), nút **Hủy** chỉ hiện khi Pending và có hộp xác nhận nêu rõ đơn nào.
 - [ ] Kiểm tra quyền sở hữu: đổi mã đơn trên URL sang đơn người khác → không xem được (404), không hủy được.
 - [ ] **Chạy tay và ghi biên bản + ảnh chụp** cho KT06, KT07, KT10, KT14, KT16, KT17, KT21 theo mẫu ở tài liệu 06 mục 6 (môi trường, dữ liệu, kết quả thực tế, trạng thái Đạt/Không đạt, ảnh).
-- [ ] Viết báo cáo: 5.1.4 (phần Web MVC).
+- [x] Viết báo cáo: 5.1.4 (phần Web MVC) (đã có trong báo cáo, cập nhật 15/11/2026; B đọc soát cho đúng).
 - [ ] **Đóng băng chức năng 18:00.**
 
 ### T7 – 14/11
-- [ ] Sửa lỗi Web, chụp ảnh giao diện đặt vào báo cáo, điền bảng 5.4 phần Web (ca nào Đạt/Không đạt/Chưa kiểm thử và bằng chứng).
+- [ ] Sửa lỗi Web, chụp ảnh giao diện đặt vào báo cáo, điền bảng 5.4 phần Web (ca nào Đạt/Không đạt/Chưa kiểm thử và bằng chứng). Bảng 5.4 đã điền từ kết quả chạy tự động 15/11/2026 (`docs/bien-ban-kiem-thu.md`); ảnh chưa được đưa vào báo cáo.
 - [ ] Kiểm tra giao diện ở 360 px và 1280 px; đọc soát chính tả toàn báo cáo; tập demo.
 
 ### Mức 2 (chỉ khi Mức 1 xong trước thứ 5 tối)
