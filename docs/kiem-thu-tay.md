@@ -211,28 +211,28 @@ Sao chép vào báo cáo hoặc tệp riêng, điền sau khi chạy.
 | Trạng thái | Đạt / Không đạt / Bị chặn / Chưa kiểm thử |
 | Lỗi và chạy lại | mô tả, mức ảnh hưởng, commit sửa, kết quả lần chạy lại |
 
-Bảng điền nhanh (một dòng mỗi ca; mặc định chưa chạy):
+Bảng điền nhanh (một dòng mỗi ca). **Cập nhật 15/11/2026:** các dòng dưới được điền từ [biên bản kiểm thử tự động](bien-ban-kiem-thu.md) (Web điều khiển bằng Edge không đầu, Desktop bằng chương trình điều khiển; **không phải thao tác chuột bằng tay**, xem mục 1 của biên bản về phương pháp và giới hạn). Ca nào nhóm tự chạy tay thì thêm lần chạy mới ("lần 2") thay vì xóa dòng này:
 
 | Ca | Người | Ngày giờ | Commit | Trạng thái | Bằng chứng |
 |---|---|---|---|---|---|
-| KT01 | C | | | Chưa kiểm thử | |
-| KT02 | C | | | Chưa kiểm thử | |
-| KT03 | C | | | Chưa kiểm thử | |
-| KT04 | C | | | Chưa kiểm thử | |
-| KT05 | C | | | Chưa kiểm thử | |
-| KT06 | B | | | Chưa kiểm thử | |
-| KT07 | B | | | Chưa kiểm thử | |
-| KT08 | C | | | Chưa kiểm thử | |
-| KT09 | C | | | Chưa kiểm thử | |
-| KT10 | B | | | Chưa kiểm thử | |
-| KT14 | B | | | Chưa kiểm thử | |
-| KT15 | C | | | Chưa kiểm thử | |
-| KT16 | B | | | Chưa kiểm thử | |
-| KT17 | B | | | Chưa kiểm thử | |
-| KT18 | C | | | Chưa kiểm thử | |
-| KT19 | C | | | Chưa kiểm thử | |
-| KT21 | B | | | Chưa kiểm thử | |
-| LT01 liên thông | A | | | Chưa kiểm thử | |
+| KT01 | C (chạy tự động) | 15/11/2026 09:03 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt01), 2 ảnh, 5/5 kiểm tra |
+| KT02 | C (chạy tự động) | 15/11/2026 09:03 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt02), 2 ảnh, 8/8 kiểm tra |
+| KT03 | C (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt03), 1 ảnh, 5/5 kiểm tra |
+| KT04 | C (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt04), 11 ảnh, 10/10 kiểm tra |
+| KT05 | C (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt05), 4 ảnh, 8/8 kiểm tra |
+| KT06 | B (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt06), 4 ảnh, 4/4 kiểm tra |
+| KT07 | B (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt07), 3 ảnh, 5/5 kiểm tra |
+| KT08 | C (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt08), 7 ảnh, 13/13 kiểm tra |
+| KT09 | C (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt09), 9 ảnh, 11/11 kiểm tra |
+| KT10 | B (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt10), 6 ảnh, 6/6 kiểm tra |
+| KT14 | B (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt14), 6 ảnh, 7/7 kiểm tra |
+| KT15 | C (chạy tự động) | 15/11/2026 09:05 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt15), 2 ảnh, 9/9 kiểm tra |
+| KT16 | B (chạy tự động) | 15/11/2026 09:05 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt16), 3 ảnh, 5/5 kiểm tra |
+| KT17 | B (chạy tự động) | 15/11/2026 09:04 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt17), 6 ảnh, 9/9 kiểm tra |
+| KT18 | C (chạy tự động) | 15/11/2026 09:05 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt18), 5 ảnh, 5/5 kiểm tra |
+| KT19 | C (chạy tự động) | 15/11/2026 09:05 | 7a8d253 | Không đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt19), 9 ảnh, 10/10 kiểm tra; không có thao tác xóa |
+| KT21 | B (chạy tự động) | 15/11/2026 09:05 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#kt21), 4 ảnh, 10/10 kiểm tra |
+| LT01 liên thông | A (chạy tự động) | 15/11/2026 09:06 | 7a8d253 | Đạt | Tự động; [biên bản](bien-ban-kiem-thu.md#lt01), 15 ảnh, 17/17 kiểm tra |
 
 ## 8. Lưu ý khi thử
 - Mỗi lần chạy lại KT07/KT08 nên dùng đơn mới; một đơn đã tiếp nhận không tiếp nhận lại được.

@@ -222,6 +222,27 @@ Lỗi tìm thấy và đã xử lý:
 
 Giới hạn của lần chạy thử: ảnh chụp màn hình trình duyệt bị lỗi hết giờ nên phần Web kiểm bằng văn bản trang, cây trợ năng và SQL, chưa xem bằng mắt; hộp thoại Desktop do chương trình điều khiển trả lời; chạy HTTP trên một máy; chưa thử HTTPS với chứng chỉ được tin; không chạy lại KT04/KT05/KT09/KT19 trên D06 (đã có 22/22 ở mục trên); không đo hiệu năng, sao lưu hay tải. Việc xem bằng mắt, chụp ảnh và ghi biên bản vẫn là của nhóm.
 
+## Kiểm thử giao diện chạy tự động theo hướng dẫn (15/11/2026)
+
+Chi tiết từng ca, ảnh và câu SQL nằm ở [bien-ban-kiem-thu.md](bien-ban-kiem-thu.md) và [bang-chung/](bang-chung/). Chạy trên commit `7a8d253` (nhánh `test/kiem-thu-15-11`, kho local), CSDL `CafeManager_Group6_Dev` dựng mới bằng các lệnh trong hướng dẫn trên một instance LocalDB riêng, máy chủ `http://localhost:5055`.
+
+| Phạm vi | Kết quả |
+|---|---|
+| Ca của C (Desktop): KT01–KT05, KT08, KT09, KT15, KT18 | 10/10 ca Đạt |
+| Ca của B (Web): KT06, KT07, KT10, KT14, KT16, KT17, KT21 | 7/7 ca Đạt |
+| KT19 (quản lý danh mục và xóa) | **Không đạt** theo kỳ vọng gốc: ngừng bán, giữ lịch sử đơn và bật bán lại đạt, nhưng hệ thống không có thao tác xóa món (hạn chế do thiết kế) |
+| LT01 (liên thông Desktop → Web → Desktop → SQL, CSDL sạch thứ hai) | Đạt, 15 giây từ tạo món đến đối chiếu SQL |
+| Tổng | 17 Đạt, 1 Không đạt, 0 Chưa kiểm thử trên 18 ca; 99 ảnh chụp |
+
+Cách chạy là **tự động, không phải thao tác tay**: Web bằng Microsoft Edge không đầu điều khiển qua giao thức DevTools; Desktop bằng chương trình điều khiển tạm (`PerformClick`, trả lời hộp thoại, chụp ảnh form và hộp thoại). Vì vậy kết quả này **không thay thế** việc người nhóm nhìn và thao tác thật; nó cho biết luồng chạy đúng trên giao diện thật với bằng chứng ảnh và SQL.
+
+Phát hiện trong lúc chạy:
+- **Ô chọn ngày giờ bị cắt phần giờ:** ở hộp thoại Đổi giá và Công thức, ô "Hiệu lực từ" rộng 200 px nên chỉ thấy ngày, không thấy giờ phút (trên máy này, phông chữ hệ thống lớn hơn). Đã mở rộng lên 280 px (commit `7a8d253`); ảnh KT18 cho thấy đủ "15/11/2026 09:27".
+- **Thực đơn Web có thể còn giá cũ vài giây sau khi đổi giá** (bộ nhớ đệm). Đơn đặt trong khoảng đó bị chặn bằng cảnh báo "Giá đã thay đổi", đúng thiết kế; ghi nhận ở KT09, KT10 và KT14.
+- Hướng dẫn đã được sửa từ lần chạy thử trước (KT18, KT21, cờ `-I` của `sqlcmd`).
+
+Chưa kiểm: cảm nhận trực quan khi thao tác thật, HTTPS với chứng chỉ được tin, giờ biên 07:00/22:00 qua giao diện, hiệu năng, sao lưu và phục hồi, tải.
+
 ## Phần chưa thực hiện
 
 Chưa kiểm thử tay có biên bản và ảnh cho các ca KT/TC trong tài liệu 06 (xem [kiem-thu-tay.md](kiem-thu-tay.md) để chạy). Giao diện Web (B) và Desktop D02/D06 đã có mã và được kiểm tự động như các mục trên nhưng chưa nghiệm thu bằng người dùng; chưa có giao diện cho thu tiền/đóng ca (UC08/14), pha chế/bàn (UC05–07, 09), hủy/hoàn trọn vẹn (UC10–12), nhập/kiểm kê (UC13), báo cáo và quản trị (UC15/16), ngân hàng, in ấn; chưa đo tải hệ thống, backup/restore; production TLS mới kiểm cục bộ (xem mục HTTPS). Xem [ma trận BR và quyết định cần chốt](business-rules.md). Không đánh dấu các ca KT/TC trong tài liệu gốc đã đạt chỉ vì có test dữ liệu liên quan.
