@@ -306,7 +306,10 @@ public sealed class DatabaseTests(SqlServerFixture fixture) : IClassFixture<SqlS
         await using (var db = Open()) ticket = await new CafeDataCommands(db).AcceptRoundAsync(s.Round, Now);
         await using (var db = Open()) Assert.Equal(ticket, await new CafeDataCommands(db).AcceptRoundAsync(s.Round, Now));
         await using var check = Open();
-        Assert.Equal(2, await check.PreparationUnit.CountAsync(x => x.TicketId == ticket));
+        // 3NF: đơn vị không lưu TicketId; phiếu của đơn vị suy ra qua dòng và lượt, công thức chốt ở OrderLine.
+        Assert.Equal(2, await (from u in check.PreparationUnit join l in check.OrderLine on u.LineId equals l.LineId
+                               join t in check.PreparationTicket on l.RoundId equals t.RoundId where t.TicketId == ticket select u.UnitId).CountAsync());
+        Assert.True(await check.OrderLine.Where(x => x.RoundId == s.Round).AllAsync(x => x.RecipeVersionId == s.Recipe));
         Assert.Equal(40, (await check.StockBalance.FindAsync(s.Ingredient))!.QuantityReserved);
         Assert.Equal(2, await check.StockMovement.CountAsync(x => x.IngredientId == s.Ingredient && x.MovementType == "Reserve"));
     }

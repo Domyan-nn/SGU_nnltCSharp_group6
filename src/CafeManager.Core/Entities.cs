@@ -113,6 +113,8 @@ public sealed class OrderLine
     public string ProductNameSnapshot { get; set; } = "";
     public string VariantNameSnapshot { get; set; } = "";
     public decimal UnitPriceSnapshot { get; set; }
+    // Phiên bản công thức chốt khi tiếp nhận lượt (NULL khi còn nháp); mọi đơn vị món của dòng dùng chung (3NF: LineId → RecipeVersionId).
+    public long? RecipeVersionId { get; set; }
 }
 
 public sealed class OrderLineAddon
@@ -135,12 +137,11 @@ public sealed class PreparationTicket
 
 public sealed class PreparationUnit
 {
+    // Phiếu của đơn vị = PreparationTicket có RoundId bằng OrderLine.RoundId của LineId (không lưu TicketId để đạt 3NF).
     public long UnitId { get; set; }
-    public long TicketId { get; set; }
     public long LineId { get; set; }
     public int UnitNumber { get; set; }
     public string Status { get; set; } = "";
-    public long RecipeVersionId { get; set; }
     public long? DeliveredBy { get; set; }
     public DateTime? DeliveredAt { get; set; }
     public byte[] RowVersion { get; set; } = [];

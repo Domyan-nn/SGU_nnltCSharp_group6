@@ -230,6 +230,9 @@ Nhóm đơn vị có cùng biến thể, giá và tùy chọn.
 | ProductNameSnapshot | NVARCHAR(200) | Không | — |
 | VariantNameSnapshot | NVARCHAR(200) | Không | — |
 | UnitPriceSnapshot | DECIMAL(18,2) | Không | — |
+| RecipeVersionId | BIGINT | Có | FK → RecipeVersion (migration PreparationUnit3NF) |
+
+`RecipeVersionId` là phiên bản công thức chốt lúc tiếp nhận lượt, `NULL` khi dòng còn nháp; mọi đơn vị món của dòng dùng chung giá trị này (LineId → RecipeVersionId, nên đặt ở dòng chứ không đặt ở từng đơn vị để đạt 3NF).
 
 UNIQUE: chỉ PK.
 
@@ -288,14 +291,14 @@ Tiến độ từng đơn vị món.
 | Trường | Kiểu SQL | NULL | Khóa / tham chiếu |
 |---|---|---|---|
 | UnitId | BIGINT | Không | PK |
-| TicketId | BIGINT | Không | FK → PreparationTicket |
 | LineId | BIGINT | Không | FK → OrderLine |
 | UnitNumber | INT | Không | — |
 | Status | NVARCHAR(30) | Không | — |
-| RecipeVersionId | BIGINT | Không | FK → RecipeVersion |
 | DeliveredBy | BIGINT | Có | FK → StaffAccount |
 | DeliveredAt | DATETIME2 | Có | — |
 | RowVersion | ROWVERSION | Không | Concurrency token |
+
+Phiếu của đơn vị không lưu thành cột: là `PreparationTicket` có `RoundId` bằng `OrderLine.RoundId` của `LineId` (RoundId là duy nhất trong PreparationTicket). Công thức của đơn vị là `OrderLine.RecipeVersionId`. Hai cột `TicketId` và `RecipeVersionId` đã bị bỏ khỏi bảng này ở migration `PreparationUnit3NF` để loại phụ thuộc bộ phận (2NF) và phụ thuộc bắc cầu (3NF).
 
 UNIQUE: LineId, UnitNumber.
 

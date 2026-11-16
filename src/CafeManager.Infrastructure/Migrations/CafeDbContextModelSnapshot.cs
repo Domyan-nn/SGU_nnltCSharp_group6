@@ -376,6 +376,9 @@ namespace CafeManager.Infrastructure.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<long?>("RecipeVersionId")
+                        .HasColumnType("bigint");
+
                     b.Property<long>("RoundId")
                         .HasColumnType("bigint");
 
@@ -393,6 +396,8 @@ namespace CafeManager.Infrastructure.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.HasKey("LineId");
+
+                    b.HasIndex("RecipeVersionId");
 
                     b.HasIndex("RoundId");
 
@@ -711,9 +716,6 @@ namespace CafeManager.Infrastructure.Migrations
                     b.Property<long>("LineId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("RecipeVersionId")
-                        .HasColumnType("bigint");
-
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
@@ -726,19 +728,12 @@ namespace CafeManager.Infrastructure.Migrations
                         .IsUnicode(true)
                         .HasColumnType("nvarchar(30)");
 
-                    b.Property<long>("TicketId")
-                        .HasColumnType("bigint");
-
                     b.Property<int>("UnitNumber")
                         .HasColumnType("int");
 
                     b.HasKey("UnitId");
 
                     b.HasIndex("DeliveredBy");
-
-                    b.HasIndex("RecipeVersionId");
-
-                    b.HasIndex("TicketId");
 
                     b.HasIndex("LineId", "UnitNumber")
                         .IsUnique();
@@ -1796,6 +1791,11 @@ namespace CafeManager.Infrastructure.Migrations
 
             modelBuilder.Entity("CafeManager.Core.OrderLine", b =>
                 {
+                    b.HasOne("CafeManager.Core.RecipeVersion", null)
+                        .WithMany()
+                        .HasForeignKey("RecipeVersionId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("CafeManager.Core.OrderRound", null)
                         .WithMany()
                         .HasForeignKey("RoundId")
@@ -1903,18 +1903,6 @@ namespace CafeManager.Infrastructure.Migrations
                     b.HasOne("CafeManager.Core.OrderLine", null)
                         .WithMany()
                         .HasForeignKey("LineId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("CafeManager.Core.RecipeVersion", null)
-                        .WithMany()
-                        .HasForeignKey("RecipeVersionId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("CafeManager.Core.PreparationTicket", null)
-                        .WithMany()
-                        .HasForeignKey("TicketId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
                 });
