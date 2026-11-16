@@ -17,11 +17,13 @@ public static class DevelopmentAccountSeeder
     {
         await using var tx = await db.Database.BeginTransactionAsync(ct);
         var manager = await RoleAsync(db, "Manager", [Permissions.MenuManage], ct);
-        var cashier = await RoleAsync(db, "Cashier", [Permissions.OrderReceive], ct);
+        var cashier = await RoleAsync(db, "Cashier", [Permissions.OrderReceive, Permissions.PaymentCollect], ct);
+        var barista = await RoleAsync(db, "Barista", [Permissions.PreparationWork], ct);
         var result = new List<SeededAccount>
         {
             await StaffAsync(db, users, "dev.manager", "Quản lý thử", manager, ct),
             await StaffAsync(db, users, "dev.cashier", "Thu ngân thử", cashier, ct),
+            await StaffAsync(db, users, "dev.barista", "Pha chế thử", barista, ct),
             await CustomerAsync(db, users, "dev.customer", "Khách thử", "0900000000", ct),
         };
         await tx.CommitAsync(ct);

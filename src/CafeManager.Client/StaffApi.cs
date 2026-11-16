@@ -2,7 +2,7 @@ using CafeManager.Core;
 
 namespace CafeManager.Client;
 
-// Lời gọi API dành cho nhân viên trên Desktop (D02 tiếp nhận đơn, D06 quản lý món).
+// Lời gọi API dành cho nhân viên trên Desktop (D02 tiếp nhận đơn, D06 quản lý món, danh mục, nguyên liệu, Thu ngân, Pha chế).
 // Tách khỏi giao diện để kiểm thử được mà không cần Windows Forms; mọi thao tác đều đi qua ApiClient (cookie + antiforgery).
 public sealed class StaffApi(ApiClient api)
 {
@@ -40,4 +40,75 @@ public sealed class StaffApi(ApiClient api)
 
     public Task<ApiResult<Empty>> DeactivateAsync(long variantId, CancellationToken ct = default) =>
         api.PostAsync($"api/staff/variants/{variantId}/deactivate", null, ct);
+
+    // --- A1: danh mục (C1) và nguyên liệu (C2), quyền MENU_MANAGE ---
+    public Task<ApiResult<List<CategoryDto>>> CategoriesAsync(string? search = null, CancellationToken ct = default) =>
+        api.GetAsync<List<CategoryDto>>("api/staff/categories" + Search(search), ct);
+
+    public Task<ApiResult<IdResponse>> SaveCategoryAsync(long? categoryId, CategoryUpsertRequest request, CancellationToken ct = default) =>
+        categoryId is null
+            ? api.PostAsync<IdResponse>("api/staff/categories", request, ct)
+            : api.PutAsync<IdResponse>($"api/staff/categories/{categoryId}", request, ct);
+
+    // 409 CONFLICT khi danh mục còn món: báo người dùng, không xóa.
+    public Task<ApiResult<Empty>> DeleteCategoryAsync(long categoryId, CancellationToken ct = default) =>
+        api.DeleteAsync($"api/staff/categories/{categoryId}", ct);
+
+    public Task<ApiResult<List<IngredientDto>>> IngredientsAsync(string? search = null, CancellationToken ct = default) =>
+        api.GetAsync<List<IngredientDto>>("api/staff/ingredients" + Search(search), ct);
+
+    public Task<ApiResult<IdResponse>> SaveIngredientAsync(long? ingredientId, IngredientUpsertRequest request, CancellationToken ct = default) =>
+        ingredientId is null
+            ? api.PostAsync<IdResponse>("api/staff/ingredients", request, ct)
+            : api.PutAsync<IdResponse>($"api/staff/ingredients/{ingredientId}", request, ct);
+
+    // 409 CONFLICT khi nguyên liệu đang nằm trong công thức hoặc đã có phát sinh kho.
+    public Task<ApiResult<Empty>> DeleteIngredientAsync(long ingredientId, CancellationToken ct = default) =>
+        api.DeleteAsync($"api/staff/ingredients/{ingredientId}", ct);
+
+    // --- A2: ca và thu tiền mặt (màn hình Thu ngân), quyền PAYMENT_COLLECT ---
+    public Task<ApiResult<List<CounterDto>>> CountersAsync(CancellationToken ct = default) =>
+        api.GetAsync<List<CounterDto>>("api/staff/counters", ct);
+
+    // Luôn trả 200; Shift = null khi nhân viên chưa mở ca.
+    public Task<ApiResult<CurrentShiftResponse>> CurrentShiftAsync(CancellationToken ct = default) =>
+        api.GetAsync<CurrentShiftResponse>("api/staff/shifts/current", ct);
+
+    // 409 CONFLICT khi quầy đã có ca mở hoặc nhân viên đang có ca khác.
+    public Task<ApiResult<ShiftDto>> OpenShiftAsync(long counterId, decimal openingCash, CancellationToken ct = default) =>
+        api.PostAsync<ShiftDto>("api/staff/shifts", new OpenShiftRequest(counterId, openingCash), ct);
+
+    public Task<ApiResult<ShiftSummaryDto>> ShiftSummaryAsync(long shiftId, CancellationToken ct = default) =>
+        api.GetAsync<ShiftSummaryDto>($"api/staff/shifts/{shiftId}/summary", ct);
+
+    // Trả bảng đối soát đã có tiền đếm thực tế và chênh lệch; 409 INVALID_STATE nếu ca đã đóng.
+    public Task<ApiResult<ShiftSummaryDto>> CloseShiftAsync(long shiftId, decimal countedCash, string? closeNote, CancellationToken ct = default) =>
+        api.PostAsync<ShiftSummaryDto>($"api/staff/shifts/{shiftId}/close", new CloseShiftRequest(countedCash, closeNote), ct);
+
+    // Đơn đã tiếp nhận còn phải thu (Remaining > 0).
+    public Task<ApiResult<List<PayableOrderDto>>> PayableOrdersAsync(CancellationToken ct = default) =>
+        api.GetAsync<List<PayableOrderDto>>("api/staff/payments/payable", ct);
+
+    // requestId tạo MỘT lần cho mỗi lần bấm Thu tiền; khi kết quả chưa xác định thì gửi lại cùng requestId,
+    // máy chủ trả lại đúng phiếu thu cũ chứ không thu hai lần. 400 VALIDATION nếu tiền khách đưa ít hơn số phải trả.
+    public Task<ApiResult<CashPaymentResponse>> PayCashAsync(Guid requestId, long orderId, decimal amountReceived, CancellationToken ct = default) =>
+        api.PostAsync<CashPaymentResponse>("api/staff/payments/cash", new CashPaymentRequest(requestId, orderId, amountReceived), ct);
+
+    // --- A3: pha chế (C3), quyền PREPARATION_WORK ---
+    // Mặc định trả các ly chưa giao (Waiting, Preparing, Ready), cũ nhất trước.
+    public Task<ApiResult<List<PreparationUnitDto>>> PreparationQueueAsync(CancellationToken ct = default) =>
+        api.GetAsync<List<PreparationUnitDto>>("api/staff/preparation", ct);
+
+    // Ba thao tác dưới KHÔNG tự thử lại: gọi lần hai trả 409 INVALID_STATE vì ly đã đổi trạng thái; khi đó tải lại danh sách.
+    public Task<ApiResult<Empty>> StartUnitAsync(long unitId, CancellationToken ct = default) =>
+        api.PostAsync($"api/staff/preparation/{unitId}/start", null, ct);
+
+    public Task<ApiResult<Empty>> MarkReadyAsync(long unitId, CancellationToken ct = default) =>
+        api.PostAsync($"api/staff/preparation/{unitId}/ready", null, ct);
+
+    public Task<ApiResult<Empty>> DeliverAsync(long unitId, CancellationToken ct = default) =>
+        api.PostAsync($"api/staff/preparation/{unitId}/deliver", null, ct);
+
+    private static string Search(string? text) =>
+        string.IsNullOrWhiteSpace(text) ? "" : "?q=" + Uri.EscapeDataString(text.Trim());
 }

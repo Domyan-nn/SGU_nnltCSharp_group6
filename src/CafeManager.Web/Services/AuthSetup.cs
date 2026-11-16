@@ -31,7 +31,7 @@ public static class AuthSetup
     public static void ConfigureAuthorization(AuthorizationOptions o)
     {
         o.AddPolicy("Customer", p => p.RequireAuthenticatedUser().RequireClaim(KindClaim, UserKinds.Customer));
-        foreach (var code in new[] { Permissions.MenuManage, Permissions.OrderReceive })
+        foreach (var code in Permissions.All)
             o.AddPolicy(code, p => p.RequireAuthenticatedUser().RequireClaim(KindClaim, UserKinds.Staff).AddRequirements(new PermissionRequirement(code)));
     }
 

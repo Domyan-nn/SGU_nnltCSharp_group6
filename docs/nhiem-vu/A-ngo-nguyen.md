@@ -42,7 +42,7 @@ Hạn: thứ 7 14/11/2026 (đóng băng chức năng thứ 6 18:00). Xem phạm 
 - [ ] Chuẩn bị bản chạy demo (cơ sở dữ liệu sạch, tài khoản mẫu, kịch bản).
 
 ### Mức 2 (chỉ khi Mức 1 xong trước thứ 5 tối)
-`POST /api/staff/orders/{id}/payments` (UC08, gọi `RecordCashPaymentAsync`, cần mở ca), `POST /api/staff/units/{id}/start` (UC07, `StartUnitAsync`), mở/đóng ca.
+Thu tiền (UC08, `RecordCashPaymentAsync`, cần mở ca), pha chế (UC07, `StartUnitAsync`), mở/đóng ca: đường dẫn đã chốt lại ở mục "Hợp đồng bổ sung 16/11" cuối file.
 
 ## Quy tắc cần nhớ
 - Không dùng EnsureCreated, không xóa/đặt lại DB, không hạ migration; thay đổi mô hình = migration mới, đọc `Up`/`Down` trước (`docs/quy-uoc-du-an.md`).
@@ -78,3 +78,29 @@ Mã + test cho mỗi API ở trên, `TestResults/*.trx`, bản cập nhật `doc
 | `POST /api/staff/variants/{id}/deactivate` | `MENU_MANAGE` | — | 204 |
 
 Lỗi luôn có dạng `{code, message}`; mã trạng thái 400 (đầu vào sai), 401, 403, 404, 409 (xung đột trạng thái hoặc phiên bản).
+
+## Hợp đồng bổ sung 16/11 cho A1–A3 (chưa hiện thực máy chủ)
+
+DTO nằm trong `Core/ApiContracts.cs`, hàm gọi nằm trong `Client/StaffApi.cs`; test `StaffApiContractTests` khóa đường dẫn. C dựng màn hình theo các hàm của `StaffApi` ngay; trước khi A gộp phần máy chủ, các lời gọi này trả 404. Tài khoản mẫu chạy lại `--seed-accounts` để có quyền mới: `dev.cashier` thêm `PAYMENT_COLLECT`, tài khoản mới `dev.barista` có `PREPARATION_WORK`.
+
+| Phương thức, đường dẫn | Quyền | Đầu vào chính | Kết quả | Hàm trong `StaffApi` |
+|---|---|---|---|---|
+| `GET /api/staff/categories?q=` | `MENU_MANAGE` | — | `[{categoryId, categoryName, isActive, productCount}]` | `CategoriesAsync` |
+| `POST /api/staff/categories`, `PUT /api/staff/categories/{id}` | `MENU_MANAGE` | `categoryName`, `isActive` | 201/200 `{id}`; 400; 409 trùng tên | `SaveCategoryAsync` |
+| `DELETE /api/staff/categories/{id}` | `MENU_MANAGE` | — | 204; 404; 409 `CONFLICT` khi danh mục còn món | `DeleteCategoryAsync` |
+| `GET /api/staff/ingredients?q=` | `MENU_MANAGE` | — | `[{ingredientId, ingredientName, unitName, isActive, quantityOnHand, quantityReserved, recipeCount}]` | `IngredientsAsync` |
+| `POST /api/staff/ingredients`, `PUT /api/staff/ingredients/{id}` | `MENU_MANAGE` | `ingredientName`, `unitName`, `isActive` | 201/200 `{id}`; 400; 409 | `SaveIngredientAsync` |
+| `DELETE /api/staff/ingredients/{id}` | `MENU_MANAGE` | — | 204; 404; 409 khi đang nằm trong công thức hoặc đã có phát sinh kho | `DeleteIngredientAsync` |
+| `GET /api/staff/counters` | `PAYMENT_COLLECT` | — | `[{counterId, counterCode}]` quầy đang hoạt động | `CountersAsync` |
+| `GET /api/staff/shifts/current` | `PAYMENT_COLLECT` | — | 200 `{shift}`; `shift` = null khi chưa mở ca | `CurrentShiftAsync` |
+| `POST /api/staff/shifts` | `PAYMENT_COLLECT` | `counterId`, `openingCash` | 201 `ShiftDto`; 409 khi quầy hoặc nhân viên đã có ca mở | `OpenShiftAsync` |
+| `GET /api/staff/shifts/{id}/summary` | `PAYMENT_COLLECT` | — | `{openingCash, cashPayments, cashRefunds, otherIn, otherOut, expectedCash, countedCash, difference}` | `ShiftSummaryAsync` |
+| `POST /api/staff/shifts/{id}/close` | `PAYMENT_COLLECT` | `countedCash`, `closeNote?` | 200 bảng đối soát có chênh lệch; 409 `INVALID_STATE` khi ca đã đóng | `CloseShiftAsync` |
+| `GET /api/staff/payments/payable` | `PAYMENT_COLLECT` | — | đơn đã tiếp nhận còn phải thu: `[{orderId, orderCode, contactName, pickupCode, status, total, paid, remaining}]` | `PayableOrdersAsync` |
+| `POST /api/staff/payments/cash` | `PAYMENT_COLLECT` | `requestId`, `orderId`, `amountReceived` | 201 `{paymentId, amountDue, amountReceived, change}`; 400 khi tiền đưa thiếu; 409 khi chưa mở ca hoặc đơn không còn nợ. Gửi lại cùng `requestId` trả lại phiếu cũ | `PayCashAsync` |
+| `GET /api/staff/preparation` | `PREPARATION_WORK` | — | các ly chưa giao, cũ nhất trước: `[{unitId, ticketId, orderId, orderCode, pickupCode, productName, variantName, addons, unitNumber, lineQuantity, status, acceptedAt}]` | `PreparationQueueAsync` |
+| `POST /api/staff/preparation/{unitId}/start` | `PREPARATION_WORK` | — | 204; 409 `INVALID_STATE` khi ly không còn `Waiting` | `StartUnitAsync` |
+| `POST /api/staff/preparation/{unitId}/ready` | `PREPARATION_WORK` | — | 204; 409 khi ly không ở `Preparing` | `MarkReadyAsync` |
+| `POST /api/staff/preparation/{unitId}/deliver` | `PREPARATION_WORK` | — | 204; 409 khi ly không ở `Ready` | `DeliverAsync` |
+
+Web khách (B2): `OrderDetailDto` có thêm `progress` = `{waiting, preparing, ready, delivered, paid}`; trường này là `null` cho tới khi A3 xong, giao diện phải chịu được `null`.

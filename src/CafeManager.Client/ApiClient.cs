@@ -85,6 +85,9 @@ public sealed class ApiClient : IDisposable
     public Task<ApiResult<T>> PutAsync<T>(string path, object? body, CancellationToken ct = default) =>
         SendAsync<T>(HttpMethod.Put, path, body, raiseExpired: true, ct);
 
+    public Task<ApiResult<Empty>> DeleteAsync(string path, CancellationToken ct = default) =>
+        SendAsync<Empty>(HttpMethod.Delete, path, null, raiseExpired: true, ct);
+
     private async Task<ApiResult<T>> SendAsync<T>(HttpMethod method, string path, object? body, bool raiseExpired, CancellationToken ct)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
