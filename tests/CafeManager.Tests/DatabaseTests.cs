@@ -591,7 +591,7 @@ public sealed class DatabaseTests(SqlServerFixture fixture) : IClassFixture<SqlS
         var users = provider.GetRequiredService<UserManager<IdentityUser>>();
         var db = provider.GetRequiredService<CafeDbContext>();
         var first = await DevelopmentAccountSeeder.SeedAsync(db, users);
-        Assert.Equal(3, first.Count);
+        Assert.Equal(4, first.Count);
         Assert.All(first, a => Assert.False(string.IsNullOrEmpty(a.Password)));
         Assert.Equal(first.Count, first.Select(a => a.Password).Distinct().Count());
         var cashier = await users.FindByNameAsync("dev.cashier");
@@ -604,6 +604,11 @@ public sealed class DatabaseTests(SqlServerFixture fixture) : IClassFixture<SqlS
         Assert.False(await reader.HasAsync(cashier.Id, Permissions.MenuManage));
         Assert.True(await reader.HasAsync(manager!.Id, Permissions.MenuManage));
         Assert.False(await reader.HasAsync(customer!.Id, Permissions.OrderReceive));
+        Assert.True(await reader.HasAsync(cashier.Id, Permissions.PaymentCollect));
+        Assert.False(await reader.HasAsync(cashier.Id, Permissions.PreparationWork));
+        var barista = await users.FindByNameAsync("dev.barista");
+        Assert.True(await reader.HasAsync(barista!.Id, Permissions.PreparationWork));
+        Assert.False(await reader.HasAsync(barista.Id, Permissions.PaymentCollect));
         Assert.Equal(1, await db.CustomerProfile.CountAsync(x => x.IdentityUserId == customer.Id));
         var second = await DevelopmentAccountSeeder.SeedAsync(db, users);
         Assert.All(second, a => Assert.Null(a.Password));

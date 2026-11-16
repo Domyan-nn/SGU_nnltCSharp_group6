@@ -7,7 +7,7 @@ namespace CafeManager.Web.Controllers.Web;
 // W03 (UC04): đơn của tôi. Chỉ chủ đơn xem và hủy được; đơn người khác hoặc không tồn tại đều trả 404.
 // Mã đơn (số) nằm trong đường dẫn nhưng không phải dữ liệu cá nhân; quyền sở hữu do máy chủ kiểm tra, không dựa vào việc "đoán không ra".
 [AutoValidateAntiforgeryToken]
-public sealed class MyOrdersController : Controller
+public sealed class MyOrdersController(ICustomerGateway gateway) : Controller
 {
     public const int PageSize = 10;
 
@@ -18,7 +18,7 @@ public sealed class MyOrdersController : Controller
         var me = CustomerSession.Current(HttpContext);
         if (me is null) return Redirect(CustomerSession.LoginUrl("/don-cua-toi"));
 
-        var result = await CustomerGatewayProvider.Current.ListOrdersAsync(me.UserName);
+        var result = await gateway.ListOrdersAsync(me.UserName);
         if (result.Error?.Code == ApiErrorCodes.Unauthorized) return Redirect(CustomerSession.LoginUrl("/don-cua-toi"));
         if (!result.Ok || result.Value is null)
         {
@@ -40,7 +40,7 @@ public sealed class MyOrdersController : Controller
         var me = CustomerSession.Current(HttpContext);
         if (me is null) return Redirect(CustomerSession.LoginUrl("/don-cua-toi/" + id));
 
-        var result = await CustomerGatewayProvider.Current.GetOrderAsync(me.UserName, id);
+        var result = await gateway.GetOrderAsync(me.UserName, id);
         var failure = Failure(result, id);
         if (failure is not null) return failure;
         return View(result.Value!);
@@ -54,7 +54,7 @@ public sealed class MyOrdersController : Controller
         var me = CustomerSession.Current(HttpContext);
         if (me is null) return Redirect(CustomerSession.LoginUrl("/don-cua-toi/" + id));
 
-        var result = await CustomerGatewayProvider.Current.GetOrderAsync(me.UserName, id);
+        var result = await gateway.GetOrderAsync(me.UserName, id);
         var failure = Failure(result, id);
         if (failure is not null) return failure;
 
@@ -73,7 +73,6 @@ public sealed class MyOrdersController : Controller
         var me = CustomerSession.Current(HttpContext);
         if (me is null) return Redirect(CustomerSession.LoginUrl("/don-cua-toi/" + id));
 
-        var gateway = CustomerGatewayProvider.Current;
         var found = await gateway.GetOrderAsync(me.UserName, id);
         var failure = Failure(found, id);
         if (failure is not null) return failure;

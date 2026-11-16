@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Identity;
 namespace CafeManager.Web.Models;
 
 // Cổng gọi nghiệp vụ khách (đăng ký, đăng nhập, gửi đơn) theo hợp đồng API trong Core/ApiContracts.cs.
-// Hiện dùng bản GIẢ (FakeCustomerGateway, bộ nhớ) vì API của A chưa giao. Khi A giao, viết một bản thật
-// (gọi dịch vụ máy chủ của A) và gán vào CustomerGatewayProvider.Current; Controller/View không phải sửa.
+// Controller nhận ICustomerGateway qua constructor (DI). Program.cs chọn bản thật (RealCustomerGateway)
+// hoặc bản giả (FakeCustomerGateway) khi chạy kiểm thử / đặt CAFE_FAKE_GATEWAY=1; Controller/View không phải sửa.
 
 public sealed record GatewayResult<T>(T? Value, ApiError? Error, bool TimedOut)
 {
@@ -31,11 +31,6 @@ public interface ICustomerGateway
     Task<GatewayResult<IReadOnlyList<OrderSummaryDto>>> ListOrdersAsync(string userName);
     Task<GatewayResult<OrderDetailDto>> GetOrderAsync(string userName, long orderId);
     Task<GatewayResult<bool>> CancelOrderAsync(string userName, long orderId);
-}
-
-public static class CustomerGatewayProvider
-{
-    public static ICustomerGateway Current { get; set; } = new FakeCustomerGateway();
 }
 
 /// <summary>

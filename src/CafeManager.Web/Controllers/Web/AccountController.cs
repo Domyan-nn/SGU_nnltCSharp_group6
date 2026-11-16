@@ -6,7 +6,7 @@ namespace CafeManager.Web.Controllers.Web;
 
 // W00: đăng ký và đăng nhập khách. Sai mật khẩu hoặc tài khoản khóa thì KHÔNG cấp phiên.
 [AutoValidateAntiforgeryToken]
-public sealed class AccountController : Controller
+public sealed class AccountController(ICustomerGateway gateway) : Controller
 {
     private const string SessionMissing =
         "Chưa bật session trên máy chủ nên chưa đăng nhập được (xem docs/patch-session-for-A.md).";
@@ -40,7 +40,7 @@ public sealed class AccountController : Controller
         }
         if (!ModelState.IsValid) return View("Login", form);
 
-        var result = await CustomerGatewayProvider.Current.LoginAsync(new LoginRequest(form.UserName.Trim(), form.Password));
+        var result = await gateway.LoginAsync(new LoginRequest(form.UserName.Trim(), form.Password));
         if (result.TimedOut)
         {
             ModelState.AddModelError(string.Empty, "Không kết nối được máy chủ. Vui lòng thử lại sau.");
@@ -80,7 +80,7 @@ public sealed class AccountController : Controller
         if (!ModelState.IsValid) return View("Register", form);
 
         var request = new RegisterCustomerRequest(form.UserName.Trim(), form.Password, form.FullName.Trim(), form.Phone.Trim());
-        var result = await CustomerGatewayProvider.Current.RegisterAsync(request);
+        var result = await gateway.RegisterAsync(request);
         if (result.TimedOut)
         {
             ModelState.AddModelError(string.Empty, "Không kết nối được máy chủ. Vui lòng thử lại sau.");

@@ -8,6 +8,10 @@ public static class Permissions
 {
     public const string MenuManage = "MENU_MANAGE";
     public const string OrderReceive = "ORDER_RECEIVE";
+    public const string PaymentCollect = "PAYMENT_COLLECT";     // mở/đóng ca, thu tiền mặt (Thu ngân)
+    public const string PreparationWork = "PREPARATION_WORK";   // màn hình Pha chế
+
+    public static readonly IReadOnlyList<string> All = [MenuManage, OrderReceive, PaymentCollect, PreparationWork];
 }
 
 public static class UserKinds
@@ -61,7 +65,10 @@ public sealed record OrderAddonDto(string Name, int QuantityPerUnit, decimal Uni
 public sealed record OrderLineDto(string ProductName, string VariantName, int Quantity, decimal UnitPrice, IReadOnlyList<OrderAddonDto> Addons);
 public sealed record OrderSummaryDto(long OrderId, string OrderCode, string Status, DateTime CreatedAt, DateTime? PickupAt, decimal Total);
 public sealed record OrderDetailDto(OrderSummaryDto Summary, string? PickupCode, string? ContactName, string? ContactPhone,
-    string? RejectReason, IReadOnlyList<OrderLineDto> Lines);
+    string? RejectReason, IReadOnlyList<OrderLineDto> Lines, OrderProgressDto? Progress = null);
+
+// Tiến độ pha chế và số đã trả của một đơn (B2 hiển thị). Null khi máy chủ chưa có dữ liệu này.
+public sealed record OrderProgressDto(int Waiting, int Preparing, int Ready, int Delivered, decimal Paid);
 
 // --- Thu ngân tiếp nhận đơn Web (UC03) ---
 public sealed record StaffOrderDto(OrderDetailDto Detail, long RoundId);
@@ -108,3 +115,43 @@ public sealed record StaffMenuResponse(
 
 // Kết quả tạo mới (món, biến thể) trong quản lý thực đơn.
 public sealed record IdResponse(long Id);
+
+// --- Danh mục và nguyên liệu (A1; Desktop C1, C2). Quyền MENU_MANAGE ---
+// Xóa trả 409 CONFLICT khi danh mục còn món / nguyên liệu đang nằm trong công thức hoặc đã có phát sinh kho.
+public sealed record CategoryDto(long CategoryId, string CategoryName, bool IsActive, int ProductCount);
+public sealed record CategoryUpsertRequest(string CategoryName, bool IsActive);
+
+public sealed record IngredientDto(long IngredientId, string IngredientName, string UnitName, bool IsActive,
+    decimal QuantityOnHand, decimal QuantityReserved, int RecipeCount);
+public sealed record IngredientUpsertRequest(string IngredientName, string UnitName, bool IsActive);
+
+// --- Ca và thu tiền mặt (A2; Desktop A4 Thu ngân). Quyền PAYMENT_COLLECT ---
+// Thu tiền luôn ghi vào ca đang mở của chính nhân viên đăng nhập, nên client không gửi mã ca.
+public sealed record CounterDto(long CounterId, string CounterCode);
+public sealed record ShiftDto(long ShiftId, long CounterId, string CounterCode, string OpenedByName, DateTime OpenedAt,
+    decimal OpeningCash, DateTime? ClosedAt, decimal? CountedCash);
+public sealed record CurrentShiftResponse(ShiftDto? Shift);
+public sealed record OpenShiftRequest(long CounterId, decimal OpeningCash);
+public sealed record CloseShiftRequest(decimal CountedCash, string? CloseNote);
+public sealed record ShiftSummaryDto(long ShiftId, decimal OpeningCash, decimal CashPayments, decimal CashRefunds,
+    decimal OtherIn, decimal OtherOut, decimal ExpectedCash, decimal? CountedCash, decimal? Difference);
+
+public sealed record PayableOrderDto(long OrderId, string OrderCode, string? ContactName, string? PickupCode,
+    string Status, decimal Total, decimal Paid, decimal Remaining);
+public sealed record CashPaymentRequest(Guid RequestId, long OrderId, decimal AmountReceived);
+public sealed record CashPaymentResponse(long PaymentId, decimal AmountDue, decimal AmountReceived, decimal Change);
+
+// --- Pha chế (A3; Desktop C3). Quyền PREPARATION_WORK ---
+// Mỗi ly là một PreparationUnit: Waiting -> Preparing -> Ready -> Delivered.
+public static class PreparationStatuses
+{
+    public const string Waiting = "Waiting";
+    public const string Preparing = "Preparing";
+    public const string Ready = "Ready";
+    public const string Delivered = "Delivered";
+    public const string Cancelled = "Cancelled";
+}
+
+public sealed record PreparationUnitDto(long UnitId, long TicketId, long OrderId, string OrderCode, string? PickupCode,
+    string ProductName, string VariantName, IReadOnlyList<OrderAddonDto> Addons, int UnitNumber, int LineQuantity,
+    string Status, DateTime AcceptedAt);

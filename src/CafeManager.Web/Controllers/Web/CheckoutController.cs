@@ -10,7 +10,7 @@ namespace CafeManager.Web.Controllers.Web;
 // - requestId mới mỗi lần MỞ form; gửi lại do mất phản hồi dùng lại CÙNG requestId (không tạo đơn trùng).
 // - Giá chỉ để hiển thị; máy chủ tính lại. Giá khách đã thấy gửi kèm làm expectedUnitPrice để phát hiện giá đổi (409).
 [AutoValidateAntiforgeryToken]
-public sealed class CheckoutController : Controller
+public sealed class CheckoutController(ICustomerGateway gateway) : Controller
 {
     private const string CheckoutPath = "/dat-hang";
 
@@ -82,7 +82,7 @@ public sealed class CheckoutController : Controller
             l.Addons.Select(a => new OrderAddonRequest(a.AddonVariantId, a.QuantityPerUnit)).ToList())).ToList();
         var request = new CreateOrderRequest(requestId, pickupUtc, name, phone, lines);
 
-        var result = await CustomerGatewayProvider.Current.CreateOrderAsync(me.UserName, request);
+        var result = await gateway.CreateOrderAsync(me.UserName, request);
         var model = BuildModel(page, requestId, pickupAtLocal ?? "", name, phone, expected);
 
         // Mất phản hồi: KHÔNG khẳng định thất bại, KHÔNG tạo mã mới; "Tra cứu kết quả" gửi lại cùng requestId.

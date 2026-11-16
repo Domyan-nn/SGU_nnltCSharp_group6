@@ -32,6 +32,12 @@ builder.Services.AddScoped<CustomerOrderService>();
 builder.Services.AddScoped<StaffOrderService>();
 builder.Services.AddScoped<StaffMenuService>();
 
+// Giao diện khách (B) gọi nghiệp vụ qua ICustomerGateway, nhận qua constructor của controller.
+// Môi trường Testing hoặc CAFE_FAKE_GATEWAY=1 dùng bản giả (không cần CSDL), còn lại dùng dịch vụ thật.
+var useFakeGateway = builder.Environment.IsEnvironment("Testing") || Environment.GetEnvironmentVariable("CAFE_FAKE_GATEWAY") == "1";
+if (useFakeGateway) builder.Services.AddSingleton<ICustomerGateway, FakeCustomerGateway>();
+else builder.Services.AddSingleton<ICustomerGateway, RealCustomerGateway>();
+
 // Giỏ hàng và trạng thái đăng nhập của Web khách dùng session (B); API cho Desktop dùng cookie xác thực riêng.
 builder.Services.AddMemoryCache();
 builder.Services.AddDistributedMemoryCache();
@@ -79,14 +85,10 @@ if (args.Contains("--migrate") || args.Contains("--seed") || args.Contains("--se
     return;
 }
 
-// Giao diện khách (B) gọi nghiệp vụ qua cổng và thực đơn qua MenuSource; mặc định dùng dữ liệu thật.
-// Đặt CAFE_FAKE_GATEWAY=1 để chạy giao diện với dữ liệu giả (không cần CSDL).
-if (!app.Environment.IsEnvironment("Testing") && Environment.GetEnvironmentVariable("CAFE_FAKE_GATEWAY") != "1")
-{
-    var scopes = app.Services.GetRequiredService<IServiceScopeFactory>();
-    CustomerGatewayProvider.Current = new RealCustomerGateway(scopes);
-    MenuSource.Provider = new DbMenuSource(scopes, app.Services.GetRequiredService<IMemoryCache>()).Get;
-}
+// Thực đơn cho giao diện khách: dữ liệu thật trừ khi đang dùng bản giả ở trên.
+if (!useFakeGateway)
+    MenuSource.Provider = new DbMenuSource(app.Services.GetRequiredService<IServiceScopeFactory>(),
+        app.Services.GetRequiredService<IMemoryCache>()).Get;
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
