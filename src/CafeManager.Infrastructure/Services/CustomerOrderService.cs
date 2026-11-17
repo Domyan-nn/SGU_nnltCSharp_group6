@@ -194,15 +194,8 @@ IF @r < 0 THROW 51000, 'Cannot acquire operation lock', 1;", ct);
     internal static OrderSummaryDto Summary(SalesOrder o, decimal total) => new(o.OrderId, o.OrderCode, o.Status, o.CreatedAt, o.ExpectedPickupAt, total);
 
     // Tổng tiền tính từ dòng và tùy chọn đã chốt (không lưu tổng trong SalesOrder).
-    internal async Task<Dictionary<long, decimal>> TotalsAsync(IReadOnlyCollection<long> orderIds, CancellationToken ct)
-    {
-        var lines = await (from l in db.OrderLine join r in db.OrderRound on l.RoundId equals r.RoundId where orderIds.Contains(r.OrderId)
-                           select new { r.OrderId, l.LineId, l.Quantity, l.UnitPriceSnapshot }).AsNoTracking().ToListAsync(ct);
-        var lineIds = lines.Select(l => l.LineId).ToList();
-        var addons = await db.OrderLineAddon.AsNoTracking().Where(a => lineIds.Contains(a.LineId)).ToListAsync(ct);
-        return lines.GroupBy(l => l.OrderId).ToDictionary(g => g.Key, g => g.Sum(l =>
-            (l.UnitPriceSnapshot + addons.Where(a => a.LineId == l.LineId).Sum(a => a.UnitPriceSnapshot * a.Quantity)) * l.Quantity));
-    }
+    internal Task<Dictionary<long, decimal>> TotalsAsync(IReadOnlyCollection<long> orderIds, CancellationToken ct) =>
+        OrderTotals.ComputeAsync(db, orderIds, acceptedOnly: false, ct);
 
     internal async Task<Dictionary<long, OrderDetailDto>> DetailsAsync(IReadOnlyCollection<long> orderIds, CancellationToken ct)
     {
@@ -212,8 +205,22 @@ IF @r < 0 THROW 51000, 'Cannot acquire operation lock', 1;", ct);
                            orderby r.RoundNumber, l.LineId select new { r.OrderId, Line = l }).AsNoTracking().ToListAsync(ct);
         var lineIds = lines.Select(x => x.Line.LineId).ToList();
         var addons = await db.OrderLineAddon.AsNoTracking().Where(a => lineIds.Contains(a.LineId)).OrderBy(a => a.LineAddonId).ToListAsync(ct);
+        var progress = await ProgressAsync(orderIds, ct);
         return orders.ToDictionary(o => o.OrderId, o => new OrderDetailDto(Summary(o, totals.GetValueOrDefault(o.OrderId)), o.PickupCode, o.ContactName, o.ContactPhone, o.RejectReason,
             lines.Where(x => x.OrderId == o.OrderId).Select(x => new OrderLineDto(x.Line.ProductNameSnapshot, x.Line.VariantNameSnapshot, x.Line.Quantity, x.Line.UnitPriceSnapshot,
-                addons.Where(a => a.LineId == x.Line.LineId).Select(a => new OrderAddonDto(a.AddonNameSnapshot, a.Quantity, a.UnitPriceSnapshot)).ToList())).ToList()));
+                addons.Where(a => a.LineId == x.Line.LineId).Select(a => new OrderAddonDto(a.AddonNameSnapshot, a.Quantity, a.UnitPriceSnapshot)).ToList())).ToList(),
+            progress.GetValueOrDefault(o.OrderId)));
+    }
+
+    // Tiến độ pha chế (số ly theo trạng thái) và số đã thu thành công. Đơn chưa tiếp nhận chưa có ly nên trả null; giao diện chịu được null.
+    private async Task<Dictionary<long, OrderProgressDto>> ProgressAsync(IReadOnlyCollection<long> orderIds, CancellationToken ct)
+    {
+        var units = await (from u in db.PreparationUnit join l in db.OrderLine on u.LineId equals l.LineId join r in db.OrderRound on l.RoundId equals r.RoundId
+                           where orderIds.Contains(r.OrderId) select new { r.OrderId, u.Status }).AsNoTracking().ToListAsync(ct);
+        var paid = await db.Payment.AsNoTracking().Where(p => orderIds.Contains(p.OrderId) && p.Status == "Succeeded")
+            .GroupBy(p => p.OrderId).Select(g => new { OrderId = g.Key, Amount = g.Sum(p => p.Amount) }).ToDictionaryAsync(x => x.OrderId, x => x.Amount, ct);
+        return units.GroupBy(x => x.OrderId).ToDictionary(g => g.Key, g => new OrderProgressDto(
+            g.Count(x => x.Status == PreparationStatuses.Waiting), g.Count(x => x.Status == PreparationStatuses.Preparing),
+            g.Count(x => x.Status == PreparationStatuses.Ready), g.Count(x => x.Status == PreparationStatuses.Delivered), paid.GetValueOrDefault(g.Key)));
     }
 }
