@@ -78,4 +78,35 @@ public static class TestData
         await db.SaveChangesAsync();
         return user.UserName;
     }
+
+    // Nhân viên có đúng các quyền chỉ định (mật khẩu thử "secret1"), dùng cho thu ngân, pha chế, ... trong kiểm thử API.
+    public static async Task<string> SeedStaffAsync(IServiceProvider provider, string suffix, string label, params string[] permissionCodes)
+    {
+        using var scope = provider.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<CafeDbContext>();
+        var users = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var user = new IdentityUser { UserName = label + "." + suffix };
+        Assert.True((await users.CreateAsync(user, "secret1")).Succeeded);
+        var staff = new StaffAccount { IdentityUserId = user.Id, FullName = "NV " + label + " " + suffix, IsActive = true };
+        var role = new Role { RoleName = label + " " + suffix };
+        db.AddRange(staff, role); await db.SaveChangesAsync();
+        db.Add(new StaffRole { StaffId = staff.StaffId, RoleId = role.RoleId });
+        foreach (var code in permissionCodes)
+        {
+            var permission = await db.Permission.SingleOrDefaultAsync(p => p.PermissionCode == code);
+            if (permission == null) { permission = new Permission { PermissionCode = code }; db.Add(permission); await db.SaveChangesAsync(); }
+            db.Add(new RolePermission { RoleId = role.RoleId, PermissionId = permission.PermissionId });
+        }
+        await db.SaveChangesAsync();
+        return user.UserName;
+    }
+
+    public static async Task<long> SeedCounterAsync(IServiceProvider provider, string code)
+    {
+        using var scope = provider.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<CafeDbContext>();
+        var counter = new Counter { CounterCode = code, IsActive = true };
+        db.Add(counter); await db.SaveChangesAsync();
+        return counter.CounterId;
+    }
 }

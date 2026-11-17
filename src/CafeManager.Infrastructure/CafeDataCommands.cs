@@ -180,6 +180,37 @@ IF @r < 0 THROW 51000, 'Cannot acquire operation lock', 1;", ct);
         return payment.PaymentId;
     }
 
+    public async Task<CashCollection> CollectCashAsync(Guid requestId, long orderId, long shiftId, long staffId, decimal amountReceived, CancellationToken ct = default)
+    {
+        if (amountReceived <= 0 || decimal.Round(amountReceived, 2) != amountReceived || amountReceived > 1_000_000_000m)
+            throw new ArgumentOutOfRangeException(nameof(amountReceived));
+        await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
+        var request = await BeginRequestAsync(requestId, Hash(new { Operation = "CashCollect", orderId, shiftId, staffId,
+            Received = amountReceived.ToString("F2", System.Globalization.CultureInfo.InvariantCulture) }), ct);
+        if (request.ResultReference != null)
+        {
+            var paymentId = long.Parse(request.ResultReference, System.Globalization.CultureInfo.InvariantCulture);
+            var paidAmount = await db.Payment.AsNoTracking().Where(x => x.PaymentId == paymentId).Select(x => x.Amount).SingleAsync(ct);
+            await tx.CommitAsync(ct);
+            return new CashCollection(paymentId, paidAmount, amountReceived, amountReceived - paidAmount);
+        }
+        await RequireOpenShiftAsync(shiftId, staffId, ct);
+        await LockAsync($"order-pay:{orderId}", ct); // hai người thu cùng một đơn phải nối đuôi nhau để không thu vượt
+        if (!await db.SalesOrder.AnyAsync(x => x.OrderId == orderId && (x.Status == "Serving" || x.Status == "Settling"), ct))
+            throw new InvalidOperationException("Order is not accepted for payment.");
+        var total = (await OrderTotals.ComputeAsync(db, [orderId], acceptedOnly: true, ct)).GetValueOrDefault(orderId);
+        var paid = await db.Payment.Where(x => x.OrderId == orderId && x.Status == "Succeeded").SumAsync(x => (decimal?)x.Amount, ct) ?? 0;
+        var due = total - paid;
+        if (due <= 0) throw new InvalidOperationException("Order has no balance.");
+        if (amountReceived < due) throw new ArgumentOutOfRangeException(nameof(amountReceived), "Amount received is less than amount due.");
+        var payment = new Payment { PaymentCode = Guid.NewGuid().ToString("N"), OrderId = orderId, ShiftId = shiftId,
+            Amount = due, Method = "Cash", Status = "Succeeded", PaidAt = DateTime.UtcNow, RequestId = requestId, CreatedBy = staffId };
+        db.Add(payment); await db.SaveChangesAsync(ct);
+        request.ResultReference = payment.PaymentId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        await db.SaveChangesAsync(ct); await tx.CommitAsync(ct);
+        return new CashCollection(payment.PaymentId, due, amountReceived, amountReceived - due);
+    }
+
     public async Task<long> RecordCashRefundAsync(Guid requestId, long refundId, long shiftId, long staffId, CancellationToken ct = default)
     {
         await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
