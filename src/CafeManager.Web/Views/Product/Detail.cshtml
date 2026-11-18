@@ -1,0 +1,29 @@
+@model MenuProductDto
+@{
+    ViewData["Title"] = Model.ProductName;
+    string Vnd(decimal v) => Money.Vnd(v);
+    var returnUrl = "/mon/" + Model.ProductId;
+    var cheapest = Model.Variants.Count > 0 ? Model.Variants.Min(v => v.UnitPrice) : 0m;
+}
+<p><a href="/">‹ Về thực đơn</a></p>
+<h1>@Model.ProductName</h1>
+<p class="cat">@Model.CategoryName <span class="badge ok">Đang bán</span></p>
+@if (Model.Variants.Count > 0)
+{
+    <p class="muted">@Model.Variants.Count kích cỡ, giá từ @Vnd(cheapest). Giá chốt do máy chủ tính lại khi gửi đơn.</p>
+    <ul class="variants">
+        @foreach (var v in Model.Variants)
+        {
+            <li class="variant">
+                <partial name="_VariantForm" model="new VariantFormModel(Model, v, returnUrl)" />
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <div class="empty" role="status">
+        <p>Món này hiện chưa có kích cỡ để đặt.</p>
+        <a class="button secondary" href="/">Quay về thực đơn</a>
+    </div>
+}

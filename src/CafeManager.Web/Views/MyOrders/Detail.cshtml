@@ -20,6 +20,30 @@
         }
     </dl>
 </div>
+<h2>Tiến độ đơn</h2>
+<div class="form-card" aria-live="polite">
+    @if (OrderProgressText.HasUnits(Model.Progress))
+    {
+        <dl class="kv">
+            <dt>Pha chế</dt><dd><strong>@OrderProgressText.Stage(Model.Progress)</strong></dd>
+            <dt>Chi tiết ly</dt><dd>@OrderProgressText.Units(Model.Progress!)</dd>
+            <dt>Thanh toán</dt><dd><span class="badge @(OrderProgressText.IsPaid(Model.Progress, s.Total) ? "ok" : "warn")">@OrderProgressText.Payment(Model.Progress, s.Total)</span></dd>
+        </dl>
+    }
+    else if (s.Status == "Pending")
+    {
+        <p class="note">Đơn đang chờ quán tiếp nhận nên chưa bắt đầu pha chế.</p>
+    }
+    else if (s.Status is "Cancelled" or "Rejected")
+    {
+        <p class="note">Đơn không còn được thực hiện.</p>
+    }
+    else
+    {
+        <p class="note">Chưa có thông tin pha chế cho đơn này.</p>
+    }
+    <p><a class="button secondary" href="/don-cua-toi/@s.OrderId">Tải lại trạng thái</a></p>
+</div>
 <h2>Món đã đặt (giá chốt)</h2>
 <ul class="cart">
     @foreach (var line in Model.Lines)

@@ -16,7 +16,7 @@ else if (Model.TotalCount == 0)
 }
 else
 {
-    <p class="muted" role="status">@Model.TotalCount đơn · Trang @Model.Page/@Model.PageCount</p>
+    <p class="muted" role="status">@Model.TotalCount đơn · Trang @Model.Page/@Model.PageCount · <a href="/don-cua-toi?page=@Model.Page">Tải lại trạng thái</a></p>
     <ul class="cart">
         @foreach (var o in Model.Items)
         {
@@ -26,6 +26,11 @@ else
                     <span class="badge @OrderStatusText.Css(o.Status)">@OrderStatusText.Vietnamese(o.Status)</span>
                     <p class="muted">Đặt lúc @OrderRules.LocalText(o.CreatedAt)@(o.PickupAt is DateTime pickup ? " · Giờ nhận " + OrderRules.LocalText(pickup) : "")</p>
                     <p>Tổng tiền: <strong>@Money.Vnd(o.Total)</strong></p>
+                    @if (Model.Progress is not null && Model.Progress.TryGetValue(o.OrderId, out var prog))
+                    {
+                        <p>Pha chế: <strong>@OrderProgressText.Stage(prog)</strong> (@OrderProgressText.Units(prog))</p>
+                        <p>Thanh toán: <span class="badge @(OrderProgressText.IsPaid(prog, o.Total) ? "ok" : "warn")">@OrderProgressText.Payment(prog, o.Total)</span></p>
+                    }
                 </div>
                 <div class="cl-actions">
                     <a class="button secondary" href="/don-cua-toi/@o.OrderId" aria-label="@("Xem chi tiết đơn " + o.OrderCode)">Chi tiết</a>

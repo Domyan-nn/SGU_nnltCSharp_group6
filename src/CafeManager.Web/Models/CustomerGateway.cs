@@ -148,8 +148,11 @@ public sealed class FakeCustomerGateway : ICustomerGateway
             // CAFE_FAKE_ORDER_STATUS=Serving tạo đơn ở trạng thái đã tiếp nhận để thử "đơn đã tiếp nhận không tự hủy được".
             var status = Environment.GetEnvironmentVariable("CAFE_FAKE_ORDER_STATUS") is { Length: > 0 } custom ? custom : "Pending";
             var summary = new OrderSummaryDto(seq, response.OrderCode, status, DateTime.UtcNow, request.PickupAt, total);
+            // CAFE_FAKE_PROGRESS=1 gắn tiến độ giả (1 ly chờ, 1 đang làm, 1 sẵn sàng; đã trả một nửa) cho đơn không ở trạng thái Pending.
+            var fakeProgress = status != "Pending" && Environment.GetEnvironmentVariable("CAFE_FAKE_PROGRESS") == "1"
+                ? new OrderProgressDto(1, 1, 1, 0, Math.Floor(total / 2)) : null;
             OrdersById[seq] = new FakeOrder(userName, new OrderDetailDto(summary, response.PickupCode,
-                request.ContactName, request.ContactPhone, null, detailLines));
+                request.ContactName, request.ContactPhone, null, detailLines, fakeProgress));
 
             if (!_timeoutUsed && Environment.GetEnvironmentVariable("CAFE_FAKE_TIMEOUT_ONCE") == "1")
             {

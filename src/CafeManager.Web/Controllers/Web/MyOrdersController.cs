@@ -30,7 +30,16 @@ public sealed class MyOrdersController(ICustomerGateway gateway) : Controller
         var pageCount = Math.Max(1, (all.Count + PageSize - 1) / PageSize);
         var current = Math.Clamp(page, 1, pageCount);
         var items = all.Skip((current - 1) * PageSize).Take(PageSize).ToList();
-        return View(new OrderListViewModel(items, current, pageCount, all.Count, null));
+
+        // B2: danh sách chỉ có tóm tắt; với đơn đã tiếp nhận thì lấy chi tiết để có tiến độ pha chế và số đã trả.
+        // Chỉ các đơn trên trang hiện tại (tối đa PageSize). Lấy lỗi thì bỏ qua tiến độ của đơn đó, không làm hỏng cả trang.
+        var progress = new Dictionary<long, OrderProgressDto>();
+        foreach (var item in items.Where(i => OrderProgressText.Tracks(i.Status)))
+        {
+            var detail = await gateway.GetOrderAsync(me.UserName, item.OrderId);
+            if (detail.Ok && detail.Value?.Progress is { } p) progress[item.OrderId] = p;
+        }
+        return View(new OrderListViewModel(items, current, pageCount, all.Count, null, progress));
     }
 
     [HttpGet("/don-cua-toi/{id:long}")]
