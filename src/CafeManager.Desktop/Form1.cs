@@ -47,10 +47,20 @@ public partial class Form1 : Form
         });
 
         if (user?.Permissions.Contains(Permissions.MenuManage) == true)
+        {
             _actions.Controls.Add(CreateActionButton("Quản lý món", OpenMenuManagement));
+            _actions.Controls.Add(CreateActionButton("Danh mục", OpenCategories));
+            _actions.Controls.Add(CreateActionButton("Nguyên liệu", OpenIngredients));
+        }
 
         if (user?.Permissions.Contains(Permissions.OrderReceive) == true)
             _actions.Controls.Add(CreateActionButton("Tiếp nhận đơn", OpenOrderReceiving));
+
+        if (user?.Permissions.Contains(Permissions.PaymentCollect) == true)
+            _actions.Controls.Add(CreateActionButton("Thu ngân (thu tiền, mở/đóng ca)", OpenCashier));
+
+        if (user?.Permissions.Contains(Permissions.PreparationWork) == true)
+            _actions.Controls.Add(CreateActionButton("Pha chế", OpenPreparation));
 
         if (_actions.Controls.Count == 0)
             _actions.Controls.Add(new Label
@@ -93,6 +103,34 @@ public partial class Form1 : Form
     {
         if (_api is null) return;
         using var form = new OrderReceivingForm(_api);
+        form.ShowDialog(this);
+    }
+
+    private void OpenCategories(object? sender, EventArgs e)
+    {
+        if (_api is null) return;
+        using var form = new CategoryForm(_api);
+        form.ShowDialog(this);
+    }
+
+    private void OpenIngredients(object? sender, EventArgs e)
+    {
+        if (_api is null) return;
+        using var form = new IngredientForm(_api);
+        form.ShowDialog(this);
+    }
+
+    private void OpenCashier(object? sender, EventArgs e)
+    {
+        if (_api is null) return;
+        using var form = new CashierForm(_api);
+        form.ShowDialog(this);
+    }
+
+    private void OpenPreparation(object? sender, EventArgs e)
+    {
+        if (_api is null) return;
+        using var form = new PreparationForm(_api);
         form.ShowDialog(this);
     }
 
