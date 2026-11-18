@@ -59,10 +59,12 @@ IF @r < 0 THROW 51000, 'Cannot acquire operation lock', 1;", ct);
                 foreach (var (ingredient, quantity) in await RecipeQuantitiesAsync(addonRecipe.RecipeVersionId, ct))
                     quantities[ingredient] = quantities.GetValueOrDefault(ingredient) + quantity * addon.Quantity;
             }
+            // Công thức chốt cho cả dòng (3NF). Lưu trước khi tạo ly để trigger của PreparationUnit kiểm tra được.
+            line.RecipeVersionId = recipe.RecipeVersionId;
+            await db.SaveChangesAsync(ct);
             for (var number = 1; number <= line.Quantity; number++)
             {
-                var unit = new PreparationUnit { TicketId = ticket.TicketId, LineId = line.LineId,
-                    UnitNumber = number, Status = "Waiting", RecipeVersionId = recipe.RecipeVersionId };
+                var unit = new PreparationUnit { LineId = line.LineId, UnitNumber = number, Status = "Waiting" };
                 db.Add(unit);
                 await db.SaveChangesAsync(ct);
                 foreach (var (ingredient, quantity) in quantities)

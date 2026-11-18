@@ -113,6 +113,9 @@ public sealed class OrderLine
     public string ProductNameSnapshot { get; set; } = "";
     public string VariantNameSnapshot { get; set; } = "";
     public decimal UnitPriceSnapshot { get; set; }
+    // Phiên bản công thức chốt khi tiếp nhận lượt, NULL khi dòng còn nháp. Mọi ly của dòng dùng chung giá trị này
+    // (LineId → RecipeVersionId), nên đặt ở dòng thay vì ở từng ly để PreparationUnit đạt 3NF.
+    public long? RecipeVersionId { get; set; }
 }
 
 public sealed class OrderLineAddon
@@ -133,14 +136,14 @@ public sealed class PreparationTicket
     public DateTime CreatedAt { get; set; }
 }
 
+// Phiếu của một ly không lưu thành cột: là PreparationTicket có RoundId bằng OrderLine.RoundId của LineId
+// (RoundId là duy nhất trong PreparationTicket). Công thức của ly là OrderLine.RecipeVersionId.
 public sealed class PreparationUnit
 {
     public long UnitId { get; set; }
-    public long TicketId { get; set; }
     public long LineId { get; set; }
     public int UnitNumber { get; set; }
     public string Status { get; set; } = "";
-    public long RecipeVersionId { get; set; }
     public long? DeliveredBy { get; set; }
     public DateTime? DeliveredAt { get; set; }
     public byte[] RowVersion { get; set; } = [];
