@@ -230,6 +230,9 @@ Nhóm đơn vị có cùng biến thể, giá và tùy chọn.
 | ProductNameSnapshot | NVARCHAR(200) | Không | — |
 | VariantNameSnapshot | NVARCHAR(200) | Không | — |
 | UnitPriceSnapshot | DECIMAL(18,2) | Không | — |
+| RecipeVersionId | BIGINT | Có | FK → RecipeVersion (migration PreparationUnit3NF) |
+
+`RecipeVersionId` là phiên bản công thức chốt lúc tiếp nhận lượt; dòng còn nháp thì để `NULL`. Mọi ly của dòng dùng chung giá trị này (LineId → RecipeVersionId), nên cột nằm ở dòng chứ không ở từng ly. Đó là điều kiện để `PreparationUnit` đạt 3NF. Khi dòng đã có ly, trigger `TR_OrderLine_Units` không cho đổi công thức, lượt hay biến thể của dòng.
 
 UNIQUE: chỉ PK.
 
@@ -288,14 +291,18 @@ Tiến độ từng đơn vị món.
 | Trường | Kiểu SQL | NULL | Khóa / tham chiếu |
 |---|---|---|---|
 | UnitId | BIGINT | Không | PK |
-| TicketId | BIGINT | Không | FK → PreparationTicket |
 | LineId | BIGINT | Không | FK → OrderLine |
 | UnitNumber | INT | Không | — |
 | Status | NVARCHAR(30) | Không | — |
-| RecipeVersionId | BIGINT | Không | FK → RecipeVersion |
 | DeliveredBy | BIGINT | Có | FK → StaffAccount |
 | DeliveredAt | DATETIME2 | Có | — |
 | RowVersion | ROWVERSION | Không | Concurrency token |
+
+Migration `PreparationUnit3NF` (18/11/2026) bỏ hai cột `TicketId` và `RecipeVersionId` khỏi bảng này để loại phụ thuộc riêng phần. Dữ liệu suy ra như sau:
+- **Phiếu của một ly:** là `PreparationTicket` có `RoundId` bằng `OrderLine.RoundId` của `LineId`; `RoundId` là duy nhất trong `PreparationTicket`.
+- **Công thức của một ly:** là `OrderLine.RecipeVersionId`.
+
+Ba trigger `TR_PreparationUnit_Round`, `TR_PreparationTicket_Round` và `TR_OrderLine_Units` (mã lỗi 51002) thay vai trò của hai khóa ngoại đã bỏ. Chúng bảo đảm: ly chỉ thuộc lượt đã tiếp nhận và có phiếu; số thứ tự ly không vượt số lượng của dòng; dòng đã chốt công thức đúng biến thể; và không xóa được phiếu khi lượt còn ly.
 
 UNIQUE: LineId, UnitNumber.
 

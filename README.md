@@ -101,7 +101,7 @@ dotnet ef database update --project src/CafeManager.Infrastructure --startup-pro
 dotnet ef migrations has-pending-model-changes --project src/CafeManager.Infrastructure --startup-project src/CafeManager.Web
 ```
 
-Các file migration đã có: InitialSchema → IntegrityGuards → HistoryProtection → SchemaGapColumns. Không tạo lại InitialSchema ở máy khác. Khi đổi mô hình, tạo migration mới, đọc Up/Down/SQL và kiểm thử trên CSDL thử trước. Không chạy database drop, migration về 0 hay xóa migration để thay thế CSDL đang dùng.
+Các file migration đã có: InitialSchema → IntegrityGuards → HistoryProtection → SchemaGapColumns → PreparationUnit3NF (18/11/2026: chuẩn hóa `PreparationUnit` về 3NF, chuyển `RecipeVersionId` lên `OrderLine`; mỗi máy chạy `--migrate` một lần sau khi kéo về). Không tạo lại InitialSchema ở máy khác. Khi đổi mô hình, tạo migration mới, đọc Up/Down/SQL và kiểm thử trên CSDL thử trước. Không chạy database drop, migration về 0 hay xóa migration để thay thế CSDL đang dùng.
 
 Seed là tùy chọn, chạy lặp lại an toàn trong transaction có khóa: 1 danh mục, 3 món/biến thể (cà phê đen, cà phê sữa, thêm sữa), giá, 2 nguyên liệu, công thức, 3 bàn, 1 quầy và tồn thử có chứng từ mở đầu. Tên có [THỬ], mã DEMO-. Chỉ thêm đối tượng thiếu; không sửa giá/tồn/món đã tồn tại. Nếu người dùng đã sửa bản mẫu hoặc làm dữ liệu mẫu không đầy đủ, seed không tự sửa lại. Không tạo tài khoản, vai trò có quyền quản trị hoặc mật khẩu cố định. Các tài khoản trong tests nằm ở CSDL thử và được dọn cùng CSDL.
 

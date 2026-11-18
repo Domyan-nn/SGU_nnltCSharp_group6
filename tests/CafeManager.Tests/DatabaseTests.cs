@@ -306,7 +306,10 @@ public sealed class DatabaseTests(SqlServerFixture fixture) : IClassFixture<SqlS
         await using (var db = Open()) ticket = await new CafeDataCommands(db).AcceptRoundAsync(s.Round, Now);
         await using (var db = Open()) Assert.Equal(ticket, await new CafeDataCommands(db).AcceptRoundAsync(s.Round, Now));
         await using var check = Open();
-        Assert.Equal(2, await check.PreparationUnit.CountAsync(x => x.TicketId == ticket));
+        // 3NF: ly không lưu TicketId; phiếu suy ra qua dòng và lượt, công thức chốt ở OrderLine.
+        Assert.Equal(2, await (from u in check.PreparationUnit join l in check.OrderLine on u.LineId equals l.LineId
+                               join t in check.PreparationTicket on l.RoundId equals t.RoundId where t.TicketId == ticket select u.UnitId).CountAsync());
+        Assert.True(await check.OrderLine.Where(x => x.RoundId == s.Round).AllAsync(x => x.RecipeVersionId == s.Recipe));
         Assert.Equal(40, (await check.StockBalance.FindAsync(s.Ingredient))!.QuantityReserved);
         Assert.Equal(2, await check.StockMovement.CountAsync(x => x.IngredientId == s.Ingredient && x.MovementType == "Reserve"));
     }
@@ -376,6 +379,29 @@ public sealed class DatabaseTests(SqlServerFixture fixture) : IClassFixture<SqlS
         var unit = await check.PreparationUnit.SingleAsync(x => x.LineId == s.Line);
         await Rejected(() => check.Database.ExecuteSqlInterpolatedAsync($"UPDATE dbo.PreparationUnit SET LineId={other.Line} WHERE UnitId={unit.UnitId}"), 51002);
         await Rejected(() => check.Database.ExecuteSqlInterpolatedAsync($"UPDATE dbo.OrderLine SET RoundId={other.Round} WHERE LineId={s.Line}"), 51002);
+    }
+
+    // Migration PreparationUnit3NF: ly không còn TicketId, RecipeVersionId; trigger thay vai trò của hai khóa ngoại đã bỏ.
+    [SqlServerFact]
+    public async Task Normalized_unit_keeps_line_recipe_and_ticket_consistent()
+    {
+        var s = await CreateAsync(2);
+        long ticket;
+        await using (var db = Open()) ticket = await new CafeDataCommands(db).AcceptRoundAsync(s.Round, Now);
+        await using var check = Open();
+        Assert.Equal(s.Recipe, (await check.OrderLine.SingleAsync(x => x.LineId == s.Line)).RecipeVersionId);
+        var older = new RecipeVersion { VariantId = s.Variant, EffectiveFrom = Now.AddDays(-10), EffectiveTo = Now.AddDays(-5) };
+        check.Add(older); await check.SaveChangesAsync();
+        // Dòng đã có ly: không đổi công thức đã chốt (kể cả sang phiên bản khác của cùng biến thể), không bỏ trống công thức.
+        await Rejected(() => check.Database.ExecuteSqlInterpolatedAsync($"UPDATE dbo.OrderLine SET RecipeVersionId={older.RecipeVersionId} WHERE LineId={s.Line}"), 51002);
+        await Rejected(() => check.Database.ExecuteSqlInterpolatedAsync($"UPDATE dbo.OrderLine SET RecipeVersionId=NULL WHERE LineId={s.Line}"), 51002);
+        // Không giảm số lượng dưới số thứ tự ly, không thêm ly vượt số lượng.
+        await Rejected(() => check.Database.ExecuteSqlInterpolatedAsync($"UPDATE dbo.OrderLine SET Quantity=1 WHERE LineId={s.Line}"), 51002);
+        await Rejected(() => check.Database.ExecuteSqlInterpolatedAsync($"INSERT dbo.PreparationUnit(LineId,UnitNumber,Status) VALUES({s.Line},3,N'Waiting')"), 51002);
+        // Không xóa phiếu khi lượt còn ly (trước đây do khóa ngoại PreparationUnit.TicketId chặn).
+        await Rejected(() => check.Database.ExecuteSqlInterpolatedAsync($"DELETE dbo.PreparationTicket WHERE TicketId={ticket}"), 51002);
+        Assert.Equal(2, await (from u in check.PreparationUnit join l in check.OrderLine on u.LineId equals l.LineId
+                               join t in check.PreparationTicket on l.RoundId equals t.RoundId where t.TicketId == ticket select u.UnitId).CountAsync());
     }
 
     [SqlServerFact]

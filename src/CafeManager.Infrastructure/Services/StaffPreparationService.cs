@@ -22,6 +22,13 @@ IF @r < 0 THROW 51000, 'Cannot acquire operation lock', 1;", ct);
         await db.StaffAccount.AsNoTracking().SingleOrDefaultAsync(x => x.IdentityUserId == identityUserId && x.IsActive, ct)
         ?? throw new AppException(ApiErrorCodes.Forbidden, "Cần tài khoản nhân viên đang hoạt động.");
 
+    // Phiếu của một ly suy ra qua dòng và lượt (PreparationTicket.RoundId là duy nhất); PreparationUnit không lưu TicketId (3NF).
+    private Task<long> TicketIdOfAsync(long lineId, CancellationToken ct) =>
+        (from l in db.OrderLine
+         join t in db.PreparationTicket on l.RoundId equals t.RoundId
+         where l.LineId == lineId
+         select t.TicketId).SingleAsync(ct);
+
     private static AppException Busy() => new(ApiErrorCodes.Conflict, "Hệ thống đang bận xử lý thao tác khác, vui lòng thử lại sau giây lát.");
     private static AppException Changed() => new(ApiErrorCodes.Conflict, "Ly vừa được xử lý ở nơi khác, vui lòng tải lại danh sách.");
 
@@ -31,10 +38,11 @@ IF @r < 0 THROW 51000, 'Cannot acquire operation lock', 1;", ct);
         var rows = await (from u in db.PreparationUnit
                           join l in db.OrderLine on u.LineId equals l.LineId
                           join r in db.OrderRound on l.RoundId equals r.RoundId
+                          join t in db.PreparationTicket on r.RoundId equals t.RoundId
                           join o in db.SalesOrder on r.OrderId equals o.OrderId
                           where u.Status == PreparationStatuses.Waiting || u.Status == PreparationStatuses.Preparing || u.Status == PreparationStatuses.Ready
                           orderby r.AcceptedAt, u.UnitId
-                          select new { u.UnitId, u.TicketId, o.OrderId, o.OrderCode, o.PickupCode, l.LineId, l.ProductNameSnapshot, l.VariantNameSnapshot,
+                          select new { u.UnitId, t.TicketId, o.OrderId, o.OrderCode, o.PickupCode, l.LineId, l.ProductNameSnapshot, l.VariantNameSnapshot,
                               u.UnitNumber, LineQuantity = l.Quantity, u.Status, r.AcceptedAt })
             .AsNoTracking().Take(MaxQueue).ToListAsync(ct);
         var lineIds = rows.Select(x => x.LineId).Distinct().ToList();
@@ -61,7 +69,7 @@ IF @r < 0 THROW 51000, 'Cannot acquire operation lock', 1;", ct);
             throw new AppException(ApiErrorCodes.InvalidState, "Không thể bắt đầu pha: thiếu phần nguyên liệu đã giữ hoặc tồn kho không khớp.");
         }
         catch (DbUpdateConcurrencyException) { throw Changed(); }
-        await SyncTicketAsync(unit.TicketId, ct);
+        await SyncTicketAsync(await TicketIdOfAsync(unit.LineId, ct), ct);
     }
 
     public async Task MarkReadyAsync(string identityUserId, long unitId, CancellationToken ct = default)
@@ -73,7 +81,7 @@ IF @r < 0 THROW 51000, 'Cannot acquire operation lock', 1;", ct);
         unit.Status = PreparationStatuses.Ready;
         var attempt = await db.PreparationAttempt.Where(a => a.UnitId == unitId && a.Outcome == "Started").OrderByDescending(a => a.AttemptNo).FirstOrDefaultAsync(ct);
         if (attempt != null) attempt.Outcome = "Completed";
-        await SaveUnitAsync(unit.TicketId, ct);
+        await SaveUnitAsync(await TicketIdOfAsync(unit.LineId, ct), ct);
     }
 
     public async Task DeliverAsync(string identityUserId, long unitId, DateTime utcNow, CancellationToken ct = default)
@@ -83,7 +91,7 @@ IF @r < 0 THROW 51000, 'Cannot acquire operation lock', 1;", ct);
             ?? throw new AppException(ApiErrorCodes.NotFound, "Không tìm thấy ly.");
         if (unit.Status != PreparationStatuses.Ready) throw new AppException(ApiErrorCodes.InvalidState, "Chỉ giao được ly đã pha xong.");
         unit.Status = PreparationStatuses.Delivered; unit.DeliveredBy = staff.StaffId; unit.DeliveredAt = utcNow;
-        await SaveUnitAsync(unit.TicketId, ct);
+        await SaveUnitAsync(await TicketIdOfAsync(unit.LineId, ct), ct);
     }
 
     private async Task SaveUnitAsync(long ticketId, CancellationToken ct)
@@ -111,7 +119,11 @@ IF @r < 0 THROW 51000, 'Cannot acquire operation lock', 1;", ct);
         {
             await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
             await LockAsync($"ticket:{ticketId}", ct);
-            var statuses = await db.PreparationUnit.AsNoTracking().Where(u => u.TicketId == ticketId).Select(u => u.Status).ToListAsync(ct);
+            var statuses = await (from u in db.PreparationUnit
+                                  join l in db.OrderLine on u.LineId equals l.LineId
+                                  join t in db.PreparationTicket on l.RoundId equals t.RoundId
+                                  where t.TicketId == ticketId
+                                  select u.Status).AsNoTracking().ToListAsync(ct);
             var ticket = await db.PreparationTicket.SingleAsync(t => t.TicketId == ticketId, ct);
             var next = TicketStatusFor(statuses);
             if (ticket.Status != "Cancelled" && ticket.Status != next)

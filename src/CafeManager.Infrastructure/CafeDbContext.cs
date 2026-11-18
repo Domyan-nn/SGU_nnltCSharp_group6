@@ -210,6 +210,7 @@ public sealed class CafeDbContext(DbContextOptions<CafeDbContext> options)
             e.Property(x => x.UnitPriceSnapshot).HasPrecision(18, 2);
             e.HasOne<OrderRound>().WithMany().HasForeignKey(x => x.RoundId).OnDelete(DeleteBehavior.NoAction);
             e.HasOne<ProductVariant>().WithMany().HasForeignKey(x => x.VariantId).OnDelete(DeleteBehavior.NoAction);
+            e.HasOne<RecipeVersion>().WithMany().HasForeignKey(x => x.RecipeVersionId).OnDelete(DeleteBehavior.NoAction);
         });
         b.Entity<OrderLineAddon>(e =>
         {
@@ -252,9 +253,7 @@ public sealed class CafeDbContext(DbContextOptions<CafeDbContext> options)
             e.HasOne<StaffAccount>().WithMany().HasForeignKey(x => x.DeliveredBy).OnDelete(DeleteBehavior.NoAction);
             e.Property(x => x.Status).HasMaxLength(30).IsUnicode();
             e.Property(x => x.RowVersion).IsRowVersion();
-            e.HasOne<PreparationTicket>().WithMany().HasForeignKey(x => x.TicketId).OnDelete(DeleteBehavior.NoAction);
             e.HasOne<OrderLine>().WithMany().HasForeignKey(x => x.LineId).OnDelete(DeleteBehavior.NoAction);
-            e.HasOne<RecipeVersion>().WithMany().HasForeignKey(x => x.RecipeVersionId).OnDelete(DeleteBehavior.NoAction);
             e.HasIndex(x => new { x.LineId, x.UnitNumber }).IsUnique();
         });
         b.Entity<PreparationAttempt>(e =>
