@@ -61,6 +61,39 @@ public static class OrderStatusText
     public static string Css(string status) => (status is "Cancelled" or "Rejected") ? "warn" : "ok";
 }
 
+/// <summary>B2: chữ hiển thị tiến độ pha chế và thanh toán. Progress có thể null (đơn chưa tiếp nhận) nên mọi hàm đều chịu được null.</summary>
+public static class OrderProgressText
+{
+    /// <summary>Có số ly theo từng trạng thái hay không (đơn đã được tiếp nhận và có ly).</summary>
+    public static bool HasUnits(OrderProgressDto? p) => p is not null && p.Waiting + p.Preparing + p.Ready + p.Delivered > 0;
+
+    /// <summary>Nhãn ngắn cho khách. Luôn là chữ; màu chỉ bổ trợ.</summary>
+    public static string Stage(OrderProgressDto? p)
+    {
+        if (!HasUnits(p)) return "Chưa có ly nào trong hàng đợi pha chế";
+        if (p!.Ready > 0) return "Có ly sẵn sàng, mời bạn nhận";
+        if (p.Preparing > 0) return "Đang pha chế";
+        if (p.Waiting > 0) return "Đang chờ pha chế";
+        return "Đã giao đủ";
+    }
+
+    public static string Units(OrderProgressDto p) =>
+        $"Chờ làm {p.Waiting} · Đang làm {p.Preparing} · Sẵn sàng nhận {p.Ready} · Đã giao {p.Delivered}";
+
+    public static string Payment(OrderProgressDto? p, decimal total)
+    {
+        var paid = p?.Paid ?? 0m;
+        if (paid <= 0m) return "Chưa thanh toán";
+        if (paid >= total && total > 0m) return "Đã thanh toán";
+        return "Đã thanh toán một phần: " + Money.Vnd(paid) + " / " + Money.Vnd(total);
+    }
+
+    public static bool IsPaid(OrderProgressDto? p, decimal total) => (p?.Paid ?? 0m) >= total && total > 0m;
+
+    /// <summary>Đơn ở trạng thái nào thì còn đáng để hỏi tiến độ (đã được tiếp nhận).</summary>
+    public static bool Tracks(string status) => status is "Serving" or "Settling" or "Closed";
+}
+
 public sealed record PriceChangeView(string Label, decimal OldPrice, decimal NewPrice);
 
 public sealed class CheckoutViewModel
@@ -81,4 +114,5 @@ public sealed class CheckoutViewModel
     public decimal NewSubtotal { get; init; }
 }
 
-public sealed record OrderListViewModel(IReadOnlyList<OrderSummaryDto> Items, int Page, int PageCount, int TotalCount, string? Error);
+public sealed record OrderListViewModel(IReadOnlyList<OrderSummaryDto> Items, int Page, int PageCount, int TotalCount, string? Error,
+    IReadOnlyDictionary<long, OrderProgressDto>? Progress = null);
