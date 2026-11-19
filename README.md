@@ -22,7 +22,7 @@ Luồng nghiệp vụ xuyên suốt của đồ án: quản lý tạo món trên
 | Web khách | Thực đơn, chi tiết món, giỏ hàng, đăng ký, đăng nhập, đặt đơn, đơn của tôi | B |
 | Desktop | Đăng nhập, tiếp nhận đơn, quản lý món, Thu ngân, Pha chế, Danh mục, Nguyên liệu | A viết khung đăng nhập, D02 và D06; C hoàn thiện đăng nhập và viết các màn còn lại |
 
-Việc ai thật sự viết phần nào được ghi đúng sự thật trong bảng đóng góp của báo cáo; lịch sử các thay đổi nằm ở [nhật ký thay đổi](docs/nhat-ky-thay-doi.md).
+Phân công chi tiết và lịch sử làm việc theo từng commit (ai làm, ngày nào, thêm, sửa, xóa file nào, để làm gì) nằm ở [docs/phan-cong.md](docs/phan-cong.md).
 
 **Chưa làm** (ghi vào giới hạn đề tài): phục vụ tại bàn và chuyển bàn, hủy và duyệt hủy món, hoàn tiền, nhập và kiểm kê kho, báo cáo doanh thu, quản lý nhân viên trên giao diện, thanh toán chuyển khoản, đo hiệu năng, sao lưu và phục hồi.
 
@@ -109,7 +109,7 @@ Không đặt biến `CAFE_TEST_SQLSERVER` thì 62 ca cần SQL Server hiện **
 - Mỗi người làm trên nhánh riêng, commit bằng tài khoản của mình và mở pull request vào `main`; từ tối 18/11 `main` được bảo vệ, không đẩy thẳng được.
 - Chia thư mục để tránh xung đột: A sửa `Core`, `Infrastructure`, `Controllers/Api`, `Client`, `tests`, `Program.cs`; B sửa `Controllers/Web`, `Views`, `wwwroot`; C sửa `Desktop`. Cần sửa ngoài phần mình thì nhắn người phụ trách trước.
 - Không commit mật khẩu, chuỗi kết nối có bí mật hay file `TestResults`. Không báo "đạt" khi test bị Skipped.
-- Phân công và tiến độ nằm ở bảng phân công của nhóm; từng người ghi nhật ký làm việc cá nhân trong `docs/nhat-ky-<tên>.md`.
+- Phân công, tiến độ và lịch sử làm việc nằm ở [docs/phan-cong.md](docs/phan-cong.md) (bảng phân công chép từ Sheet của nhóm); từng người ghi nhật ký làm việc cá nhân trong `docs/nhat-ky-<tên>.md`.
 
 ## Nguồn và công cụ đã dùng
 
@@ -130,4 +130,4 @@ Không đặt biến `CAFE_TEST_SQLSERVER` thì 62 ca cần SQL Server hiện **
 
 ## Tài liệu trong `docs/`
 
-[quy-uoc-du-an.md](docs/quy-uoc-du-an.md) (quy ước), [nhat-ky-thay-doi.md](docs/nhat-ky-thay-doi.md), [schema.md](docs/schema.md) (từ điển lược đồ), [relation-mapping.md](docs/relation-mapping.md) và [phan-tich-3nf.md](docs/phan-tich-3nf.md) (chuẩn hóa), [mo-hinh-du-lieu-rut-gon.md](docs/mo-hinh-du-lieu-rut-gon.md), [business-rules.md](docs/business-rules.md), [verification.md](docs/verification.md), [kiem-thu-tay.md](docs/kiem-thu-tay.md), [bien-ban-kiem-thu.md](docs/bien-ban-kiem-thu.md), [huong-dan-demo.md](docs/huong-dan-demo.md), [nhiem-vu/](docs/nhiem-vu/) (nhiệm vụ từng người).
+[quy-uoc-du-an.md](docs/quy-uoc-du-an.md) (quy ước), [schema.md](docs/schema.md) (từ điển lược đồ), [relation-mapping.md](docs/relation-mapping.md) và [phan-tich-3nf.md](docs/phan-tich-3nf.md) (chuẩn hóa), [mo-hinh-du-lieu-rut-gon.md](docs/mo-hinh-du-lieu-rut-gon.md), [business-rules.md](docs/business-rules.md), [verification.md](docs/verification.md), [kiem-thu-tay.md](docs/kiem-thu-tay.md), [bien-ban-kiem-thu.md](docs/bien-ban-kiem-thu.md), [huong-dan-demo.md](docs/huong-dan-demo.md), [phan-cong.md](docs/phan-cong.md) (phân công và lịch sử làm việc), [hop-dong-api.md](docs/hop-dong-api.md) (hợp đồng API).
