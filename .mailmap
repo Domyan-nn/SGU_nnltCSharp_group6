@@ -1,0 +1,9 @@
+# Gộp các tên và email git khác nhau của cùng một thành viên về một người khi xem
+# git log, git shortlog, git blame. File này không sửa lịch sử commit.
+# Cú pháp: Tên đúng <email đúng> <email trong commit>
+
+# B – Lê Nam Thuận (GitHub: LeeNaimThwuan). Commit đã dùng ba email và ba tên:
+# "LeeNaimThwuan", "Le Nam Thuan", "Lê Nam Thuận".
+Lê Nam Thuận <233888004+LeeNaimThwuan@users.noreply.github.com>
+Lê Nam Thuận <233888004+LeeNaimThwuan@users.noreply.github.com> <lnt0566072534@gmail.com>
+Lê Nam Thuận <233888004+LeeNaimThwuan@users.noreply.github.com> <tl9352057@gmail.com>
