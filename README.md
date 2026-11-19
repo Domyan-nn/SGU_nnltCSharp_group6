@@ -119,8 +119,6 @@ Không đặt biến `CAFE_TEST_SQLSERVER` thì 62 ca cần SQL Server hiện **
 
 **Công cụ.** Visual Studio, Git và GitHub, SQL Server LocalDB, `sqlcmd`, Microsoft Edge (điều khiển tự động khi kiểm thử giao diện Web), Google Drive và Google Docs (tài liệu và báo cáo).
 
-**Trí tuệ nhân tạo.** Nhóm có dùng Claude Code (Anthropic). Phần của A (Ngô Nguyên): hỗ trợ viết và sửa mã máy chủ (API, dịch vụ tiếp nhận, thu tiền, pha chế, danh mục, nguyên liệu, migration chuẩn hóa 3NF), viết test, chạy kiểm thử giao diện tự động và soạn biên bản, phân tích 3NF, soạn và chỉnh tài liệu, báo cáo và README này. Mã do AI viết đều được build và chạy lại bằng bộ kiểm thử ở trên trước khi gộp vào `main`. Phần của B (Lê Nam Thuận) và C (Nguyễn Quốc An) do từng bạn tự ghi, bổ sung vào mục này bằng pull request.
-
 ## Giới hạn hiện tại và hướng phát triển
 
 - **Chưa dùng Docker.** Desktop là Windows Forms và cơ sở dữ liệu phát triển là LocalDB, cả hai chỉ chạy trên Windows, nên đóng gói bằng Docker chưa cần cho việc phát triển và demo; nhóm ưu tiên hoàn thiện chức năng trong thời hạn. Hướng đi: đóng gói máy chủ Web và SQL Server bằng `docker-compose`, dùng cùng container SQL Server để chạy cả các test cần SQL Server trên CI.

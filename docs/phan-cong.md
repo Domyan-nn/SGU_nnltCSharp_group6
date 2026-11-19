@@ -432,5 +432,5 @@ Gộp: PR #14, A gộp lúc 23:40. Sau commit này, mỗi máy cần chạy `--m
 **Lần cập nhật đưa file này vào repo (A, 19/11):**
 - Thêm: `docs/phan-cong.md` (file này) và `docs/hop-dong-api.md`. File `hop-dong-api.md` chứa hai bảng hợp đồng API chuyển ra từ `docs/nhiem-vu/A-ngo-nguyen.md`.
 - Xóa: `docs/ke-hoach-den-thu-7.md`, `docs/nhiem-vu/A-ngo-nguyen.md`, `docs/nhiem-vu/B-le-nam-thuan.md`, `docs/nhiem-vu/C-nguyen-quoc-an.md` (kế hoạch 10/11–14/11, đã hết hạn và được thay bằng mục 2) và `docs/nhat-ky-thay-doi.md` (được thay bằng mục 3).
-- Sửa: `README.md` và chú thích đầu `Core/ApiContracts.cs`, cho trỏ tới các file mới.
+- Sửa: `README.md` và chú thích đầu `Core/ApiContracts.cs`, cho trỏ tới các file mới. README bỏ đoạn cuối của mục "Nguồn và công cụ đã dùng"; nhóm sẽ tự viết lại đoạn này (việc N6).
 - Ý nghĩa: phân công và lịch sử làm việc nằm ở một chỗ, không còn các bản kế hoạch cũ ghi trạng thái sai.
