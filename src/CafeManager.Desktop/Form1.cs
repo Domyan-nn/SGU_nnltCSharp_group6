@@ -51,6 +51,7 @@ public partial class Form1 : Form
             _actions.Controls.Add(CreateActionButton("Quản lý món", OpenMenuManagement));
             _actions.Controls.Add(CreateActionButton("Danh mục", OpenCategories));
             _actions.Controls.Add(CreateActionButton("Nguyên liệu", OpenIngredients));
+            _actions.Controls.Add(CreateActionButton("Báo cáo doanh thu", OpenRevenueReport));
         }
 
         if (user?.Permissions.Contains(Permissions.OrderReceive) == true)
@@ -117,6 +118,13 @@ public partial class Form1 : Form
     {
         if (_api is null) return;
         using var form = new IngredientForm(_api);
+        form.ShowDialog(this);
+    }
+
+    private void OpenRevenueReport(object? sender, EventArgs e)
+    {
+        if (_api is null) return;
+        using var form = new RevenueReportForm(_api);
         form.ShowDialog(this);
     }
 
