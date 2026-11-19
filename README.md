@@ -1,99 +1,91 @@
-# Quản lý quán cà phê — Nhóm 6
+# Hệ thống quản lý quán cà phê – Nhóm 6
 
-Phần dữ liệu dùng **.NET 10, EF Core 10.0.14, SQL Server và ASP.NET Core Identity**. Đã xây dựng 40 quan hệ theo tài liệu (cộng bảng mở rộng AllowedAddon), migration, dữ liệu thử và kiểm thử SQL Server. API, giao diện Web khách (UC01, 02, 04, 18, 19) và Desktop (D00 đăng nhập, D02 tiếp nhận đơn, D06 quản lý món) đã có mã và kiểm thử tự động; đã có [biên bản kiểm thử giao diện chạy tự động](docs/bien-ban-kiem-thu.md) (17 Đạt, 1 Không đạt), chưa có kiểm thử tay do người thao tác, và chưa hoàn thiện 19 UC (thu tiền, ca, pha chế, kho, báo cáo chưa có giao diện).
+Đồ án môn Ngôn ngữ lập trình C# (đề tài 11), giảng viên Đỗ Như Tài. Nhóm gồm Ngô Nguyên (A), Lê Nam Thuận (B) và Nguyễn Quốc An (C).
 
-Xem [kết quả kiểm chứng](docs/verification.md), [đối chiếu 40 quan hệ và chuẩn hóa](docs/relation-mapping.md), [từ điển lược đồ](docs/schema.md), [quy tắc và giới hạn](docs/business-rules.md), [tài liệu nguồn](docs/sources.md).
+Hệ thống có hai giao diện dùng chung một cơ sở dữ liệu SQL Server:
 
-## Cấu trúc và phụ thuộc
+- **Web cho khách** (ASP.NET Core MVC): xem thực đơn và chi tiết món, chọn món, giỏ hàng, đăng ký, đăng nhập, đặt đơn mang đi, xem đơn của mình và tiến độ pha chế.
+- **Desktop cho nhân viên** (Windows Forms): đăng nhập theo quyền, tiếp nhận hoặc từ chối đơn Web, thu tiền và mở, đóng ca, pha chế, quản lý món, danh mục và nguyên liệu.
+
+Desktop không nối thẳng vào cơ sở dữ liệu. Nó gọi API của máy chủ Web bằng HTTP (cookie đăng nhập và token chống giả mạo), còn Web và API cùng dùng chung các dịch vụ nghiệp vụ rồi mới tới EF Core và SQL Server. Quyền của nhân viên được kiểm tra lại trong cơ sở dữ liệu ở mỗi yêu cầu.
+
+Công nghệ: .NET 10 (SDK 10.0.403 khóa trong `global.json`), EF Core 10.0.14, SQL Server (LocalDB khi phát triển), ASP.NET Core Identity, xUnit.
+
+## Đã làm được gì
+
+Luồng nghiệp vụ xuyên suốt của đồ án: quản lý tạo món trên Desktop → khách đặt đơn trên Web → thu ngân tiếp nhận trên Desktop → pha chế từng ly → thu tiền mặt → đóng ca, trong đó khách theo dõi tiến độ đơn trên Web. Cả ba phần (máy chủ, Desktop, Web) của luồng này đều đã có mã và kiểm thử tự động; chưa ai chạy tay trọn luồng (xem "Mức kiểm chứng" bên dưới).
+
+| Phần | Nội dung | Người làm chính |
+|---|---|---|
+| Cơ sở dữ liệu | 40 bảng nghiệp vụ và 4 bảng Identity, 5 migration, trigger bảo vệ toàn vẹn, các thao tác tiếp nhận đơn, trừ nguyên liệu, thu tiền, đối soát ca | A |
+| API và dịch vụ máy chủ | Đăng nhập, đăng ký, thực đơn, đơn của khách, tiếp nhận, quản lý món, danh mục, nguyên liệu, ca, thu tiền, pha chế | A |
+| Web khách | Thực đơn, chi tiết món, giỏ hàng, đăng ký, đăng nhập, đặt đơn, đơn của tôi | B |
+| Desktop | Đăng nhập, tiếp nhận đơn, quản lý món, Thu ngân, Pha chế, Danh mục, Nguyên liệu | A viết khung đăng nhập, D02 và D06; C hoàn thiện đăng nhập và viết các màn còn lại |
+
+Việc ai thật sự viết phần nào được ghi đúng sự thật trong bảng đóng góp của báo cáo; lịch sử các thay đổi nằm ở [nhật ký thay đổi](docs/nhat-ky-thay-doi.md).
+
+**Chưa làm** (ghi vào giới hạn đề tài): phục vụ tại bàn và chuyển bàn, hủy và duyệt hủy món, hoàn tiền, nhập và kiểm kê kho, báo cáo doanh thu, quản lý nhân viên trên giao diện, thanh toán chuyển khoản, đo hiệu năng, sao lưu và phục hồi.
+
+**Mức kiểm chứng.** Bộ kiểm thử tự động có 149 ca: 62 ca cần SQL Server (cơ sở dữ liệu, dịch vụ, API qua HTTP, luồng Desktop qua `ApiClient` thật) và 87 ca không cần. Kiểm thử giao diện ngày 15/11 chạy tự động (17 Đạt, 1 Không đạt), xem [biên bản](docs/bien-ban-kiem-thu.md). Các màn hình mới từ 17/11 chưa được người chạy tay trọn luồng; kết quả chạy tay sẽ ghi vào [kiem-thu-tay.md](docs/kiem-thu-tay.md) và báo cáo.
+
+## Cấu trúc thư mục
 
 ```text
 CafeManager.sln
 src/
-  CafeManager.Core/             Entity, ICafeDataCommands, kết quả đối soát
-  CafeManager.Infrastructure/   DbContext, Identity store, transaction, seed, migrations
-  CafeManager.Web/              Host ASP.NET Core, DI, nền MVC/API, lệnh dữ liệu Development
-  CafeManager.Client/           Máy khách API dùng chung cho Desktop (HttpClient, cookie riêng mỗi phiên); chỉ phụ thuộc Core
-  CafeManager.Desktop/          Windows Forms: D00 đăng nhập, cửa sổ chính theo quyền, D02 tiếp nhận/từ chối đơn Web, D06 quản lý món/giá/công thức (gọi API qua Client)
-tests/
-  CafeManager.Tests/            105 kiểm thử: 53 cần SQL Server (CSDL, dịch vụ, API qua HTTP, luồng Desktop qua ApiClient thật) + 52 không cần SQL (máy khách API, logic hiển thị Desktop)
-docs/                          Thiết kế, đối chiếu và bằng chứng
-database/                      Truy vấn kiểm tra chỉ đọc
+  CafeManager.Core/             Entity, hợp đồng API (DTO, quyền, mã lỗi), ICafeDataCommands
+  CafeManager.Infrastructure/   DbContext, migration, dịch vụ nghiệp vụ, thao tác dữ liệu, seed
+  CafeManager.Web/              Host ASP.NET Core: API (Controllers/Api) và giao diện khách (Controllers/Web, Views)
+  CafeManager.Client/           Máy khách API cho Desktop (HttpClient, cookie riêng mỗi phiên) và logic hiển thị; chỉ phụ thuộc Core
+  CafeManager.Desktop/          Windows Forms, chỉ gọi API qua Client
+tests/CafeManager.Tests/        Kiểm thử xUnit
+docs/                           Tài liệu thiết kế, đối chiếu, kiểm thử và bằng chứng
+database/                       Truy vấn kiểm tra chỉ đọc
+scripts/                        Script kiểm tra máy trước khi chạy thử
 ```
 
-Infrastructure → Core; Web → Infrastructure (và Core qua project reference); Tests → Infrastructure. Core không phụ thuộc EF/SQL Server. Gộp Domain và hợp đồng Application vào Core vì phạm vi này chưa cần một project Application riêng. Khi xây UC có thể tách theo nhu cầu thực tế.
+Hướng phụ thuộc: Infrastructure → Core; Web → Infrastructure và Core; Client → Core; Desktop → Client và Core. Core không biết EF hay SQL Server, và Desktop không tham chiếu Infrastructure, EF hay SqlClient nên không chứa chuỗi kết nối cơ sở dữ liệu. Domain và hợp đồng nghiệp vụ gộp trong Core vì phạm vi đồ án chưa cần thêm một project Application riêng.
 
-Desktop hiện độc lập, không tham chiếu Infrastructure, EF hay SqlClient, không chứa connection string SQL. Các màn hình WinForms dùng HttpClient (qua `CafeManager.Client`) gọi API của Web với cookie và token chống giả mạo; controller và MVC dùng cùng dịch vụ máy chủ → EF Core → SQL Server. Quyền được kiểm tra trong CSDL ở mỗi yêu cầu. Tích hợp Web–Desktop–SQL Server đã chạy thử tự động ([verification.md](docs/verification.md)); chạy tay theo [kiem-thu-tay.md](docs/kiem-thu-tay.md).
+## Chạy thử trên máy mới
 
-## Môi trường Windows / Visual Studio
-
-Máy đã kiểm tra: Windows x64, SDK 10.0.403, Visual Studio 18.11.12328.437, LocalDB SQL Server 2025 (17.0.4025.3). `global.json` khóa SDK 10.0.403, cho phép bản vá cùng feature band. Máy khác cần cài SDK này hoặc chủ động cập nhật global.json sau kiểm tra tương thích.
-
-Trong Visual Studio Installer chọn **ASP.NET and web development**, **.NET desktop development**, thành phần SQL Server Express LocalDB / SQL Server Data Tools. Dùng Visual Studio hỗ trợ .NET 10; không mặc định Visual Studio cũ mở được solution.
-
-Mở PowerShell/Terminal ở gốc repo:
+Cần Windows x64, .NET SDK 10.0.403 và SQL Server LocalDB. Trong Visual Studio chọn "ASP.NET and web development", ".NET desktop development" và thành phần LocalDB. Máy của A đã kiểm tra với Visual Studio 18.11 và LocalDB 17.0.4025.3. Chạy `scripts\kiem-tra-may.ps1` để máy tự kiểm tra các điều kiện (chỉ đọc, không đổi gì).
 
 ```powershell
-dotnet --info
-dotnet --list-sdks
-sqllocaldb info
-sqllocaldb info MSSQLLocalDB
-sqlcmd -S '(localdb)\MSSQLLocalDB' -E -l 15 -Q "SELECT @@VERSION; SELECT name FROM sys.databases;"
 dotnet tool restore
-dotnet ef --version
-dotnet restore CafeManager.sln
-dotnet build CafeManager.sln --no-restore
+dotnet build CafeManager.sln
+$env:ASPNETCORE_ENVIRONMENT='Development'
+dotnet run --project src/CafeManager.Web --no-launch-profile -- --migrate --seed --seed-accounts
 ```
 
-Nếu LocalDB chưa có, cài LocalDB rồi dùng `sqllocaldb create MSSQLLocalDB` và `sqllocaldb start MSSQLLocalDB`. Không cần tạo lại instance đã có. Lỗi registry/quyền trong sandbox không đồng nghĩa thiếu SQL Server: phiên làm việc này phải kiểm tra ngoài sandbox mới truy cập được. Nếu máy khác thiếu SQL Server, vẫn có thể build/tạo migration; các kiểm thử tích hợp sẽ không được coi là đạt khi chưa chạy SQL Server.
+Lệnh cuối tạo cơ sở dữ liệu `CafeManager_Group6_Dev`, thêm dữ liệu mẫu (có đánh dấu `[THỬ]`) và bốn tài khoản mẫu: `dev.manager` (quyền quản lý món, danh mục, nguyên liệu), `dev.cashier` (tiếp nhận đơn và thu tiền), `dev.barista` (pha chế) và `dev.customer` (khách). **Mật khẩu ngẫu nhiên chỉ in ra một lần**, không lưu và không đưa lên git; quên thì phải tạo lại cơ sở dữ liệu Dev của máy mình.
 
-## Kết nối an toàn
+Chạy máy chủ Web rồi Desktop (hai cửa sổ terminal):
 
-Mặc định trong Web/appsettings.json và design-time factory:
+```powershell
+dotnet run --project src/CafeManager.Web --launch-profile http          # http://localhost:5055
+$env:CAFE_API_BASE_URL='http://localhost:5055'
+dotnet run --project src/CafeManager.Desktop
+```
+
+Kịch bản demo từng bước nằm ở [huong-dan-demo.md](docs/huong-dan-demo.md). Nếu muốn xem giao diện Web mà không cần cơ sở dữ liệu, đặt `CAFE_FAKE_GATEWAY=1` trước khi chạy Web (dùng dữ liệu giả). Nếu Windows báo "Application Control policy has blocked this file" thì máy đang bật Smart App Control, cần tắt hoặc dùng máy khác.
+
+## Kết nối cơ sở dữ liệu
+
+Mặc định (trong `appsettings.json` của Web và design-time factory), không chứa mật khẩu:
 
 ```text
 Server=(localdb)\MSSQLLocalDB;Database=CafeManager_Group6_Dev;Integrated Security=true;Encrypt=true;TrustServerCertificate=true
 ```
 
-Không chứa mật khẩu. TrustServerCertificate=true chỉ phục vụ LocalDB cục bộ; SQL Server máy chủ dùng chứng chỉ tin cậy và `TrustServerCertificate=false`, tài khoản quyền tối thiểu. Ví dụ không có bí mật: [appsettings.Example.json](docs/appsettings.Example.json).
-
-Nếu đổi máy chủ, ưu tiên Windows Authentication. Có thể ghi cấu hình cục bộ cho Web bằng User Secrets:
-
-```powershell
-dotnet user-secrets set 'ConnectionStrings:CafeDatabase' 'Server=YOUR_SERVER;Database=CafeManager_Group6_Dev;Integrated Security=true;Encrypt=true;TrustServerCertificate=false' --project src/CafeManager.Web
-```
-
-Hoặc biến môi trường dùng chung Web/EF tooling:
-
-```powershell
-$env:ConnectionStrings__CafeDatabase='Server=YOUR_SERVER;Database=CafeManager_Group6_Dev;Integrated Security=true;Encrypt=true;TrustServerCertificate=false'
-```
-
-Nếu phải dùng SQL Authentication, nhập chuỗi có bí mật vào User Secrets bằng công cụ quản lý secrets của IDE hoặc biến môi trường cục bộ; không commit, không đưa mật khẩu thật vào lệnh minh họa hoặc log. Design-time factory đọc biến môi trường và mặc định LocalDB, **không đọc User Secrets của Web**; khi chạy `dotnet ef` hãy cấu hình biến môi trường đúng đích. Không bật EnableSensitiveDataLogging.
+`TrustServerCertificate=true` chỉ dành cho LocalDB cục bộ. SQL Server máy chủ phải dùng chứng chỉ tin cậy, `TrustServerCertificate=false` và tài khoản quyền tối thiểu. Đổi máy chủ thì ưu tiên Windows Authentication; chuỗi có bí mật đặt trong User Secrets hoặc biến môi trường `ConnectionStrings__CafeDatabase`, không commit. Công cụ `dotnet ef` không đọc User Secrets của Web, nên khi chạy `dotnet ef` hãy đặt biến môi trường đúng đích. Ví dụ không có bí mật: [appsettings.Example.json](docs/appsettings.Example.json).
 
 ## Migration và dữ liệu thử
 
-Kiểm tra server/CSDL đích trước khi chạy. Dự án không dùng EnsureCreated, không tự chạy migration/seed khi khởi động Web thông thường.
+Dự án không dùng `EnsureCreated` và không tự chạy migration hay seed khi Web khởi động. Các lệnh `--migrate`, `--seed`, `--seed-accounts` chỉ chạy ở môi trường Development và chỉ với cơ sở dữ liệu tên đúng `CafeManager_Group6_Dev`; không có lệnh nào xóa hay đặt lại cơ sở dữ liệu. Thay đổi mô hình = tạo migration mới, đọc `Up` và `Down` trước, thử trên cơ sở dữ liệu thử rồi mới áp dụng.
 
-Đường dẫn an toàn cho phát triển (chỉ cho phép đúng tên CafeManager_Group6_Dev, môi trường Development; không drop/reset CSDL):
+Các migration hiện có: InitialSchema → IntegrityGuards → HistoryProtection → SchemaGapColumns → PreparationUnit3NF. Migration cuối (18/11/2026) chuẩn hóa bảng `PreparationUnit` về 3NF: bỏ `TicketId` và `RecipeVersionId`, chuyển công thức lên `OrderLine`. **Sau khi kéo mã mới về, mỗi máy cần chạy `--migrate` một lần** (không cần `--seed`), nếu không việc tiếp nhận đơn và pha chế sẽ lỗi. Muốn quay lại: `dotnet ef database update SchemaGapColumns`.
 
-```powershell
-$env:ASPNETCORE_ENVIRONMENT='Development'
-dotnet run --project src/CafeManager.Web --no-launch-profile -- --migrate
-dotnet run --project src/CafeManager.Web --no-launch-profile -- --seed
-```
-
-Có thể dùng `--migrate --seed` trong cùng một lần chạy.
-
-Tài khoản mẫu để đăng nhập (quản lý, thu ngân, khách) tạo bằng lệnh riêng, cùng điều kiện an toàn (Development, đúng CSDL Dev):
-
-```powershell
-$env:ASPNETCORE_ENVIRONMENT='Development'
-dotnet run --project src/CafeManager.Web --no-launch-profile -- --seed-accounts
-```
-
-Lệnh tạo vai trò Manager (quyền MENU_MANAGE) và Cashier (quyền ORDER_RECEIVE), ba tài khoản dev.manager, dev.cashier, dev.customer với **mật khẩu ngẫu nhiên chỉ in ra một lần** trên màn hình (không lưu, không ghi log, không commit). Chạy lại không đổi tài khoản đã có; quên mật khẩu thì phải tạo lại CSDL Dev của riêng bạn. Mỗi máy tự chạy lệnh trên CSDL của mình. Lần này đã xác nhận đích chưa tồn tại trước khi tạo. Khi dùng CSDL cùng tên có sẵn trên máy khác, phải kiểm tra lịch sử migration/schema trước; tên đúng không chứng minh CSDL đó thuộc đồ án.
-
-EF CLI tương đương, **cần tự xác minh đích vì CLI EF không có guard của host**:
+Lệnh EF tương đương (cần tự kiểm tra đích vì EF CLI không có chốt chặn của host):
 
 ```powershell
 dotnet ef migrations list --project src/CafeManager.Infrastructure --startup-project src/CafeManager.Web
@@ -101,36 +93,41 @@ dotnet ef database update --project src/CafeManager.Infrastructure --startup-pro
 dotnet ef migrations has-pending-model-changes --project src/CafeManager.Infrastructure --startup-project src/CafeManager.Web
 ```
 
-Các file migration đã có: InitialSchema → IntegrityGuards → HistoryProtection → SchemaGapColumns → PreparationUnit3NF (18/11/2026: chuẩn hóa `PreparationUnit` về 3NF, chuyển `RecipeVersionId` lên `OrderLine`; mỗi máy chạy `--migrate` một lần sau khi kéo về). Không tạo lại InitialSchema ở máy khác. Khi đổi mô hình, tạo migration mới, đọc Up/Down/SQL và kiểm thử trên CSDL thử trước. Không chạy database drop, migration về 0 hay xóa migration để thay thế CSDL đang dùng.
+Seed chạy lại an toàn: chỉ thêm đối tượng còn thiếu (1 danh mục, 3 món, giá, 2 nguyên liệu, công thức, 3 bàn, 1 quầy `DEMO-C01`, tồn thử), không sửa món, giá hay tồn đã có. Xem cấu trúc trong Visual Studio: SQL Server Object Explorer → `(localdb)\MSSQLLocalDB` → `CafeManager_Group6_Dev` (44 bảng và `__EFMigrationsHistory`); [database/inspect.sql](database/inspect.sql) liệt kê cột, khóa ngoại, CHECK, chỉ mục và trigger.
 
-Seed là tùy chọn, chạy lặp lại an toàn trong transaction có khóa: 1 danh mục, 3 món/biến thể (cà phê đen, cà phê sữa, thêm sữa), giá, 2 nguyên liệu, công thức, 3 bàn, 1 quầy và tồn thử có chứng từ mở đầu. Tên có [THỬ], mã DEMO-. Chỉ thêm đối tượng thiếu; không sửa giá/tồn/món đã tồn tại. Nếu người dùng đã sửa bản mẫu hoặc làm dữ liệu mẫu không đầy đủ, seed không tự sửa lại. Không tạo tài khoản, vai trò có quyền quản trị hoặc mật khẩu cố định. Các tài khoản trong tests nằm ở CSDL thử và được dọn cùng CSDL.
-
-## Mở và kiểm tra trong Visual Studio
-
-1. Mở `CafeManager.sln`. Chờ NuGet restore; chọn Build → Build Solution.
-2. View → Terminal, chạy các lệnh migration/seed phía trên tại gốc repo.
-3. View → SQL Server Object Explorer → Add SQL Server: `(localdb)\MSSQLLocalDB`, Windows Authentication.
-4. Mở Databases → CafeManager_Group6_Dev → Tables. Có 40 bảng nghiệp vụ, 4 bảng Identity và __EFMigrationsHistory: tổng 45.
-5. New Query trên đúng CSDL; chạy [database/inspect.sql](database/inspect.sql) để xem cột, FK, CHECK, chỉ mục, trigger, seed và các migration. Có thể làm tương tự trong SSMS.
-6. Chạy Web (profile http hoặc https) rồi Desktop theo [huong-dan-demo.md](docs/huong-dan-demo.md): Web phục vụ giao diện khách và API; Desktop có đăng nhập nhân viên, tiếp nhận đơn và quản lý món. Web không tự thay đổi CSDL (chỉ lệnh `--migrate/--seed` ở môi trường Development).
-7. Để chạy Test Explorer có SQL, khởi động Visual Studio từ PowerShell đã đặt `CAFE_TEST_SQLSERVER`, hoặc chạy lệnh terminal dưới đây. Không có biến này thì các ca SQL đánh dấu **Skipped**, không phải Pass.
-
-## Chạy kiểm thử thực
-
-Tài khoản Windows cần quyền tạo CSDL thử trên máy chủ đã chọn:
+## Chạy kiểm thử
 
 ```powershell
 $env:CAFE_TEST_SQLSERVER='Server=(localdb)\MSSQLLocalDB;Integrated Security=true;Encrypt=true;TrustServerCertificate=true'
-dotnet test CafeManager.sln --no-restore --logger 'trx;LogFileName=database-tests.trx' --results-directory TestResults
+dotnet test CafeManager.sln --logger 'trx;LogFileName=tests.trx' --results-directory TestResults
 ```
 
-Tests tạo CSDL mới `CafeManager_Group6_Test_<GUID>` bằng CREATE DATABASE (không nhận CSDL có sẵn), áp dụng toàn bộ migration rồi kiểm tra trực tiếp SQL Server. Chỉ dọn tên do fixture vừa tạo, có kiểm tra tiền tố và GUID; không dùng CSDL Development để chạy các ca phá ràng buộc. Nếu tiến trình bị kill trước cleanup, có thể còn CSDL thử; kiểm tra đúng tên/lần chạy trước khi tự dọn. Không dùng SQLite/InMemory làm bằng chứng SQL Server.
+Không đặt biến `CAFE_TEST_SQLSERVER` thì 62 ca cần SQL Server hiện **Skipped**, đó không phải Pass. Mỗi lần chạy, các ca SQL tạo một cơ sở dữ liệu riêng `CafeManager_Group6_Test_<GUID>` bằng `CREATE DATABASE`, áp dụng toàn bộ migration, rồi xóa đúng cơ sở dữ liệu đó khi xong; không động vào cơ sở dữ liệu Dev. Không dùng SQLite hay InMemory làm bằng chứng cho SQL Server. Kết quả từng lần chạy ghi ở [verification.md](docs/verification.md); file `.trx` nằm trong `TestResults` (không commit).
 
-TRX nằm trong TestResults (gitignore). [verification.md](docs/verification.md) ghi kết quả thực tế và liên hệ ca kiểm thử với yêu cầu, không thay thế nghiệm thu sản phẩm.
+## Cách nhóm làm việc
 
-## Bước tiếp theo
+- Mỗi người làm trên nhánh riêng, commit bằng tài khoản của mình và mở pull request vào `main`; từ tối 18/11 `main` được bảo vệ, không đẩy thẳng được.
+- Chia thư mục để tránh xung đột: A sửa `Core`, `Infrastructure`, `Controllers/Api`, `Client`, `tests`, `Program.cs`; B sửa `Controllers/Web`, `Views`, `wwwroot`; C sửa `Desktop`. Cần sửa ngoài phần mình thì nhắn người phụ trách trước.
+- Không commit mật khẩu, chuỗi kết nối có bí mật hay file `TestResults`. Không báo "đạt" khi test bị Skipped.
+- Phân công và tiến độ nằm ở bảng phân công của nhóm; từng người ghi nhật ký làm việc cá nhân trong `docs/nhat-ky-<tên>.md`.
 
-Nhóm cần xác nhận các [quyết định và phần thiếu](docs/business-rules.md), đặc biệt trạng thái, chính sách quyền/duyệt, idempotency và luồng tiền. UC17/18/19/01/02/03/04 đã có (API, Web, Desktop). Việc còn lại: kiểm thử tay có biên bản, rồi mới đến thu tiền/đóng ca, hủy/hoàn theo đúng thiết kế nếu còn thời gian.
+## Nguồn và công cụ đã dùng
 
-ICafeDataCommands là các thao tác dữ liệu phía máy chủ đã kiểm thử, **không phải bộ UC hoàn chỉnh**. Không đưa chúng ra API ghi công khai trước khi bổ sung quyền, validation, snapshot giá từ máy chủ và các điều kiện còn thiếu. Chưa đo hiệu năng, backup/restore, kết nối thiết bị/ngân hàng; chưa nghiệm thu Web–Desktop bằng kiểm thử tay có biên bản.
+**Nguồn.** Yêu cầu và phạm vi lấy từ tài liệu đề tài của giảng viên và các tài liệu thiết kế của nhóm (báo cáo chính, SRS, nghiệp vụ, use case, dữ liệu, giao diện, kiểm thử); danh sách và đường dẫn ở [docs/sources.md](docs/sources.md). Kỹ thuật tham khảo từ tài liệu chính thức của Microsoft (EF Core, ASP.NET Core Identity, cookie, chống giả mạo yêu cầu, transaction, đồng thời) được liệt kê trong phần Tài liệu tham khảo của báo cáo.
 
+**Thư viện.** Chỉ dùng gói NuGet: `Microsoft.EntityFrameworkCore.SqlServer`, `Microsoft.EntityFrameworkCore.Design`, `Microsoft.AspNetCore.Identity.EntityFrameworkCore` (đều 10.0.14), `System.Security.Cryptography.Pkcs` (10.0.14, ghim trực tiếp để thay bản phụ thuộc bị NuGet audit cảnh báo), và cho kiểm thử `xunit`, `xunit.runner.visualstudio`, `Microsoft.NET.Test.Sdk`, `Microsoft.AspNetCore.Mvc.Testing`, `coverlet.collector`. Giao diện Web dùng CSS tự viết trong `wwwroot/css`, không dùng thư viện giao diện bên ngoài.
+
+**Công cụ.** Visual Studio, Git và GitHub, SQL Server LocalDB, `sqlcmd`, Microsoft Edge (điều khiển tự động khi kiểm thử giao diện Web), Google Drive và Google Docs (tài liệu và báo cáo).
+
+**Trí tuệ nhân tạo.** Nhóm có dùng Claude Code (Anthropic). Phần của A (Ngô Nguyên): hỗ trợ viết và sửa mã máy chủ (API, dịch vụ tiếp nhận, thu tiền, pha chế, danh mục, nguyên liệu, migration chuẩn hóa 3NF), viết test, chạy kiểm thử giao diện tự động và soạn biên bản, phân tích 3NF, soạn và chỉnh tài liệu, báo cáo và README này. Mã do AI viết đều được build và chạy lại bằng bộ kiểm thử ở trên trước khi gộp vào `main`. Phần của B (Lê Nam Thuận) và C (Nguyễn Quốc An) do từng bạn tự ghi, bổ sung vào mục này bằng pull request.
+
+## Giới hạn hiện tại và hướng phát triển
+
+- **Chưa dùng Docker.** Desktop là Windows Forms và cơ sở dữ liệu phát triển là LocalDB, cả hai chỉ chạy trên Windows, nên đóng gói bằng Docker chưa cần cho việc phát triển và demo; nhóm ưu tiên hoàn thiện chức năng trong thời hạn. Hướng đi: đóng gói máy chủ Web và SQL Server bằng `docker-compose`, dùng cùng container SQL Server để chạy cả các test cần SQL Server trên CI.
+- **Giỏ hàng và session đang lưu trong bộ nhớ của tiến trình Web** (`AddDistributedMemoryCache`), nên khởi động lại máy chủ thì giỏ hàng mất và chưa chạy được nhiều bản máy chủ cùng lúc. Hướng đi: lưu session và khóa Data Protection trong SQL Server.
+- `ICafeDataCommands` là các thao tác dữ liệu đã kiểm thử, không phải bộ use case hoàn chỉnh; không đưa trực tiếp ra API công khai mà không qua lớp dịch vụ có kiểm tra quyền và kiểm tra đầu vào.
+- Chưa đo hiệu năng, sao lưu hoặc phục hồi, kết nối thiết bị in hay ngân hàng.
+
+## Tài liệu trong `docs/`
+
+[quy-uoc-du-an.md](docs/quy-uoc-du-an.md) (quy ước), [nhat-ky-thay-doi.md](docs/nhat-ky-thay-doi.md), [schema.md](docs/schema.md) (từ điển lược đồ), [relation-mapping.md](docs/relation-mapping.md) và [phan-tich-3nf.md](docs/phan-tich-3nf.md) (chuẩn hóa), [mo-hinh-du-lieu-rut-gon.md](docs/mo-hinh-du-lieu-rut-gon.md), [business-rules.md](docs/business-rules.md), [verification.md](docs/verification.md), [kiem-thu-tay.md](docs/kiem-thu-tay.md), [bien-ban-kiem-thu.md](docs/bien-ban-kiem-thu.md), [huong-dan-demo.md](docs/huong-dan-demo.md), [nhiem-vu/](docs/nhiem-vu/) (nhiệm vụ từng người).

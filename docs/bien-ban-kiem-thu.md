@@ -8,7 +8,7 @@ Biên bản này ghi kết quả chạy các ca KT/LT trong [kiem-thu-tay.md](ki
 |---|---|
 | **Cách chạy** | **Tự động, không phải thao tác chuột bằng tay.** Web: trình duyệt Microsoft Edge ở chế độ không hiển thị cửa sổ, điều khiển bằng giao thức DevTools (nhập ô, bấm nút, chụp ảnh trang). Desktop: ứng dụng Windows Forms thật (`LoginForm`, `Form1`, `OrderReceivingForm`, `MenuManagementForm` và các hộp thoại) được một chương trình điều khiển tạm mở, bấm nút bằng `PerformClick`, trả lời hộp thoại xác nhận/cảnh báo và chụp ảnh. Chương trình điều khiển, kịch bản và ảnh gốc của trình duyệt không nằm trong repo. |
 | Người khởi chạy | A – Ngô Nguyên (yêu cầu chạy toàn bộ ca của B, C và A) |
-| Phiên bản mã | commit `7a8d253` trên nhánh `test/kiem-thu-15-11` (kho local, chưa đẩy lên GitHub). Lệnh: `git rev-parse --short HEAD` |
+| Phiên bản mã | commit `7a8d253` trên nhánh `test/kiem-thu-15-11`. Lúc chạy kiểm thử commit này mới nằm trong kho trên máy A; sau đó đã lên `main` qua PR #8 (merge commit `539ed0d`, 15/11/2026 14:19) nên tra lại được trên GitHub. Lệnh: `git rev-parse --short HEAD` |
 | Hệ điều hành, .NET | Windows 11; .NET SDK 10.0.403; ASP.NET Core 10 |
 | Cơ sở dữ liệu | SQL Server LocalDB 17.0.4025.3, **instance riêng** `(localdb)\KtRun`, CSDL `CafeManager_Group6_Dev` dựng mới bằng đúng các lệnh trong [kiem-thu-tay.md](kiem-thu-tay.md) mục 2 (`--migrate --seed --seed-accounts`); CSDL Dev của máy này không bị chạm |
 | Máy chủ | `dotnet run --project src/CafeManager.Web --launch-profile http` → `http://localhost:5055` (Development); Desktop gọi cùng địa chỉ HTTP |
