@@ -1,6 +1,6 @@
 namespace CafeManager.Core;
 
-// Hợp đồng API giữa máy chủ (Web), giao diện Web và Desktop. Xem docs/nhiem-vu/A-ngo-nguyen.md (bảng hợp đồng).
+// Hợp đồng API giữa máy chủ (Web), giao diện Web và Desktop. Xem docs/hop-dong-api.md (bảng hợp đồng).
 // Quy ước: JSON, tiền VNĐ (decimal), thời gian UTC. Lỗi luôn trả ApiError với mã trạng thái 400/401/403/404/409.
 // Đổi hợp đồng sau khi nhóm đã chốt phải báo cả nhóm.
 
