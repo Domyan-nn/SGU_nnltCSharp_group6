@@ -1,0 +1,108 @@
+# A11: mỗi pull request vào main (và mỗi lần main đổi) tự build và chạy toàn bộ test, kể cả các ca cần SQL Server.
+# SQL Server chạy trong container dịch vụ của job (chỉ Linux hỗ trợ), nên job chạy trên ubuntu-latest.
+# Project Desktop (Windows Forms) chỉ biên dịch được trên Linux khi bật EnableWindowsTargeting; CI chỉ kiểm tra nó biên dịch, không chạy.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Đẩy thêm commit vào cùng nhánh thì hủy lần chạy cũ để khỏi tốn phút.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build và test (có SQL Server)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          # Mật khẩu của container tạm, chỉ tồn tại trong lúc job chạy và không mở ra ngoài. Phải trùng với --health-cmd và CAFE_TEST_SQLSERVER
+          # (mục services không đọc được biến env của job nên phải ghi lặp lại).
+          MSSQL_SA_PASSWORD: "CiOnly-Passw0rd-123"
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P CiOnly-Passw0rd-123 -Q 'SELECT 1' -b"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+          --health-start-period 20s
+
+    env:
+      DOTNET_NOLOGO: "true"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+      # Các ca [SqlServerFact] tự bỏ qua nếu thiếu biến này. Mỗi lần chạy tạo và xóa cơ sở dữ liệu riêng CafeManager_Group6_Test_<GUID>.
+      CAFE_TEST_SQLSERVER: "Server=localhost,1433;User Id=sa;Password=CiOnly-Passw0rd-123;Encrypt=true;TrustServerCertificate=true"
+
+    steps:
+      - name: Lấy mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Cài .NET SDK đúng phiên bản trong global.json
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Cache gói NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props', 'global.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore CafeManager.sln -p:EnableWindowsTargeting=true
+
+      # Directory.Build.props bật TreatWarningsAsErrors, nên cảnh báo cũng làm job đỏ.
+      - name: Build cả solution (gồm Desktop)
+        run: dotnet build CafeManager.sln --no-restore --configuration Release -p:EnableWindowsTargeting=true
+
+      # Job chỉ bắt đầu các bước trên khi container SQL Server đã qua health check ở mục services.
+      - name: Test
+        run: >-
+          dotnet test tests/CafeManager.Tests/CafeManager.Tests.csproj
+          --no-build --configuration Release
+          --logger "trx;LogFileName=tests.trx" --results-directory TestResults
+
+      # Thiếu SQL Server thì hơn 60 ca tự Skipped mà dotnet test vẫn xanh. Bước này chặn trường hợp đó.
+      # Trong file TRX, ca bị bỏ qua là kết quả outcome="NotExecuted" (bộ đếm notExecuted ở <Counters> vẫn bằng 0 nên không dùng nó).
+      - name: Không chấp nhận test bị bỏ qua
+        run: |
+          trx=TestResults/tests.trx
+          counters=$(grep -o '<Counters [^>]*>' "$trx" | head -n 1)
+          echo "$counters"
+          total=$(echo "$counters" | grep -o ' total="[0-9]*"' | grep -o '[0-9]*')
+          passed=$(echo "$counters" | grep -o ' passed="[0-9]*"' | grep -o '[0-9]*')
+          failed=$(echo "$counters" | grep -o ' failed="[0-9]*"' | grep -o '[0-9]*')
+          skipped=$(grep -o 'outcome="NotExecuted"' "$trx" | wc -l | tr -d ' ')
+          echo "Tổng $total, đạt $passed, lỗi $failed, bỏ qua $skipped"
+          {
+            echo "### Kết quả test"
+            echo "- Tổng: $total"
+            echo "- Đạt: $passed"
+            echo "- Lỗi: $failed"
+            echo "- Bỏ qua: $skipped"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ -z "$total" ] || [ "$total" -eq 0 ]; then echo "Không đọc được kết quả test" >&2; exit 1; fi
+          if [ "$skipped" != "0" ]; then echo "Có $skipped test bị bỏ qua (Skipped); CI yêu cầu 0." >&2; exit 1; fi
+          if [ "$failed" != "0" ] || [ "$passed" != "$total" ]; then echo "Có test không đạt." >&2; exit 1; fi
+
+      - name: Lưu file kết quả test
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults/*.trx
+          if-no-files-found: ignore

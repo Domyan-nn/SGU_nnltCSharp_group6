@@ -104,6 +104,8 @@ dotnet test CafeManager.sln --logger 'trx;LogFileName=tests.trx' --results-direc
 
 Không đặt biến `CAFE_TEST_SQLSERVER` thì 62 ca cần SQL Server hiện **Skipped**, đó không phải Pass. Mỗi lần chạy, các ca SQL tạo một cơ sở dữ liệu riêng `CafeManager_Group6_Test_<GUID>` bằng `CREATE DATABASE`, áp dụng toàn bộ migration, rồi xóa đúng cơ sở dữ liệu đó khi xong; không động vào cơ sở dữ liệu Dev. Không dùng SQLite hay InMemory làm bằng chứng cho SQL Server. Kết quả từng lần chạy ghi ở [verification.md](docs/verification.md); file `.trx` nằm trong `TestResults` (không commit).
 
+**CI (A11).** Mỗi pull request vào `main` và mỗi lần `main` đổi, GitHub Actions chạy [`.github/workflows/ci.yml`](.github/workflows/ci.yml): build cả solution (gồm Desktop, chỉ biên dịch) rồi chạy toàn bộ test với SQL Server 2022 trong container. Lần chạy bị coi là **lỗi** nếu có test lỗi hoặc có test Skipped, nên dấu kiểm xanh nghĩa là mọi ca cần SQL Server đã thật sự chạy. Dấu kiểm này chưa bắt buộc để gộp; muốn bắt buộc thì bật ở Settings → Branches → quy tắc của `main`.
+
 ## Cách nhóm làm việc
 
 - Mỗi người làm trên nhánh riêng, commit bằng tài khoản của mình và mở pull request vào `main`; từ tối 18/11 `main` được bảo vệ, không đẩy thẳng được.
