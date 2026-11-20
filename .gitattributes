@@ -1,0 +1,5 @@
+# File do Entity Framework Core tự sinh khi chạy "dotnet ef migrations add".
+# Đánh dấu để GitHub thu gọn chúng trong diff và không tính vào thống kê ngôn ngữ.
+# Không đánh dấu các file migration chính (<mốc>_<tên>.cs) vì có SQL viết tay.
+**/Migrations/*.Designer.cs linguist-generated=true
+**/Migrations/*ModelSnapshot.cs linguist-generated=true
