@@ -85,3 +85,29 @@ input[aria-invalid="true"] { border-color: #b3261e; }
 
 /* --- T6: phân trang đơn --- */
 .pager { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin: 1rem 0; }
+
+/* --- B3: responsive 360 px và máy tính --- */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+/* Chuỗi dài không có khoảng trắng (mã đơn, tên) không được làm trang tràn ngang. */
+.kv { grid-template-columns: max-content minmax(0, 1fr); }
+.kv dd, .cl-main { overflow-wrap: anywhere; }
+.cl-main { flex: 1 1 14rem; min-width: 0; }
+/* fieldset mặc định có min-width: min-content nên đẩy tràn ở màn hình hẹp. */
+.addons { min-width: 0; }
+input, select { min-width: 0; max-width: 100%; }
+/* Vùng bấm tối thiểu 44 px cho nút, liên kết điều hướng và ô nhập. */
+button, .button, nav a { min-height: 2.75rem; }
+button, .button { display: inline-flex; align-items: center; justify-content: center; }
+nav a, .brand { display: inline-flex; align-items: center; }
+.brand { min-height: 2.75rem; }
+input, select { min-height: 2.75rem; }
+/* Trang chi tiết món: không kéo giãn biểu mẫu theo cả chiều ngang máy tính. */
+main > .variants { max-width: 40rem; }
+@media (max-width: 30rem) {
+    .bar { flex-direction: column; align-items: stretch; }
+    nav { justify-content: flex-start; }
+    .cl-actions, .cl-actions .inline-form, .actions { width: 100%; }
+    .actions > button, .actions > .button { flex: 1 1 100%; }
+    .buy { flex-wrap: wrap; }
+    .buy button { flex: 1 1 100%; }
+}
