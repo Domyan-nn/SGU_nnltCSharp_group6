@@ -16,7 +16,7 @@ public static class DevelopmentAccountSeeder
     public static async Task<IReadOnlyList<SeededAccount>> SeedAsync(CafeDbContext db, UserManager<IdentityUser> users, CancellationToken ct = default)
     {
         await using var tx = await db.Database.BeginTransactionAsync(ct);
-        var manager = await RoleAsync(db, "Manager", [Permissions.MenuManage], ct);
+        var manager = await RoleAsync(db, "Manager", [Permissions.MenuManage, Permissions.StaffManage], ct);
         var cashier = await RoleAsync(db, "Cashier", [Permissions.OrderReceive, Permissions.PaymentCollect], ct);
         var barista = await RoleAsync(db, "Barista", [Permissions.PreparationWork], ct);
         var result = new List<SeededAccount>

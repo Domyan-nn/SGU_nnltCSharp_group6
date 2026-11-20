@@ -60,3 +60,24 @@ Quy tắc máy chủ đã áp dụng (C cần biết để hiện thông báo đ
 | `POST /api/staff/preparation/{unitId}/deliver` | `PREPARATION_WORK` | — | 204; 409 khi ly không ở `Ready` | `DeliverAsync` |
 
 Web khách (B2): `OrderDetailDto` có thêm `progress` = `{waiting, preparing, ready, delivered, paid}`; trường này là `null` khi đơn chưa được tiếp nhận (chưa có ly), giao diện phải chịu được `null`.
+
+## Hợp đồng bổ sung cho A6: nhân viên và phân quyền (UC16)
+
+Quyền mới `STAFF_MANAGE` (có trong `Permissions.All`, nên chính sách ủy quyền tự được đăng ký). Vai trò `Manager` của lệnh `--seed-accounts` được cấp thêm quyền này. **CSDL Dev đã có sẵn tài khoản `dev.manager` thì chạy lại `--seed-accounts` một lần** để gắn quyền mới vào vai trò `Manager` (lệnh không đổi mật khẩu của tài khoản đã có); nếu không, nút **Nhân viên và phân quyền** không hiện ở Desktop.
+
+- Quyền thật của nhân viên là hợp các quyền của những vai trò được gán (`StaffRole → RolePermission`) và được kiểm tra trong CSDL ở mỗi yêu cầu, nên đổi vai trò hoặc khóa tài khoản có hiệu lực ở yêu cầu kế tiếp của phiên đang mở, không cần đăng nhập lại.
+- Không xóa nhân viên (đã có chứng từ tham chiếu); chỉ khóa (`IsActive = false`) và mở lại. Mở khóa còn gỡ khóa tạm của Identity do nhập sai mật khẩu 5 lần liên tiếp.
+- Mỗi nhân viên có ít nhất một vai trò. Chưa có chức năng tạo vai trò mới, sửa quyền của vai trò hay đặt lại mật khẩu: vai trò và quyền của vai trò do CSDL (lệnh seed) quyết định.
+- Mọi thay đổi ghi vào `AuditEvent` với `ActionCode` = `STAFF_CREATE`, `STAFF_UPDATE`, `STAFF_DEACTIVATE`, `STAFF_ACTIVATE`; `EntityReference` là tên đăng nhập.
+- Quy tắc 409 `CONFLICT`: trùng tên đăng nhập (kể cả trùng tên của một khách, không phân biệt hoa thường); tự khóa tài khoản của chính mình; làm mất nhân viên đang hoạt động cuối cùng có `STAFF_MANAGE` (khóa người đó hoặc gỡ vai trò quản trị của họ).
+
+| Phương thức, đường dẫn | Quyền | Đầu vào chính | Kết quả | Hàm trong `StaffApi` |
+|---|---|---|---|---|
+| `GET /api/staff/accounts?q=` | `STAFF_MANAGE` | `q` tìm theo tên đăng nhập hoặc họ tên | `[{staffId, userName, fullName, isActive, roleIds, roleNames, isCurrentUser}]` theo họ tên, tối đa 500 dòng | `StaffAccountsAsync` |
+| `GET /api/staff/roles` | `STAFF_MANAGE` | — | `[{roleId, roleName, permissions}]`, `permissions` là các mã quyền xếp theo mã | `RolesAsync` |
+| `POST /api/staff/accounts` | `STAFF_MANAGE` | `userName` (3–50 ký tự: chữ không dấu, số, `.` `_` `-`), `password` (6–100), `fullName` (≤ 200), `roleIds` (≥ 1) | 201 `{id}` (mã nhân viên); 400 `VALIDATION`; 409 trùng tên đăng nhập. Tạo trong một giao dịch: lỗi bất kỳ không để lại tài khoản dở dang | `CreateStaffAsync` |
+| `PUT /api/staff/accounts/{id}` | `STAFF_MANAGE` | `fullName`, `roleIds` (thay toàn bộ vai trò) | 200 `{id}`; 400; 404; 409 khi làm mất quản trị viên cuối cùng | `UpdateStaffAsync` |
+| `POST /api/staff/accounts/{id}/deactivate` | `STAFF_MANAGE` | — | 204 (gọi lại khi đã khóa vẫn 204); 404; 409 khi tự khóa mình hoặc khóa quản trị viên cuối cùng | `SetStaffActiveAsync(id, false)` |
+| `POST /api/staff/accounts/{id}/activate` | `STAFF_MANAGE` | — | 204 (gọi lại vẫn 204); 404 | `SetStaffActiveAsync(id, true)` |
+
+Nhân viên bị khóa đăng nhập nhận 403 `ACCOUNT_LOCKED`; phiên đang mở của họ nhận 401 ở yêu cầu kế tiếp.

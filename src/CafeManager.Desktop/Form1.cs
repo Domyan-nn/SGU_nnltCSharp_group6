@@ -54,6 +54,9 @@ public partial class Form1 : Form
             _actions.Controls.Add(CreateActionButton("Báo cáo doanh thu", OpenRevenueReport));
         }
 
+        if (user?.Permissions.Contains(Permissions.StaffManage) == true)
+            _actions.Controls.Add(CreateActionButton("Nhân viên và phân quyền", OpenStaffAccounts));
+
         if (user?.Permissions.Contains(Permissions.OrderReceive) == true)
             _actions.Controls.Add(CreateActionButton("Tiếp nhận đơn", OpenOrderReceiving));
 
@@ -118,6 +121,13 @@ public partial class Form1 : Form
     {
         if (_api is null) return;
         using var form = new IngredientForm(_api);
+        form.ShowDialog(this);
+    }
+
+    private void OpenStaffAccounts(object? sender, EventArgs e)
+    {
+        if (_api is null) return;
+        using var form = new StaffAccountForm(_api);
         form.ShowDialog(this);
     }
 

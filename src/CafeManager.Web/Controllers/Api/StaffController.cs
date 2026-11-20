@@ -176,3 +176,42 @@ public sealed class StaffPreparationController(StaffPreparationService preparati
         return NoContent();
     }
 }
+
+// Nhân viên và phân quyền (A6, UC16; màn hình Nhân viên). Quyền STAFF_MANAGE, kiểm tra trong CSDL ở mỗi yêu cầu.
+// Không có thao tác xóa: nhân viên chỉ bị khóa (deactivate) hoặc mở lại (activate).
+[ApiController]
+[Route("api/staff")]
+[Authorize(Policy = Permissions.StaffManage)]
+public sealed class StaffAccountsController(StaffAccountService accounts) : ApiBase
+{
+    [HttpGet("accounts")]
+    public async Task<IReadOnlyList<StaffAccountDto>> List(string? q, CancellationToken ct) => await accounts.ListAsync(UserId, q, ct);
+
+    [HttpGet("roles")]
+    public async Task<IReadOnlyList<RoleDto>> Roles(CancellationToken ct) => await accounts.RolesAsync(ct);
+
+    [HttpPost("accounts")]
+    public async Task<ActionResult<IdResponse>> Create(CreateStaffRequest request, CancellationToken ct) =>
+        StatusCode(201, new IdResponse(await accounts.CreateAsync(UserId, request, DateTime.UtcNow, ct)));
+
+    [HttpPut("accounts/{id:long}")]
+    public async Task<IdResponse> Update(long id, UpdateStaffRequest request, CancellationToken ct)
+    {
+        await accounts.UpdateAsync(UserId, id, request, DateTime.UtcNow, ct);
+        return new IdResponse(id);
+    }
+
+    [HttpPost("accounts/{id:long}/activate")]
+    public async Task<IActionResult> Activate(long id, CancellationToken ct)
+    {
+        await accounts.SetActiveAsync(UserId, id, true, DateTime.UtcNow, ct);
+        return NoContent();
+    }
+
+    [HttpPost("accounts/{id:long}/deactivate")]
+    public async Task<IActionResult> Deactivate(long id, CancellationToken ct)
+    {
+        await accounts.SetActiveAsync(UserId, id, false, DateTime.UtcNow, ct);
+        return NoContent();
+    }
+}
