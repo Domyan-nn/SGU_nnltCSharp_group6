@@ -629,6 +629,8 @@ public sealed class DatabaseTests(SqlServerFixture fixture) : IClassFixture<SqlS
         Assert.True(await reader.HasAsync(cashier.Id, Permissions.OrderReceive));
         Assert.False(await reader.HasAsync(cashier.Id, Permissions.MenuManage));
         Assert.True(await reader.HasAsync(manager!.Id, Permissions.MenuManage));
+        Assert.True(await reader.HasAsync(manager.Id, Permissions.StaffManage));      // A6: quản lý mẫu quản lý được nhân viên
+        Assert.False(await reader.HasAsync(cashier.Id, Permissions.StaffManage));
         Assert.False(await reader.HasAsync(customer!.Id, Permissions.OrderReceive));
         Assert.True(await reader.HasAsync(cashier.Id, Permissions.PaymentCollect));
         Assert.False(await reader.HasAsync(cashier.Id, Permissions.PreparationWork));

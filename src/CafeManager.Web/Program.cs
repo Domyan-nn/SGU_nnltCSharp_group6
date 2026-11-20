@@ -35,6 +35,7 @@ builder.Services.AddScoped<StaffCatalogService>();
 builder.Services.AddScoped<StaffCashierService>();
 builder.Services.AddScoped<StaffPreparationService>();
 builder.Services.AddScoped<StaffReportService>();
+builder.Services.AddScoped<StaffAccountService>();
 
 // Giao diện khách (B) gọi nghiệp vụ qua ICustomerGateway, nhận qua constructor của controller.
 // Môi trường Testing hoặc CAFE_FAKE_GATEWAY=1 dùng bản giả (không cần CSDL), còn lại dùng dịch vụ thật.

@@ -10,8 +10,9 @@ public static class Permissions
     public const string OrderReceive = "ORDER_RECEIVE";
     public const string PaymentCollect = "PAYMENT_COLLECT";     // mở/đóng ca, thu tiền mặt (Thu ngân)
     public const string PreparationWork = "PREPARATION_WORK";   // màn hình Pha chế
+    public const string StaffManage = "STAFF_MANAGE";           // quản lý nhân viên và gán vai trò (UC16)
 
-    public static readonly IReadOnlyList<string> All = [MenuManage, OrderReceive, PaymentCollect, PreparationWork];
+    public static readonly IReadOnlyList<string> All = [MenuManage, OrderReceive, PaymentCollect, PreparationWork, StaffManage];
 }
 
 public static class UserKinds
@@ -155,6 +156,16 @@ public static class PreparationStatuses
 public sealed record PreparationUnitDto(long UnitId, long TicketId, long OrderId, string OrderCode, string? PickupCode,
     string ProductName, string VariantName, IReadOnlyList<OrderAddonDto> Addons, int UnitNumber, int LineQuantity,
     string Status, DateTime AcceptedAt);
+
+// --- Nhân viên và phân quyền (A6, UC16; Desktop). Quyền STAFF_MANAGE ---
+// Quyền thật của nhân viên là hợp các quyền của những vai trò được gán (StaffRole -> RolePermission). Không xóa nhân viên vì đã có
+// chứng từ tham chiếu; chỉ khóa (IsActive = false) và mở lại. Khóa có hiệu lực ngay ở yêu cầu kế tiếp của phiên đang mở.
+// 409 CONFLICT: trùng tên đăng nhập; tự khóa tài khoản của mình; làm mất người quản trị (STAFF_MANAGE) đang hoạt động cuối cùng.
+public sealed record RoleDto(long RoleId, string RoleName, IReadOnlyList<string> Permissions);
+public sealed record StaffAccountDto(long StaffId, string UserName, string FullName, bool IsActive,
+    IReadOnlyList<long> RoleIds, IReadOnlyList<string> RoleNames, bool IsCurrentUser);
+public sealed record CreateStaffRequest(string UserName, string Password, string FullName, IReadOnlyList<long> RoleIds);
+public sealed record UpdateStaffRequest(string FullName, IReadOnlyList<long> RoleIds);
 
 // --- Báo cáo doanh thu (B4; Desktop). Quyền MENU_MANAGE (quản lý) ---
 // Doanh thu thuần = tiền đã thu thành công (Payment.Succeeded, theo PaidAt) trừ tiền đã hoàn thành công (RefundTransaction.Succeeded,

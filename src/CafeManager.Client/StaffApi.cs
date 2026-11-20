@@ -114,6 +114,26 @@ public sealed class StaffApi(ApiClient api)
         api.GetAsync<RevenueReportDto>("api/staff/reports/revenue?from=" + from.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)
             + "&to=" + to.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) + "&top=" + top, ct);
 
+    // --- A6: nhân viên và phân quyền (màn hình Nhân viên), quyền STAFF_MANAGE ---
+    // Danh sách kèm vai trò; IsCurrentUser = true ở dòng của chính người đang đăng nhập.
+    public Task<ApiResult<List<StaffAccountDto>>> StaffAccountsAsync(string? search = null, CancellationToken ct = default) =>
+        api.GetAsync<List<StaffAccountDto>>("api/staff/accounts" + Search(search), ct);
+
+    public Task<ApiResult<List<RoleDto>>> RolesAsync(CancellationToken ct = default) =>
+        api.GetAsync<List<RoleDto>>("api/staff/roles", ct);
+
+    // 409 CONFLICT khi trùng tên đăng nhập. Tạo KHÔNG tự thử lại: gọi lần hai trả 409 nếu lần đầu đã thành công.
+    public Task<ApiResult<IdResponse>> CreateStaffAsync(CreateStaffRequest request, CancellationToken ct = default) =>
+        api.PostAsync<IdResponse>("api/staff/accounts", request, ct);
+
+    // Đổi họ tên và thay toàn bộ vai trò. 409 khi làm mất quản trị viên đang hoạt động cuối cùng.
+    public Task<ApiResult<IdResponse>> UpdateStaffAsync(long staffId, UpdateStaffRequest request, CancellationToken ct = default) =>
+        api.PutAsync<IdResponse>($"api/staff/accounts/{staffId}", request, ct);
+
+    // Khóa/mở an toàn để gọi lại (trả 204 dù đã ở trạng thái đó). 409 khi tự khóa mình hoặc khóa quản trị viên cuối cùng.
+    public Task<ApiResult<Empty>> SetStaffActiveAsync(long staffId, bool active, CancellationToken ct = default) =>
+        api.PostAsync($"api/staff/accounts/{staffId}/" + (active ? "activate" : "deactivate"), null, ct);
+
     private static string Search(string? text) =>
         string.IsNullOrWhiteSpace(text) ? "" : "?q=" + Uri.EscapeDataString(text.Trim());
 }

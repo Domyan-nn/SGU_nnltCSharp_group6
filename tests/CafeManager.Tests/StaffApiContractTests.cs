@@ -118,6 +118,6 @@ public sealed class StaffApiContractTests
     [Fact]
     public void Every_permission_has_a_policy_entry()
     {
-        Assert.Equal(new[] { "MENU_MANAGE", "ORDER_RECEIVE", "PAYMENT_COLLECT", "PREPARATION_WORK" }, Permissions.All.ToArray());
+        Assert.Equal(new[] { "MENU_MANAGE", "ORDER_RECEIVE", "PAYMENT_COLLECT", "PREPARATION_WORK", "STAFF_MANAGE" }, Permissions.All.ToArray());
     }
 }
