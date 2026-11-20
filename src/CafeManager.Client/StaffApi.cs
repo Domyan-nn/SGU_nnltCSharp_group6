@@ -109,6 +109,11 @@ public sealed class StaffApi(ApiClient api)
     public Task<ApiResult<Empty>> DeliverAsync(long unitId, CancellationToken ct = default) =>
         api.PostAsync($"api/staff/preparation/{unitId}/deliver", null, ct);
 
+    // --- B4: báo cáo doanh thu (quyền MENU_MANAGE). Ngày theo giờ Việt Nam, tối đa 366 ngày, top 1..50. ---
+    public Task<ApiResult<RevenueReportDto>> RevenueReportAsync(DateOnly from, DateOnly to, int top = 10, CancellationToken ct = default) =>
+        api.GetAsync<RevenueReportDto>("api/staff/reports/revenue?from=" + from.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)
+            + "&to=" + to.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) + "&top=" + top, ct);
+
     private static string Search(string? text) =>
         string.IsNullOrWhiteSpace(text) ? "" : "?q=" + Uri.EscapeDataString(text.Trim());
 }

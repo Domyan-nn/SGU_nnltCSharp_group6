@@ -155,3 +155,11 @@ public static class PreparationStatuses
 public sealed record PreparationUnitDto(long UnitId, long TicketId, long OrderId, string OrderCode, string? PickupCode,
     string ProductName, string VariantName, IReadOnlyList<OrderAddonDto> Addons, int UnitNumber, int LineQuantity,
     string Status, DateTime AcceptedAt);
+
+// --- Báo cáo doanh thu (B4; Desktop). Quyền MENU_MANAGE (quản lý) ---
+// Doanh thu thuần = tiền đã thu thành công (Payment.Succeeded, theo PaidAt) trừ tiền đã hoàn thành công (RefundTransaction.Succeeded,
+// theo ExecutedAt), gom theo NGÀY giờ Việt Nam (UTC+7). Món bán chạy tính trên các đơn có thu tiền trong kỳ, chỉ các lượt đã tiếp nhận.
+public sealed record DailyRevenueDto(DateOnly Date, decimal Revenue, int Orders);
+public sealed record TopProductDto(string ProductName, int Quantity, decimal Revenue);
+public sealed record RevenueReportDto(DateOnly From, DateOnly To, decimal Paid, decimal Refunded, decimal Net, int PaidOrders,
+    IReadOnlyList<DailyRevenueDto> Days, IReadOnlyList<TopProductDto> TopProducts);
