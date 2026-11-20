@@ -1,6 +1,6 @@
 # Hướng dẫn kiểm thử tay (nhóm thực hiện và ghi biên bản)
 
-Cập nhật 14/11/2026. Tài liệu này giúp ba người chạy các ca KT trong tài liệu 06 trên **giao diện thật** (Web và Desktop) và ghi biên bản có bằng chứng. Kết quả thật do người chạy điền; **tài liệu này không ghi sẵn "Đạt" cho bất kỳ ca nào**.
+Cập nhật 14/11/2026; bổ sung 19/11/2026 (C10: thêm KT23, KT24, sửa kỳ vọng KT19, cập nhật tài khoản mẫu và nút menu). Tài liệu này giúp ba người chạy các ca KT trong tài liệu 06 trên **giao diện thật** (Web và Desktop) và ghi biên bản có bằng chứng. Kết quả thật do người chạy điền; **tài liệu này không ghi sẵn "Đạt" cho bất kỳ ca nào**.
 
 ## 1. Nguyên tắc
 - Mỗi ca chỉ có bốn trạng thái: **Đạt**, **Không đạt**, **Bị chặn** (không chạy được, ghi lý do), **Chưa kiểm thử**. Không ghi Đạt khi thiếu ảnh chụp hoặc kết quả truy vấn SQL kèm theo.
@@ -9,7 +9,7 @@ Cập nhật 14/11/2026. Tài liệu này giúp ba người chạy các ca KT tr
 - Ảnh chụp lưu ở `docs/bang-chung/` (thư mục tự tạo), đặt tên `KT07-lan1-01.png`; không chụp mật khẩu. Truy vấn SQL dán vào biên bản kèm kết quả (văn bản).
 
 ## 2. Chuẩn bị môi trường (mỗi người, máy riêng)
-**Bước 0 – lấy đúng mã:** D02 và D06 nằm trên nhánh `feat/desktop-t6` (PR số 7). Khi PR đã gộp thì `git checkout main && git pull`; chưa gộp thì `git fetch && git checkout feat/desktop-t6 && git pull`. Ghi `git rev-parse --short HEAD` vào biên bản.
+**Bước 0 – lấy đúng mã:** `git checkout main && git pull` (từ 18/11 mọi màn hình Desktop và Web đã nằm trên `main`; `main` được bảo vệ, thay đổi đi qua PR). Chạy lại `--migrate` nếu vừa kéo migration mới. Ghi `git rev-parse --short HEAD` vào biên bản.
 
 **Bước 1 – kiểm tra máy (chỉ đọc, ~1 phút):**
 ```powershell
@@ -28,8 +28,9 @@ Desktop (cửa sổ khác): `$env:CAFE_API_BASE_URL='http://localhost:5055'; dot
 
 | Tài khoản | Loại | Quyền | Dùng cho |
 |---|---|---|---|
-| `dev.manager` | Nhân viên | MENU_MANAGE | D06 quản lý món |
-| `dev.cashier` | Nhân viên | ORDER_RECEIVE | D02 tiếp nhận đơn |
+| `dev.manager` | Nhân viên | MENU_MANAGE | D06 quản lý món, Danh mục (C1), Nguyên liệu (C2) |
+| `dev.cashier` | Nhân viên | ORDER_RECEIVE, PAYMENT_COLLECT | D02 tiếp nhận đơn, Thu ngân (A4: mở/đóng ca, thu tiền mặt) |
+| `dev.barista` | Nhân viên | PREPARATION_WORK | Pha chế (C3) |
 | `dev.customer` | Khách | — | Web (khách A) |
 | khách B | Khách | — | Tự đăng ký trên Web (KT16, KT17) |
 
@@ -45,6 +46,8 @@ Desktop (cửa sổ khác): `$env:CAFE_API_BASE_URL='http://localhost:5055'; dot
 | C – Nguyễn Quốc An | KT01–KT05, KT08, KT09, KT15, KT18, KT19 (Desktop) |
 | A – Ngô Nguyên | hỗ trợ SQL/API; chạy lại ca bất kỳ bị Không đạt sau khi sửa; kịch bản liên thông (mục 5) |
 
+| C – Nguyễn Quốc An | (ca do C viết, C10) KT23, KT24 cho trang Web của B; người chạy là C hoặc A vì B là tác giả của hai trang này |
+
 KT09 cần cả Web lẫn Desktop; C chạy, B hỗ trợ phần Web. Thứ tự gợi ý: KT04 (tạo Món A) → KT06 → KT07 → KT08 → KT09 → KT10 → KT14 → còn lại.
 
 ## 4. Các ca
@@ -53,7 +56,7 @@ Mỗi ca có: các bước, kết quả mong đợi, kiểm tra SQL (nếu có),
 
 ### KT01 – Đăng nhập hợp lệ (Desktop) – C
 1. Mở Desktop, cửa sổ đăng nhập D00 hiện ra. 2. Nhập `dev.manager` và mật khẩu đã ghi, bấm Đăng nhập.
-- Mong đợi: vào màn hình chính "Xin chào Quản lý thử"; chỉ có nút **Quản lý món** và **Đăng xuất** (không có Tiếp nhận đơn); cửa sổ dòng lệnh của Web/Desktop không in mật khẩu.
+- Mong đợi: vào màn hình chính "Xin chào Quản lý thử"; chỉ có các nút **Quản lý món**, **Danh mục**, **Nguyên liệu** và **Đăng xuất** (không có Tiếp nhận đơn, Thu ngân, Pha chế; từ 18/11 menu có thêm Danh mục và Nguyên liệu); cửa sổ dòng lệnh của Web/Desktop không in mật khẩu.
 - Bằng chứng: ảnh màn hình chính; ảnh log máy chủ (không có mật khẩu).
 - Tự động: `ApiTests.Login_errors_lockout_and_logout`, `ApiClientTests.Login_succeeds_for_staff_and_sends_camel_case_json`.
 
@@ -64,7 +67,7 @@ Mỗi ca có: các bước, kết quả mong đợi, kiểm tra SQL (nếu có),
 - Tự động: `ApiClientTests.Wrong_password_is_401_without_session_expired_event_and_not_unknown`, `ApiClientTests.Network_failure_is_unknown`.
 
 ### KT03 – Chặn thao tác thiếu quyền – C
-1. Đăng nhập Desktop bằng `dev.cashier`. 2. Màn hình chính chỉ có **Tiếp nhận đơn**, không có Quản lý món. 3. Gọi thẳng API bằng phiên thu ngân:
+1. Đăng nhập Desktop bằng `dev.cashier`. 2. Màn hình chính chỉ có **Tiếp nhận đơn** và **Thu ngân (thu tiền, mở/đóng ca)** (từ 18/11 thu ngân có thêm quyền thu tiền), không có Quản lý món, Danh mục, Nguyên liệu, Pha chế. 3. Gọi thẳng API bằng phiên thu ngân:
 ```powershell
 $b = 'http://localhost:5055'; $s = New-Object Microsoft.PowerShell.Commands.WebRequestSession
 Invoke-RestMethod "$b/api/auth/login" -Method Post -WebSession $s -ContentType 'application/json' -Body '{"userName":"dev.cashier","password":"<mật khẩu>"}'
@@ -168,17 +171,68 @@ SELECT COUNT(*) FROM AspNetUsers u WHERE NOT EXISTS (SELECT 1 FROM CustomerProfi
 - Tự động: `DesktopFlowTests.D06_manager_builds_...`, `DatabaseTests.Effective_price_and_recipe_intervals_cannot_overlap`, `DatabaseTests.Concurrent_overlapping_prices_allow_only_one_commit`.
 
 ### KT19 – Quản lý danh mục và xóa – C
-1. Dùng một món đã có đơn (KT07) và một món mới chưa có đơn. 2. D06: tìm, **Sửa món**, **Ngừng bán** biến thể. 3. Kiểm tra Web và đơn cũ.
-- **Lưu ý phạm vi:** hệ thống **không có chức năng xóa món** (cố ý: giữ lịch sử); chỉ ngừng bán. Ca gốc nói "xóa theo quyền khi đủ điều kiện", nên ghi biên bản đúng thực tế: "không có thao tác xóa; chỉ ngừng bán" — **không ghi Đạt toàn phần nếu kỳ vọng gốc là xóa**; nêu là hạn chế/quyết định thiết kế.
-- Mong đợi: món ngừng bán biến mất khỏi Web nhưng còn trong D06 và bật lại được; đơn cũ vẫn thấy tên và giá chốt ở "Đơn của tôi".
-- Bằng chứng: ảnh D06, ảnh Web trước/sau, ảnh đơn cũ.
-- Tự động: `DatabaseTests.Foreign_key_and_history_delete_are_rejected`, `DesktopFlowTests.D06_manager_builds_...`.
+**Kỳ vọng gốc (tài liệu 06, giữ nguyên trong hồ sơ):** quản lý và xóa theo quyền khi đủ điều kiện.
+
+**Kỳ vọng sửa (C10, 19/11/2026).** Đây là thay đổi phạm vi có chủ đích, **không phải ca đã đạt theo kỳ vọng gốc**; cả nhóm phải đồng ý và báo cáo (mục giới hạn, việc C7) phải nêu như một quyết định thiết kế. Kỳ vọng gốc được tách theo từng đối tượng, mỗi phần đúng với điều hệ thống làm:
+- **(a) Món (D06):** không có thao tác xóa món, chỉ ngừng bán và bật bán lại. Lý do: giữ lịch sử đơn (đơn cũ cần tên và giá chốt); xóa trực tiếp trong CSDL bị chặn (`DatabaseTests.Foreign_key_and_history_delete_are_rejected`).
+- **(b) Danh mục (Desktop, nút Danh mục):** xóa được danh mục không còn món (có hộp xác nhận); danh mục còn món không bị xóa, thông báo nêu tên và số món; có thể bỏ chọn "Đang dùng" để ngừng sử dụng.
+- **(c) Nguyên liệu (Desktop, nút Nguyên liệu):** xóa được nguyên liệu mới tạo, chưa nằm trong công thức và chưa có tồn hoặc phát sinh kho; nguyên liệu đang trong công thức, hoặc đã có tồn/phát sinh kho, không bị xóa và có thông báo rõ; có thể ngừng dùng.
+
+**Các bước.**
+1. Phần (a): dùng một món đã có đơn (KT07) và một món mới chưa có đơn. D06: tìm, **Sửa món**, **Ngừng bán** biến thể rồi bật bán lại. Kiểm tra Web và đơn cũ.
+2. Phần (b): đăng nhập `dev.manager` → **Danh mục**. (i) Chọn danh mục có "Số món" > 0 → **Xóa…**. (ii) **Thêm…** "Danh mục thử KT19", **Sửa…** đổi tên, thử tìm theo tên. (iii) Chọn danh mục vừa thêm → **Xóa…** → trả lời **Không**, rồi lại **Xóa…** → trả lời **Có**. (iv) Thêm lại một danh mục trống, dùng D06 gán một món vào đó, quay lại **Danh mục** bấm **Tải lại** rồi **Xóa…**.
+3. Phần (c): **Nguyên liệu**. (i) Chọn nguyên liệu mẫu có "Dùng trong công thức" > 0 → **Xóa…**. (ii) **Thêm…** "Nguyên liệu thử KT19", đơn vị `g` → **Xóa…** → **Có**.
+
+**Mong đợi.**
+- (a) Món ngừng bán biến mất khỏi Web nhưng còn trong D06 và bật lại được; đơn cũ vẫn thấy tên và giá chốt ở "Đơn của tôi"; không có nút nào xóa món.
+- (b)(i) Hiện thông báo "Danh mục "…" còn N món nên không thể xóa…" và danh mục vẫn còn trong danh sách. (ii) Danh mục mới xuất hiện, đổi tên được, tìm thấy; thêm trùng tên báo "Đã có danh mục trùng tên.". (iii) **Không** thì giữ nguyên; **Có** thì danh mục biến mất và thanh trạng thái báo đã xóa. (iv) Không xóa được, vẫn còn trong danh sách.
+- (c)(i) Hiện thông báo nguyên liệu đang nằm trong N công thức nên không thể xóa; vẫn còn trong danh sách. (ii) Nguyên liệu thử biến mất sau khi xác nhận.
+- SQL: `SELECT COUNT(*) FROM Category WHERE CategoryName = N'Danh mục thử KT19';` và `SELECT COUNT(*) FROM Ingredient WHERE IngredientName = N'Nguyên liệu thử KT19';` bằng 0 sau khi xóa thành công; `SELECT COUNT(*) FROM Product;` không đổi sau mọi thao tác (a).
+- Bằng chứng: ảnh D06, Web trước/sau, đơn cũ; ảnh từng thông báo chặn; ảnh hộp xác nhận; ảnh danh sách trước và sau khi xóa; kết quả SQL.
+- Tự động: `DatabaseTests.Foreign_key_and_history_delete_are_rejected`, `DesktopFlowTests.D06_manager_builds_...`; quy tắc phần (b), (c) nằm ở `StaffCatalogService.DeleteCategoryAsync` và `DeleteIngredientAsync`; phần giao diện của (b), (c) chỉ kiểm bằng ca này.
+- **Ghi biên bản:** kết quả lần 1 (15/11, Không đạt vì lúc đó chưa có thao tác xóa nào) giữ nguyên. Lần 2 ghi riêng từng phần (a), (b), (c); chỉ ghi Đạt khi cả ba phần đúng kỳ vọng sửa, và vẫn ghi rõ kỳ vọng gốc đã được đổi thành quyết định thiết kế.
 
 ### KT21 – Đăng nhập tài khoản khách – B
 1. `/tai-khoan/dang-nhap`: `dev.customer` đúng mật khẩu → có phiên. 2. Đăng xuất. 3. Nhập sai mật khẩu → không có phiên. 4. Nhập sai 5 lần liên tiếp → thông báo khóa; thử mật khẩu **đúng** khi đang khóa. 5. Mở khóa để thử tiếp (chạy trong SSMS, hoặc `sqlcmd` **có cờ `-I`**, xem mục 2): `UPDATE AspNetUsers SET LockoutEnd = NULL, AccessFailedCount = 0 WHERE UserName = N'dev.customer';` rồi kiểm tra `SELECT LockoutEnd FROM AspNetUsers WHERE UserName = N'dev.customer'` là NULL. Nếu không chạy được thì chờ 15 phút hết khóa.
 - Mong đợi: sai/khóa không cấp phiên (vào `/don-cua-toi` bị chuyển về đăng nhập); mật khẩu đúng khi đang khóa vẫn bị từ chối; sau KT21 quyền sở hữu đơn vẫn đúng (xem KT16).
 - Bằng chứng: ảnh thông báo sai/khóa; ảnh bị chuyển về đăng nhập.
 - Tự động: `ServiceTests.Login_distinguishes_wrong_password_lockout_and_account_kind`, `ApiTests.Login_errors_lockout_and_logout`.
+
+### KT23 – Chi tiết món trên Web (B1) – ca do C viết (C10); người chạy: C hoặc A
+Điều kiện: món mẫu [THỬ] Cà phê sữa đang bán (có biến thể, có tùy chọn thêm nếu dữ liệu mẫu có), một món đã **Ngừng bán** bằng D06 (KT19), khách `dev.customer`.
+1. Mở `/`, bấm tên món để vào `/mon/<id>`. 2. Đối chiếu nội dung trang với D06 và SQL. 3. Chọn một biến thể, đặt tùy chọn thêm 1 (nếu có), số lượng 2 → **Thêm vào giỏ** → mở `/gio-hang`. 4. Thử số lượng không hợp lệ: `0`, `51`, `abc` (xóa thuộc tính `min`/`max` của ô bằng DevTools của trình duyệt để biểu mẫu vẫn gửi được); thử tùy chọn thêm vượt "tối đa". 5. Mở `/mon/999999999` và `/mon/<id món vừa ngừng bán>` (chờ vài giây vì thực đơn được lưu đệm). 6. Dùng D06 đổi giá món rồi tải lại trang chi tiết. 7. Thu nhỏ cửa sổ về 360 px; dùng phím Tab đi qua trang.
+- Mong đợi:
+  - Bước 1–2: tiêu đề là tên món, có tên danh mục và nhãn "Đang bán", dòng "N kích cỡ, giá từ X" (X là giá thấp nhất), mỗi biến thể một khối gồm tên, giá, các tùy chọn dạng "tên (+giá), tối đa N" và ô số lượng mặc định 1; giá khớp giá hiện hành trong D06 và `PriceHistory`.
+  - Bước 3: sau khi thêm, giỏ có đúng món, biến thể, số lượng 2 (và tùy chọn đã chọn); thành tiền = số lượng × (giá + tùy chọn).
+  - Bước 4: không thêm được, giỏ không đổi, có thông báo lỗi rõ: "Số lượng phải là số nguyên dương." với `0` và `abc`; "Số lượng tối đa 50 mỗi dòng." với `51`; tùy chọn vượt mức: "«<tên tùy chọn>» tối đa N mỗi ly."
+  - Bước 5: mã HTTP 404, trang "Món không còn bán" và nút "Quay về thực đơn"; không hiện lỗi hệ thống.
+  - Bước 6: giá mới hiện sau khi tải lại (có thể chậm vài giây); đơn đã đặt trước đó vẫn giữ giá chốt cũ (xem KT09).
+  - Bước 7: không tràn ngang ở 360 px; thứ tự Tab hợp lý (tùy chọn → số lượng → **Thêm vào giỏ**), mỗi ô có nhãn đọc được.
+- SQL: giá hiện hành `SELECT VariantId, UnitPrice FROM PriceHistory WHERE VariantId = <id> AND EffectiveTo IS NULL;`; `SELECT COUNT(*) FROM SalesOrder;` không đổi sau bước 3–4 (giỏ chưa phải đơn).
+- Bằng chứng: ảnh trang chi tiết ở 1280 px và 360 px; ảnh giỏ; ảnh từng thông báo lỗi; ảnh trang 404; kết quả SQL.
+- Tự động: chưa có test riêng cho trang `/mon/{id}` và luật số lượng trong giỏ; dữ liệu thực đơn được kiểm ở `ServiceTests.Menu_lists_only_sellable_drinks_with_allowed_addons` (mức dịch vụ, không kiểm giao diện).
+
+### KT24 – Tiến độ pha chế và thanh toán trong "Đơn của tôi" (B2) – ca do C viết (C10); người chạy: C hoặc A
+Điều kiện: CSDL Dev đã `--seed-accounts`; ba cửa sổ: Web (khách `dev.customer`), Desktop `dev.cashier` (đã **Mở ca**), Desktop `dev.barista`. Món A giá 30.000.
+1. Khách đặt đơn 2 ly Món A (60.000). Mở `/don-cua-toi` và mở chi tiết đơn. 2. `dev.cashier`: **Tiếp nhận đơn**. Khách bấm **Tải lại trạng thái**. 3. `dev.barista` → **Pha chế**: **Bắt đầu làm** ly 1, tải lại trên Web; **Làm xong** ly 1, tải lại; làm tiếp ly 2 đến **Sẵn sàng**; **Đã giao cho khách** cả hai ly, tải lại sau mỗi bước. 4. `dev.cashier` → **Thu ngân**: chọn đơn, nhập tiền khách đưa 100.000, **Thu tiền mặt**; khách tải lại. 5. Tạo thêm một đơn rồi **Hủy** (khách) và một đơn **Từ chối** (thu ngân, có lý do); xem `/don-cua-toi` và chi tiết hai đơn đó.
+- Mong đợi (chữ hiển thị đúng như dưới đây):
+  - Bước 1: đơn "Chờ tiếp nhận"; trong danh sách **không có** dòng Pha chế/Thanh toán; trang chi tiết ghi "Đơn đang chờ quán tiếp nhận nên chưa bắt đầu pha chế." và có nút **Hủy đơn**.
+  - Bước 2: "Đang phục vụ"; Pha chế: "Đang chờ pha chế"; "Chờ làm 2 · Đang làm 0 · Sẵn sàng nhận 0 · Đã giao 0"; Thanh toán: "Chưa thanh toán"; không còn nút Hủy ("Đơn không còn chờ tiếp nhận nên không có nút hủy.").
+  - Bước 3: sau khi bắt đầu ly 1: "Đang pha chế", "Chờ làm 1 · Đang làm 1 · Sẵn sàng nhận 0 · Đã giao 0"; khi có ly sẵn sàng: "Có ly sẵn sàng, mời bạn nhận" và số "Sẵn sàng nhận" tăng; giao đủ cả hai ly: "Đã giao đủ", "Đã giao 2".
+  - Bước 4: Thu ngân báo tiền thối 40.000 đ; Web: Thanh toán "Đã thanh toán" (nhãn xanh), cả ở danh sách lẫn chi tiết. Trạng thái đơn trên Web (Đang phục vụ / Đang thanh toán / Hoàn tất) ghi lại đúng như quan sát được và phải khớp SQL, không đoán trước.
+  - Danh sách và chi tiết cho cùng một đơn luôn hiện cùng số liệu.
+  - Bước 5: đơn đã hủy hoặc bị từ chối không có dòng tiến độ ở danh sách; chi tiết đơn đã hủy ghi "Đơn không còn được thực hiện."; đơn bị từ chối hiện "Lý do từ chối" đúng nội dung thu ngân nhập.
+- Giới hạn đã biết: trạng thái "Đã thanh toán một phần" **không tạo được từ giao diện** (Thu ngân chỉ thu đủ số còn phải thu); nhánh này chỉ kiểm bằng dữ liệu/API, không ghi Đạt cho luồng người dùng.
+- SQL (thay mã đơn):
+```sql
+SELECT Status FROM SalesOrder WHERE OrderCode = N'<mã đơn>';
+SELECT u.Status, COUNT(*) AS SoLy FROM PreparationUnit u JOIN OrderLine l ON l.LineId = u.LineId
+  JOIN OrderRound r ON r.RoundId = l.RoundId JOIN SalesOrder o ON o.OrderId = r.OrderId WHERE o.OrderCode = N'<mã đơn>' GROUP BY u.Status;
+SELECT p.Amount, p.Method, p.Status, p.PaidAt FROM Payment p JOIN SalesOrder o ON o.OrderId = p.OrderId WHERE o.OrderCode = N'<mã đơn>';
+```
+Số ly theo trạng thái và số đã thu trên Web phải khớp ba truy vấn này sau mỗi bước.
+- Bằng chứng: ảnh Web sau từng bước chính (bước 1, 2, 3 có ly đang làm, 3 có ly sẵn sàng, 3 giao đủ, 4), ảnh Desktop tương ứng, kết quả SQL.
+- Tự động: `StaffA123ApiTests` kiểm `Progress` ở mức API (số đã trả, số ly); chữ hiển thị `OrderProgressText` và hai trang Web chưa có test riêng.
 
 ## 5. Kịch bản liên thông (A điều phối; ghi như một biên bản riêng "LT01")
 Trên CSDL Dev sạch (xem [huong-dan-demo.md](huong-dan-demo.md) mục 5): quản lý tạo món (D06, KT04) → khách đăng ký và đặt đơn trên Web (KT17, KT07) → thu ngân tiếp nhận trên Desktop (KT08) → khách thấy "Đang phục vụ" trên Web → đối chiếu SQL (KT09). Ghi thời gian từng bước và ảnh.
