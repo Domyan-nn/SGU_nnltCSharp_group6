@@ -23,5 +23,5 @@ Tệp UTF-8 có BOM, phân cách bằng `;`, dòng đầu `sep=;` để Excel nh
 
 ## Kiểm thử
 
-- Tự động (không cần SQL Server): `tests/CafeManager.Tests/ReportTests.cs`.
-- Chạy tay: đăng nhập Desktop bằng `dev.manager` → Báo cáo doanh thu → chọn kỳ có đơn đã thu tiền → so tổng với màn hình Thu ngân và truy vấn `Payment` trong CSDL; bấm Xuất CSV và mở bằng Excel.
+- Kiểm thử tự động (không cần SQL Server): `tests/CafeManager.Tests/ReportTests.cs` (5 ca, Bảng 2 ở [kiem-thu.md](kiem-thu.md)).
+- Chạy thử trên Desktop (ca KT27 ở [kiem-thu.md](kiem-thu.md)): đăng nhập Desktop bằng `dev.manager` → Báo cáo doanh thu → chọn kỳ có đơn đã thu tiền → so tổng với màn hình Thu ngân và truy vấn `Payment` trong CSDL; bấm Xuất CSV và mở bằng Excel.

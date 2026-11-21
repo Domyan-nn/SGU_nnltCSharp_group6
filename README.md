@@ -13,20 +13,22 @@ Công nghệ: .NET 10 (SDK 10.0.403 khóa trong `global.json`), EF Core 10.0.14,
 
 ## Đã làm được gì
 
-Luồng nghiệp vụ xuyên suốt của đồ án: quản lý tạo món trên Desktop → khách đặt đơn trên Web → thu ngân tiếp nhận trên Desktop → pha chế từng ly → thu tiền mặt → đóng ca, trong đó khách theo dõi tiến độ đơn trên Web. Cả ba phần (máy chủ, Desktop, Web) của luồng này đều đã có mã và kiểm thử tự động; chưa ai chạy tay trọn luồng (xem "Mức kiểm chứng" bên dưới).
+Luồng nghiệp vụ xuyên suốt của đồ án: quản lý tạo món trên Desktop → khách đặt đơn trên Web → thu ngân tiếp nhận trên Desktop → pha chế từng ly → thu tiền mặt → đóng ca, trong đó khách theo dõi tiến độ đơn trên Web. Cả ba phần (máy chủ, Desktop, Web) của luồng này đều đã có mã, kiểm thử tự động và đã được chạy thử trên giao diện thật (kịch bản liên thông LT01, xem "Mức kiểm chứng" bên dưới).
 
 | Phần | Nội dung | Người làm chính |
 |---|---|---|
 | Cơ sở dữ liệu | 40 bảng nghiệp vụ và 4 bảng Identity, 5 migration, trigger bảo vệ toàn vẹn, các thao tác tiếp nhận đơn, trừ nguyên liệu, thu tiền, đối soát ca | A |
-| API và dịch vụ máy chủ | Đăng nhập, đăng ký, thực đơn, đơn của khách, tiếp nhận, quản lý món, danh mục, nguyên liệu, ca, thu tiền, pha chế | A |
-| Web khách | Thực đơn, chi tiết món, giỏ hàng, đăng ký, đăng nhập, đặt đơn, đơn của tôi | B |
-| Desktop | Đăng nhập, tiếp nhận đơn, quản lý món, Thu ngân, Pha chế, Danh mục, Nguyên liệu | A viết khung đăng nhập, D02 và D06; C hoàn thiện đăng nhập và viết các màn còn lại |
+| API và dịch vụ máy chủ | Đăng nhập, đăng ký, thực đơn, đơn của khách, tiếp nhận, quản lý món, danh mục, nguyên liệu, ca, thu tiền, pha chế, báo cáo doanh thu, tài khoản nhân viên | A |
+| Web khách | Thực đơn, chi tiết món, giỏ hàng, đăng ký, đăng nhập, đặt đơn, đơn của tôi (kèm tiến độ pha chế và thanh toán) | B |
+| Desktop | Đăng nhập, màn hình chính theo quyền, tiếp nhận đơn, quản lý món, Thu ngân, Pha chế, Danh mục, Nguyên liệu, Báo cáo doanh thu, Nhân viên và phân quyền (7 trong 9 màn hình D00–D08; chưa có D01 và D05) | A viết khung đăng nhập, D02 và D06; C hoàn thiện đăng nhập và viết các màn còn lại |
 
 Phân công chi tiết và lịch sử làm việc theo từng commit (ai làm, ngày nào, thêm, sửa, xóa file nào, để làm gì) nằm ở [docs/phan-cong.md](docs/phan-cong.md).
 
-**Chưa làm** (ghi vào giới hạn đề tài): phục vụ tại bàn và chuyển bàn, hủy và duyệt hủy món, hoàn tiền, nhập và kiểm kê kho, báo cáo doanh thu, quản lý nhân viên trên giao diện, thanh toán chuyển khoản, đo hiệu năng, sao lưu và phục hồi.
+Đã có 12 trong 19 use case (UC01–UC04, UC07, UC08, UC14–UC19).
 
-**Mức kiểm chứng.** Bộ kiểm thử tự động có 149 ca: 62 ca cần SQL Server (cơ sở dữ liệu, dịch vụ, API qua HTTP, luồng Desktop qua `ApiClient` thật) và 87 ca không cần. Kiểm thử giao diện ngày 15/11 chạy tự động (17 Đạt, 1 Không đạt), xem [biên bản](docs/bien-ban-kiem-thu.md). Các màn hình mới từ 17/11 chưa được người chạy tay trọn luồng; kết quả chạy tay sẽ ghi vào [kiem-thu-tay.md](docs/kiem-thu-tay.md) và báo cáo.
+**Chưa làm** (ghi vào giới hạn đề tài): phục vụ tại bàn và chuyển bàn (UC05–UC06), hủy và duyệt hủy món, hoàn tiền (UC10–UC12), nhập và kiểm kê kho (UC13), thanh toán chuyển khoản, đo hiệu năng, sao lưu và phục hồi.
+
+**Mức kiểm chứng.** Bộ kiểm thử tự động có 182 ca (lần chạy 21/11/2026 trên commit `73a9e5b`, đạt hết, 0 Skipped, trên SQL Server thật; gồm cơ sở dữ liệu, dịch vụ, API qua HTTP, luồng Desktop qua `ApiClient` thật và logic hiển thị). Các ca và kết quả nằm ở [docs/kiem-thu.md](docs/kiem-thu.md) (Bảng 1: ca KT; Bảng 2: kiểm thử qua `dotnet test`). Bảng kiểm thử ở tài liệu 06 có 29 ca (24 ca giao diện và 5 ca mức cơ sở dữ liệu) đều đã chạy thử và Đạt; riêng KT19 lần 1 (15/11) Không đạt theo kỳ vọng gốc, lần 2 đạt theo kỳ vọng đã sửa. Giao diện được chạy bằng chương trình điều khiển (Microsoft Edge cho Web, điều khiển form cho Desktop), không phải thao tác của người dùng; khả năng sử dụng với người dùng thật chưa được đánh giá. Chương trình điều khiển không nằm trong kho mã; ảnh và truy vấn SQL làm bằng chứng nằm trong [biên bản](docs/bien-ban-kiem-thu.md) và `docs/bang-chung`.
 
 ## Cấu trúc thư mục
 
@@ -102,7 +104,7 @@ $env:CAFE_TEST_SQLSERVER='Server=(localdb)\MSSQLLocalDB;Integrated Security=true
 dotnet test CafeManager.sln --logger 'trx;LogFileName=tests.trx' --results-directory TestResults
 ```
 
-Không đặt biến `CAFE_TEST_SQLSERVER` thì 62 ca cần SQL Server hiện **Skipped**, đó không phải Pass. Mỗi lần chạy, các ca SQL tạo một cơ sở dữ liệu riêng `CafeManager_Group6_Test_<GUID>` bằng `CREATE DATABASE`, áp dụng toàn bộ migration, rồi xóa đúng cơ sở dữ liệu đó khi xong; không động vào cơ sở dữ liệu Dev. Không dùng SQLite hay InMemory làm bằng chứng cho SQL Server. Kết quả từng lần chạy ghi ở [verification.md](docs/verification.md); file `.trx` nằm trong `TestResults` (không commit).
+Không đặt biến `CAFE_TEST_SQLSERVER` thì các ca cần SQL Server hiện **Skipped**, đó không phải Pass. Mỗi lần chạy, các ca SQL tạo một cơ sở dữ liệu riêng `CafeManager_Group6_Test_<GUID>` bằng `CREATE DATABASE`, áp dụng toàn bộ migration, rồi xóa đúng cơ sở dữ liệu đó khi xong; không động vào cơ sở dữ liệu Dev. Không dùng SQLite hay InMemory làm bằng chứng cho SQL Server. Kết quả từng lần chạy ghi ở [verification.md](docs/verification.md); file `.trx` nằm trong `TestResults` (không commit).
 
 **CI (A11).** Mỗi pull request vào `main` và mỗi lần `main` đổi, GitHub Actions chạy [`.github/workflows/ci.yml`](.github/workflows/ci.yml): build cả solution (gồm Desktop, chỉ biên dịch) rồi chạy toàn bộ test với SQL Server 2022 trong container. Lần chạy bị coi là **lỗi** nếu có test lỗi hoặc có test Skipped, nên dấu kiểm xanh nghĩa là mọi ca cần SQL Server đã thật sự chạy. Dấu kiểm này chưa bắt buộc để gộp; muốn bắt buộc thì bật ở Settings → Branches → quy tắc của `main`.
 
@@ -130,4 +132,4 @@ Không đặt biến `CAFE_TEST_SQLSERVER` thì 62 ca cần SQL Server hiện **
 
 ## Tài liệu trong `docs/`
 
-[quy-uoc-du-an.md](docs/quy-uoc-du-an.md) (quy ước), [schema.md](docs/schema.md) (từ điển lược đồ), [relation-mapping.md](docs/relation-mapping.md) và [phan-tich-3nf.md](docs/phan-tich-3nf.md) (chuẩn hóa), [mo-hinh-du-lieu-rut-gon.md](docs/mo-hinh-du-lieu-rut-gon.md), [business-rules.md](docs/business-rules.md), [verification.md](docs/verification.md), [kiem-thu-tay.md](docs/kiem-thu-tay.md), [bien-ban-kiem-thu.md](docs/bien-ban-kiem-thu.md), [huong-dan-demo.md](docs/huong-dan-demo.md), [phan-cong.md](docs/phan-cong.md) (phân công và lịch sử làm việc), [hop-dong-api.md](docs/hop-dong-api.md) (hợp đồng API).
+[quy-uoc-du-an.md](docs/quy-uoc-du-an.md) (quy ước), [schema.md](docs/schema.md) (từ điển lược đồ), [relation-mapping.md](docs/relation-mapping.md) và [phan-tich-3nf.md](docs/phan-tich-3nf.md) (chuẩn hóa), [mo-hinh-du-lieu-rut-gon.md](docs/mo-hinh-du-lieu-rut-gon.md), [business-rules.md](docs/business-rules.md), [verification.md](docs/verification.md), [kiem-thu.md](docs/kiem-thu.md) (hai bảng: ca KT và kiểm thử tự động qua dotnet), [bien-ban-kiem-thu.md](docs/bien-ban-kiem-thu.md), [huong-dan-demo.md](docs/huong-dan-demo.md), [phan-cong.md](docs/phan-cong.md) (phân công và lịch sử làm việc), [hop-dong-api.md](docs/hop-dong-api.md) (hợp đồng API).
