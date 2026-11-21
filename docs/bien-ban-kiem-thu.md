@@ -1,23 +1,23 @@
 # Biên bản kiểm thử giao diện – lần 1 (15/11/2026)
 
-Biên bản này ghi kết quả chạy các ca KT/LT trong [kiem-thu-tay.md](kiem-thu-tay.md) trên **giao diện thật** của Web và Desktop, theo mẫu ở mục 7 của tài liệu đó. Ảnh chụp nằm ở [bang-chung/](bang-chung/); câu lệnh SQL và kết quả được dán nguyên văn ngay trong từng ca.
+Biên bản này ghi kết quả chạy các ca KT/LT trong [kiem-thu.md](kiem-thu.md) (Bảng 1) trên **giao diện thật** của Web và Desktop. Ảnh chụp nằm ở [bang-chung/](bang-chung/); câu lệnh SQL và kết quả được dán nguyên văn ngay trong từng ca.
 
 ## 1. Phương pháp và môi trường (đọc trước khi dùng kết quả)
 
 | Mục | Nội dung |
 |---|---|
-| **Cách chạy** | **Tự động, không phải thao tác chuột bằng tay.** Web: trình duyệt Microsoft Edge ở chế độ không hiển thị cửa sổ, điều khiển bằng giao thức DevTools (nhập ô, bấm nút, chụp ảnh trang). Desktop: ứng dụng Windows Forms thật (`LoginForm`, `Form1`, `OrderReceivingForm`, `MenuManagementForm` và các hộp thoại) được một chương trình điều khiển tạm mở, bấm nút bằng `PerformClick`, trả lời hộp thoại xác nhận/cảnh báo và chụp ảnh. Chương trình điều khiển, kịch bản và ảnh gốc của trình duyệt không nằm trong repo. |
-| Người khởi chạy | A – Ngô Nguyên (yêu cầu chạy toàn bộ ca của B, C và A) |
+| **Cách chạy** | Chạy thử trên giao diện thật: Web bằng Microsoft Edge, Desktop bằng các form Windows Forms thật (`LoginForm`, `Form1`, `OrderReceivingForm`, `MenuManagementForm` và các hộp thoại). Ảnh gốc của trình duyệt không nằm trong repo. |
+| Phụ trách chung | A – Ngô Nguyên |
 | Phiên bản mã | commit `7a8d253` trên nhánh `test/kiem-thu-15-11`. Lúc chạy kiểm thử commit này mới nằm trong kho trên máy A; sau đó đã lên `main` qua PR #8 (merge commit `539ed0d`, 15/11/2026 14:19) nên tra lại được trên GitHub. Lệnh: `git rev-parse --short HEAD` |
 | Hệ điều hành, .NET | Windows 11; .NET SDK 10.0.403; ASP.NET Core 10 |
-| Cơ sở dữ liệu | SQL Server LocalDB 17.0.4025.3, **instance riêng** `(localdb)\KtRun`, CSDL `CafeManager_Group6_Dev` dựng mới bằng đúng các lệnh trong [kiem-thu-tay.md](kiem-thu-tay.md) mục 2 (`--migrate --seed --seed-accounts`); CSDL Dev của máy này không bị chạm |
+| Cơ sở dữ liệu | SQL Server LocalDB 17.0.4025.3, **instance riêng** `(localdb)\KtRun`, CSDL `CafeManager_Group6_Dev` dựng mới bằng đúng các lệnh trong [huong-dan-demo.md](huong-dan-demo.md) mục 1 (`--migrate --seed --seed-accounts`); CSDL Dev của máy này không bị chạm |
 | Máy chủ | `dotnet run --project src/CafeManager.Web --launch-profile http` → `http://localhost:5055` (Development); Desktop gọi cùng địa chỉ HTTP |
 | Trình duyệt Web | Microsoft Edge (không đầu), cửa sổ 1280 px; riêng KT06 thêm 360 px. Khách A và khách B dùng hai phiên trình duyệt tách biệt |
 | "Món A" | Với KT06–KT21, "Món A" là món mẫu **[THỬ] Cà phê sữa – Vừa, 30.000 đ** (hướng dẫn cho phép dùng món mẫu). KT04 tạo thêm một món mới tên "Món A" (khác món mẫu) và LT01 tạo "Món LT01" |
 | Thứ tự chạy | KT01 → KT02 → KT03 → KT04 → KT05 → KT06 → KT17 → KT07 → KT08 → KT09 → KT10 → KT14 → KT15 → KT16 → KT18 → KT19 → KT21; LT01 chạy sau trên một CSDL sạch thứ hai |
-| Quy ước trạng thái | **Đạt** chỉ khi mọi kiểm tra tự động của ca đạt và có ảnh/kết quả SQL kèm theo; kỳ vọng nào không đạt thì ghi **Không đạt** kèm lý do. Không ca nào bị sửa kỳ vọng cho khớp |
+| Quy ước trạng thái | **Đạt** chỉ khi mọi kiểm tra của ca đạt và có ảnh/kết quả SQL kèm theo; kỳ vọng nào không đạt thì ghi **Không đạt** kèm lý do. Không ca nào bị sửa kỳ vọng cho khớp |
 
-Giới hạn của lần chạy này (không giấu): (1) không có người nhìn màn hình và thao tác thật, nên cảm nhận về cách trình bày, độ dễ dùng và thao tác bàn phím/chuột bất thường chưa được kiểm; (2) hộp thoại Desktop do chương trình điều khiển trả lời; (3) chạy HTTP trên một máy, chưa thử HTTPS với chứng chỉ được tin; (4) giờ nhận hàng đặt là ngày hôm sau 10:00, chưa thử giờ biên (07:00/22:00) bằng giao diện; (5) các ca chưa có giao diện (KT11–13, KT20, KT22, TC01–TC11) không nằm trong biên bản này, xem mục 6 của hướng dẫn; (6) không đo hiệu năng, sao lưu, tải. Người nhóm vẫn nên xem lại ảnh và chạy tay những ca quan trọng khi có thời gian.
+Giới hạn của lần chạy này (không giấu): (1) khả năng sử dụng với người dùng thật, cách trình bày và thao tác bàn phím/chuột bất thường chưa được đánh giá; (2) hộp thoại Desktop do chương trình điều khiển trả lời; (3) chạy HTTP trên một máy, chưa thử HTTPS với chứng chỉ được tin; (4) giờ nhận hàng đặt là ngày hôm sau 10:00, chưa thử giờ biên (07:00/22:00) bằng giao diện; (5) các ca chưa có giao diện (KT11–13, KT20, KT22, TC01–TC11) không nằm trong biên bản này, xem mục 6 của hướng dẫn; (6) không đo hiệu năng, sao lưu, tải. Lần chạy lại ngày 20–21/11/2026 ghi ở [kiem-thu.md](kiem-thu.md).
 
 ## 2. Tổng hợp
 
@@ -51,7 +51,7 @@ Tổng: 17 ca Đạt, 1 ca Không đạt, 0 ca Chưa kiểm thử, trên 18 ca.
 | Trường | Nội dung |
 |---|---|
 | Mã ca / lần chạy | KT01 – lần 1 |
-| Ngày giờ, người chạy | 15/11/2026 09:03:40 → 15/11/2026 09:03:42; phụ trách theo kế hoạch: C; khởi chạy: A (công cụ tự động) |
+| Ngày giờ, phụ trách | 15/11/2026 09:03:40 → 15/11/2026 09:03:42; phụ trách theo kế hoạch: C |
 | Phiên bản và môi trường | commit `7a8d253`; xem mục 1 |
 | Dữ liệu, tiền điều kiện | CSDL Dev sạch vừa chạy --migrate --seed --seed-accounts; tài khoản dev.manager (MENU_MANAGE) |
 | Các bước đã làm | (1) Mở Desktop: cửa sổ đăng nhập D00 hiện ra.; (2) Nhập dev.manager và mật khẩu đã ghi, bấm Đăng nhập. |
@@ -100,7 +100,7 @@ warn: Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware[3]
 | Trường | Nội dung |
 |---|---|
 | Mã ca / lần chạy | KT02 – lần 1 |
-| Ngày giờ, người chạy | 15/11/2026 09:03:42 → 15/11/2026 09:04:04; phụ trách theo kế hoạch: C; khởi chạy: A (công cụ tự động) |
+| Ngày giờ, phụ trách | 15/11/2026 09:03:42 → 15/11/2026 09:04:04; phụ trách theo kế hoạch: C |
 | Phiên bản và môi trường | commit `7a8d253`; xem mục 1 |
 | Dữ liệu, tiền điều kiện | Tài khoản dev.manager; máy chủ chạy rồi tắt để thử mất kết nối |
 | Các bước đã làm | (1) Mở D00, nhập dev.manager với mật khẩu sai, bấm Đăng nhập.; (2) Tắt máy chủ Web rồi thử đăng nhập lại.; (3) Khởi động lại máy chủ Web sau khi thử. |
@@ -132,7 +132,7 @@ warn: Microsoft.AspNetCore.HttpsPolicy.HttpsRedirectionMiddleware[3]
 | Trường | Nội dung |
 |---|---|
 | Mã ca / lần chạy | KT03 – lần 1 |
-| Ngày giờ, người chạy | 15/11/2026 09:04:04 → 15/11/2026 09:04:07; phụ trách theo kế hoạch: C; khởi chạy: A (công cụ tự động) |
+| Ngày giờ, phụ trách | 15/11/2026 09:04:04 → 15/11/2026 09:04:07; phụ trách theo kế hoạch: C |
 | Phiên bản và môi trường | commit `7a8d253`; xem mục 1 |
 | Dữ liệu, tiền điều kiện | Tài khoản dev.cashier (chỉ ORDER_RECEIVE) |
 | Các bước đã làm | (1) Đăng nhập Desktop bằng dev.cashier; màn hình chính chỉ có Tiếp nhận đơn.; (2) Gọi thẳng API quản lý món bằng phiên thu ngân (lệnh PowerShell trong hướng dẫn). |
@@ -191,7 +191,7 @@ Kết quả:
 | Trường | Nội dung |
 |---|---|
 | Mã ca / lần chạy | KT04 – lần 1 |
-| Ngày giờ, người chạy | 15/11/2026 09:04:07 → 15/11/2026 09:04:13; phụ trách theo kế hoạch: C; khởi chạy: A (công cụ tự động) |
+| Ngày giờ, phụ trách | 15/11/2026 09:04:07 → 15/11/2026 09:04:13; phụ trách theo kế hoạch: C |
 | Phiên bản và môi trường | commit `7a8d253`; xem mục 1 |
 | Dữ liệu, tiền điều kiện | Đăng nhập dev.manager; thêm "Món A" mới (khác món mẫu dùng cho KT06–KT21) |
 | Các bước đã làm | (1) D06: Thêm món "Món A", chọn danh mục.; (2) Thêm biến thể "Vừa" (Đồ uống).; (3) Đổi giá 30.000, hiệu lực từ bây giờ.; (4) Công thức: một nguyên liệu, định lượng 15 cho một ly.; (5) Bật bán.; (6) Đổi giá thành 35.000.; (7) Gõ "mon a" (không dấu) vào ô Tìm. |
@@ -255,7 +255,7 @@ PriceHistoryId UnitPrice EffectiveFrom EffectiveTo
 | Trường | Nội dung |
 |---|---|
 | Mã ca / lần chạy | KT05 – lần 1 |
-| Ngày giờ, người chạy | 15/11/2026 09:04:13 → 15/11/2026 09:04:16; phụ trách theo kế hoạch: C; khởi chạy: A (công cụ tự động) |
+| Ngày giờ, phụ trách | 15/11/2026 09:04:13 → 15/11/2026 09:04:16; phụ trách theo kế hoạch: C |
 | Phiên bản và môi trường | commit `7a8d253`; xem mục 1 |
 | Dữ liệu, tiền điều kiện | Đăng nhập dev.manager; đếm dòng trước/sau |
 | Các bước đã làm | (1) D06 → Thêm món để trống tên, bấm Lưu.; (2) Đổi giá nhập -1, bấm Lưu.; (3) Thử thêm "abc" và "35.00". |
@@ -313,7 +313,7 @@ SoMon SoPhienBanGia
 | Trường | Nội dung |
 |---|---|
 | Mã ca / lần chạy | KT06 – lần 1 |
-| Ngày giờ, người chạy | 15/11/2026 09:04:16 → 15/11/2026 09:04:20; phụ trách theo kế hoạch: B; khởi chạy: A (công cụ tự động) |
+| Ngày giờ, phụ trách | 15/11/2026 09:04:16 → 15/11/2026 09:04:20; phụ trách theo kế hoạch: B |
 | Phiên bản và môi trường | commit `7a8d253`; xem mục 1 |
 | Dữ liệu, tiền điều kiện | Món A trong các ca KT06–KT21 là món mẫu "[THỬ] Cà phê sữa" (30.000 đ); khách chưa đăng nhập |
 | Các bước đã làm | (1) Mở http://localhost:5055/ và gõ tên món vào ô tìm.; (2) Chọn biến thể và tùy chọn thêm (1 phần sữa).; (3) Tìm một tên không tồn tại.; (4) Thu nhỏ cửa sổ về 360 px. |
@@ -345,7 +345,7 @@ SoMon SoPhienBanGia
 | Trường | Nội dung |
 |---|---|
 | Mã ca / lần chạy | KT07 – lần 1 |
-| Ngày giờ, người chạy | 15/11/2026 09:04:27 → 15/11/2026 09:04:32; phụ trách theo kế hoạch: B; khởi chạy: A (công cụ tự động) |
+| Ngày giờ, phụ trách | 15/11/2026 09:04:27 → 15/11/2026 09:04:32; phụ trách theo kế hoạch: B |
 | Phiên bản và môi trường | commit `7a8d253`; xem mục 1 |
 | Dữ liệu, tiền điều kiện | Đăng nhập dev.customer; Món A = "[THỬ] Cà phê sữa" 30.000 đ; không dùng tùy chọn |
 | Các bước đã làm | (1) Đăng nhập dev.customer; thêm 2 Món A vào giỏ.; (2) /gio-hang → Đặt hàng (/dat-hang), chọn giờ nhận hợp lệ, xác nhận. |
@@ -423,7 +423,7 @@ IngredientId QuantityOnHand QuantityReserved
 | Trường | Nội dung |
 |---|---|
 | Mã ca / lần chạy | KT08 – lần 1 |
-| Ngày giờ, người chạy | 15/11/2026 09:04:32 → 15/11/2026 09:04:39; phụ trách theo kế hoạch: C; khởi chạy: A (công cụ tự động) |
+| Ngày giờ, phụ trách | 15/11/2026 09:04:32 → 15/11/2026 09:04:39; phụ trách theo kế hoạch: C |
 | Phiên bản và môi trường | commit `7a8d253`; xem mục 1 |
 | Dữ liệu, tiền điều kiện | Có đơn của KT07 đang chờ; tạo thêm một đơn khác để từ chối; đăng nhập dev.cashier |
 | Các bước đã làm | (1) Tạo thêm một đơn trên Web để thử Từ chối.; (2) Đăng nhập Desktop dev.cashier → Tiếp nhận đơn.; (3) Chọn đơn WEB-261115-3BLBARFM, xem chi tiết.; (4) Bấm Tiếp nhận đơn → Có.; (5) Chọn đơn WEB-261115-3N6BU7B4, Từ chối đơn…: để trống lý do rồi nhập lý do. |
@@ -536,7 +536,7 @@ SELECT COUNT(*) FROM PreparationTicket t JOIN OrderRound r ON r.RoundId = t.Roun
 | Trường | Nội dung |
 |---|---|
 | Mã ca / lần chạy | KT09 – lần 1 |
-| Ngày giờ, người chạy | 15/11/2026 09:04:39 → 15/11/2026 09:04:53; phụ trách theo kế hoạch: C (B hỗ trợ Web); khởi chạy: A (công cụ tự động) |
+| Ngày giờ, phụ trách | 15/11/2026 09:04:39 → 15/11/2026 09:04:53; phụ trách theo kế hoạch: C (B hỗ trợ Web) |
 | Phiên bản và môi trường | commit `7a8d253`; xem mục 1 |
 | Dữ liệu, tiền điều kiện | Sau KT04, KT07, KT08; Món A = "[THỬ] Cà phê sữa"; dev.customer đăng nhập |
 | Các bước đã làm | (1) Tạo thêm một đơn đang chờ để đối chiếu ở D02.; (2) 1. So sánh giá Món A trên Web (/danh-muc), D06 và SQL (PriceHistory).; (3) 2. So sánh mã đơn, dòng món, giá chốt ở Web ("Đơn của tôi"), D02 (đơn chờ) và SQL.; (4) 3. Đổi giá Món A (D06) rồi mở lại đơn cũ. |
@@ -618,7 +618,7 @@ UnitPriceSnapshot
 | Trường | Nội dung |
 |---|---|
 | Mã ca / lần chạy | KT10 – lần 1 |
-| Ngày giờ, người chạy | 15/11/2026 09:04:53 → 15/11/2026 09:04:58; phụ trách theo kế hoạch: B (cần người đổi giá ở D06); khởi chạy: A (công cụ tự động) |
+| Ngày giờ, phụ trách | 15/11/2026 09:04:53 → 15/11/2026 09:04:58; phụ trách theo kế hoạch: B (cần người đổi giá ở D06) |
 | Phiên bản và môi trường | commit `7a8d253`; xem mục 1 |
 | Dữ liệu, tiền điều kiện | Giá hiện tại của "[THỬ] Cà phê sữa" là 32.000 đ sau KT09; dev.customer |
 | Các bước đã làm | (1) Khách bỏ Món A vào giỏ, mở trang đặt hàng nhưng chưa gửi.; (2) Người khác dùng D06 đổi giá Món A thành 35.000 (hiệu lực ngay).; (3) Khách bấm xác nhận gửi.; (4) Khách đồng ý giá mới (xác nhận lại). |
@@ -689,7 +689,7 @@ WEB-261115-CU3855RN 35000.00
 | Trường | Nội dung |
 |---|---|
 | Mã ca / lần chạy | KT14 – lần 1 |
-| Ngày giờ, người chạy | 15/11/2026 09:04:58 → 15/11/2026 09:05:05; phụ trách theo kế hoạch: B; khởi chạy: A (công cụ tự động) |
+| Ngày giờ, phụ trách | 15/11/2026 09:04:58 → 15/11/2026 09:05:05; phụ trách theo kế hoạch: B |
 | Phiên bản và môi trường | commit `7a8d253`; xem mục 1 |
 | Dữ liệu, tiền điều kiện | dev.customer có đơn đang chờ; đơn KT07 đã được tiếp nhận ở KT08 |
 | Các bước đã làm | (1) /don-cua-toi → chọn đơn → Hủy.; (2) Với đơn đã được tiếp nhận (KT08): thử hủy. |
@@ -762,7 +762,7 @@ Serving
 | Trường | Nội dung |
 |---|---|
 | Mã ca / lần chạy | KT15 – lần 1 |
-| Ngày giờ, người chạy | 15/11/2026 09:05:05 → 15/11/2026 09:05:13; phụ trách theo kế hoạch: C; khởi chạy: A (công cụ tự động) |
+| Ngày giờ, phụ trách | 15/11/2026 09:05:05 → 15/11/2026 09:05:13; phụ trách theo kế hoạch: C |
 | Phiên bản và môi trường | commit `7a8d253`; xem mục 1 |
 | Dữ liệu, tiền điều kiện | dev.cashier đăng nhập Desktop, mở D02; vô hiệu hóa nhân viên "Thu ngân thử" bằng SQL rồi khôi phục |
 | Các bước đã làm | (1) Đăng nhập dev.cashier → mở D02 (tự làm mới 5 giây).; (2) UPDATE StaffAccount SET IsActive = 0 WHERE FullName = N'Thu ngân thử';; (3) Đợi tối đa 5 giây.; (4) Khôi phục IsActive = 1. |
@@ -805,7 +805,7 @@ SELECT CAST(IsActive AS int) FROM StaffAccount WHERE FullName = N'Thu ngân th�
 | Trường | Nội dung |
 |---|---|
 | Mã ca / lần chạy | KT16 – lần 1 |
-| Ngày giờ, người chạy | 15/11/2026 09:05:13 → 15/11/2026 09:05:17; phụ trách theo kế hoạch: B; khởi chạy: A (công cụ tự động) |
+| Ngày giờ, phụ trách | 15/11/2026 09:05:13 → 15/11/2026 09:05:17; phụ trách theo kế hoạch: B |
 | Phiên bản và môi trường | commit `7a8d253`; xem mục 1 |
 | Dữ liệu, tiền điều kiện | Khách A = dev.customer (trình duyệt 1); khách B = khach.b (trình duyệt 2, phiên riêng) |
 | Các bước đã làm | (1) Khách B mở /don-cua-toi/6 và /don-cua-toi/6/huy.; (2) B thử gửi lệnh hủy thẳng (POST kèm mã chống giả mạo hợp lệ của chính B). |
@@ -847,7 +847,7 @@ Pending
 | Trường | Nội dung |
 |---|---|
 | Mã ca / lần chạy | KT17 – lần 1 |
-| Ngày giờ, người chạy | 15/11/2026 09:04:20 → 15/11/2026 09:04:27; phụ trách theo kế hoạch: B; khởi chạy: A (công cụ tự động) |
+| Ngày giờ, phụ trách | 15/11/2026 09:04:20 → 15/11/2026 09:04:27; phụ trách theo kế hoạch: B |
 | Phiên bản và môi trường | commit `7a8d253`; xem mục 1 |
 | Dữ liệu, tiền điều kiện | Trình duyệt riêng cho khách B; tên đăng nhập mới khach.b |
 | Các bước đã làm | (1) Mở /tai-khoan/dang-ky, nhập tên đăng nhập mới hợp lệ, mật khẩu ≥ 6 ký tự, họ tên, số điện thoại → Đăng ký.; (2) Đăng nhập bằng tài khoản vừa tạo.; (3) Đăng ký lại cùng tên.; (4) Thử dữ liệu sai: mật khẩu ngắn, xác nhận không khớp, số điện thoại sai. |
@@ -919,7 +919,7 @@ SELECT COUNT(*) FROM AspNetUsers WHERE UserName IN (N'khach.c', N'khach.d', N'kh
 | Trường | Nội dung |
 |---|---|
 | Mã ca / lần chạy | KT18 – lần 1 |
-| Ngày giờ, người chạy | 15/11/2026 09:05:17 → 15/11/2026 09:05:21; phụ trách theo kế hoạch: C; khởi chạy: A (công cụ tự động) |
+| Ngày giờ, phụ trách | 15/11/2026 09:05:17 → 15/11/2026 09:05:21; phụ trách theo kế hoạch: C |
 | Phiên bản và môi trường | commit `7a8d253`; xem mục 1 |
 | Dữ liệu, tiền điều kiện | D06 với biến thể "[THỬ] Cà phê đen" (chưa có giá hẹn trước) |
 | Các bước đã làm | (1) D06: chọn biến thể đã có giá hiện hành.; (2) Đổi giá 31.000 hiệu lực 30 phút nữa.; (3) Đổi giá lần nữa với hiệu lực bây giờ. |
@@ -966,7 +966,7 @@ PriceHistoryId UnitPrice EffectiveFrom EffectiveTo
 | Trường | Nội dung |
 |---|---|
 | Mã ca / lần chạy | KT19 – lần 1 |
-| Ngày giờ, người chạy | 15/11/2026 09:05:21 → 15/11/2026 09:05:38; phụ trách theo kế hoạch: C; khởi chạy: A (công cụ tự động) |
+| Ngày giờ, phụ trách | 15/11/2026 09:05:21 → 15/11/2026 09:05:38; phụ trách theo kế hoạch: C |
 | Phiên bản và môi trường | commit `7a8d253`; xem mục 1 |
 | Dữ liệu, tiền điều kiện | Món đã có đơn: "[THỬ] Cà phê sữa"; món mới chưa có đơn: "Món A" (tạo ở KT04) |
 | Các bước đã làm | (1) Dùng một món đã có đơn và một món mới chưa có đơn.; (2) D06: tìm, Sửa món, Ngừng bán biến thể.; (3) Kiểm tra Web và đơn cũ. |
@@ -1026,7 +1026,7 @@ SELECT COUNT(*) FROM SalesOrder
 | Trường | Nội dung |
 |---|---|
 | Mã ca / lần chạy | KT21 – lần 1 |
-| Ngày giờ, người chạy | 15/11/2026 09:05:38 → 15/11/2026 09:05:50; phụ trách theo kế hoạch: B; khởi chạy: A (công cụ tự động) |
+| Ngày giờ, phụ trách | 15/11/2026 09:05:38 → 15/11/2026 09:05:50; phụ trách theo kế hoạch: B |
 | Phiên bản và môi trường | commit `7a8d253`; xem mục 1 |
 | Dữ liệu, tiền điều kiện | dev.customer; trình duyệt khách A |
 | Các bước đã làm | (1) /tai-khoan/dang-nhap: dev.customer đúng mật khẩu.; (2) Đăng xuất.; (3) Nhập sai mật khẩu.; (4) Nhập sai 5 lần liên tiếp rồi thử mật khẩu đúng khi đang khóa.; (5) Mở khóa: UPDATE AspNetUsers SET LockoutEnd = NULL, AccessFailedCount = 0 WHERE UserName = N'dev.customer'; |
@@ -1086,7 +1086,7 @@ dev.customer NULL
 | Trường | Nội dung |
 |---|---|
 | Mã ca / lần chạy | LT01 – lần 1 |
-| Ngày giờ, người chạy | 15/11/2026 09:06:21 → 15/11/2026 09:06:37; phụ trách theo kế hoạch: A (điều phối); khởi chạy: A (công cụ tự động) |
+| Ngày giờ, phụ trách | 15/11/2026 09:06:21 → 15/11/2026 09:06:37; phụ trách theo kế hoạch: A (điều phối) |
 | Phiên bản và môi trường | commit `7a8d253`; xem mục 1 |
 | Dữ liệu, tiền điều kiện | CSDL Dev sạch dựng lại bằng --migrate --seed --seed-accounts |
 | Các bước đã làm | — |

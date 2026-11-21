@@ -1,4 +1,6 @@
-# Đề nghị A sửa `src/CafeManager.Web/Program.cs` (3 dòng) – giỏ hàng session của B (T4)
+# [Đã thực hiện] Đề nghị A sửa `src/CafeManager.Web/Program.cs` (3 dòng) – giỏ hàng session của B (T4)
+
+Ghi chú 21/11/2026: đã có trong `Program.cs` (AddSession, UseSession, cookie `.CafeManager.Cart`); giữ file để tra cứu.
 
 Giỏ hàng (W01) lưu trong session theo đề bài. B không được sửa `Program.cs`, nên nhờ A thêm:
 

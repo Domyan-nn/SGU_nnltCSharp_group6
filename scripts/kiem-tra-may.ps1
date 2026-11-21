@@ -34,7 +34,7 @@ try {
 } catch { Ket 'LOI' 'SQL Server LocalDB' 'không chạy được sqllocaldb; cài SQL Server Express LocalDB' }
 
 # 3. sqlcmd (cần cho các câu truy vấn trong hướng dẫn; có thể thay bằng SSMS)
-if (Get-Command sqlcmd -ErrorAction SilentlyContinue) { Ket 'OK' 'sqlcmd' 'có (luôn dùng cờ -I, xem docs/kiem-thu-tay.md mục 2)' }
+if (Get-Command sqlcmd -ErrorAction SilentlyContinue) { Ket 'OK' 'sqlcmd' 'có (luôn dùng cờ -I, xem docs/huong-dan-demo.md mục 1)' }
 else { Ket 'CB' 'sqlcmd' 'không có; dùng SSMS cho các câu truy vấn SQL' }
 
 # 4. Cổng 5055 (Web) phải rảnh trước khi chạy máy chủ; nếu đang có máy chủ của chính mình thì chỉ báo
@@ -62,20 +62,20 @@ if (Get-Command sqlcmd -ErrorAction SilentlyContinue) {
         $soMigration = (& sqlcmd -S $mayChu -E -C -I -b -d $csdl -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM __EFMigrationsHistory") 2>$null | Select-Object -First 1
         $caCanCo = @(Get-ChildItem (Join-Path $goc 'src\CafeManager.Infrastructure\Migrations') -Filter '*.cs' -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^\d{14}_.*(?<!\.Designer)\.cs$' }).Count
         if ($soMigration -and $caCanCo -and [int]$soMigration -ge $caCanCo) { Ket 'OK' "CSDL $csdl" "có, $soMigration migration đã áp dụng" }
-        else { Ket 'CB' "CSDL $csdl" "có nhưng mới áp dụng $soMigration/$caCanCo migration; chạy lại lệnh --migrate ở docs/kiem-thu-tay.md mục 2" }
+        else { Ket 'CB' "CSDL $csdl" "có nhưng mới áp dụng $soMigration/$caCanCo migration; chạy lại lệnh --migrate ở docs/huong-dan-demo.md mục 1" }
         $taiKhoan = (& sqlcmd -S $mayChu -E -C -I -b -d $csdl -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM AspNetUsers WHERE UserName IN (N'dev.manager', N'dev.cashier', N'dev.customer')") 2>$null | Select-Object -First 1
         if ($taiKhoan -eq '3') { Ket 'OK' 'Tài khoản mẫu' 'đủ 3 tài khoản (mật khẩu: tự tra ghi chú lúc tạo, không lấy lại được)' }
         else { Ket 'CB' 'Tài khoản mẫu' "mới có $taiKhoan/3; chạy lệnh có --seed --seed-accounts (mật khẩu hiện MỘT lần)" }
         $mon = (& sqlcmd -S $mayChu -E -C -I -b -d $csdl -h -1 -W -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM ProductVariant WHERE IsActive = 1 AND VariantType = 'Drink'") 2>$null | Select-Object -First 1
         if ([int]$mon -ge 1) { Ket 'OK' 'Món đang bán' "$mon biến thể đồ uống" } else { Ket 'CB' 'Món đang bán' 'chưa có món nào; chạy --seed hoặc tạo món bằng D06 (KT04)' }
-    } else { Ket 'CB' "CSDL $csdl" 'chưa có; chạy lệnh --migrate --seed --seed-accounts ở docs/kiem-thu-tay.md mục 2' }
+    } else { Ket 'CB' "CSDL $csdl" 'chưa có; chạy lệnh --migrate --seed --seed-accounts ở docs/huong-dan-demo.md mục 1' }
 } else { Ket 'CB' 'CSDL Dev' 'bỏ qua vì không có sqlcmd' }
 
 # 7. Máy chủ Web đang chạy chưa (không bắt buộc)
 try {
     $tl = Invoke-WebRequest -Uri 'http://localhost:5055/api/menu' -UseBasicParsing -TimeoutSec 4
     Ket 'OK' 'Máy chủ Web http://localhost:5055' "đang chạy, /api/menu trả mã $($tl.StatusCode)"
-} catch { Ket 'CB' 'Máy chủ Web http://localhost:5055' 'chưa chạy (bình thường nếu bạn chưa khởi động; lệnh ở docs/kiem-thu-tay.md mục 2)' }
+} catch { Ket 'CB' 'Máy chủ Web http://localhost:5055' 'chưa chạy (bình thường nếu bạn chưa khởi động; lệnh ở docs/huong-dan-demo.md mục 1)' }
 
 # 8. Biên dịch toàn solution
 if (-not $BoQuaBuild) {

@@ -49,7 +49,7 @@ Tổng thời lượng các cảnh phải ≤ 5 phút. Điền cột "Thời lư
 
 - Mỗi bước nói theo ba phần: **làm gì → thấy gì → vì sao quan trọng**. Một đến hai câu mỗi bước.
 - 5 phút nói tối đa khoảng 600–650 từ (mỗi phút khoảng 130 từ). Viết ra rồi đọc thử bấm giờ.
-- Chỉ nói điều đã chạy được và nhìn thấy trên màn hình. Không nói "đạt", "hoàn chỉnh" cho phần chưa kiểm thử tay.
+- Chỉ nói điều đã chạy được và nhìn thấy trên màn hình. Không nói "đạt", "hoàn chỉnh" cho phần chưa kiểm thử.
 - Nhấn điểm khác biệt của đồ án (cùng một dữ liệu giữa Web, Desktop, CSDL; giá chốt; chặn thao tác sai), đừng liệt kê từng nút.
 - Phần không làm nói thẳng, ngắn gọn, khớp báo cáo.
 
