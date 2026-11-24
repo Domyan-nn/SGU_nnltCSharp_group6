@@ -92,6 +92,12 @@ IF @r < 0 THROW 51000, 'Cannot acquire operation lock', 1;", ct);
         if (unit.Status != PreparationStatuses.Ready) throw new AppException(ApiErrorCodes.InvalidState, "Chỉ giao được ly đã pha xong.");
         unit.Status = PreparationStatuses.Delivered; unit.DeliveredBy = staff.StaffId; unit.DeliveredAt = utcNow;
         await SaveUnitAsync(await TicketIdOfAsync(unit.LineId, ct), ct);
+
+        // PreparationUnit không lưu OrderId (3NF) nên tìm đơn qua dòng và lượt.
+        var orderId = await (from l in db.OrderLine join r in db.OrderRound on l.RoundId equals r.RoundId
+                             where l.LineId == unit.LineId select r.OrderId).SingleAsync(ct);
+        try { await OrderClosing.TryCloseAsync(db, orderId, ct); }
+        catch (DbUpdateConcurrencyException) { /* thao tác thu tiền vừa đóng đơn cùng lúc: bỏ qua */ }
     }
 
     private async Task SaveUnitAsync(long ticketId, CancellationToken ct)

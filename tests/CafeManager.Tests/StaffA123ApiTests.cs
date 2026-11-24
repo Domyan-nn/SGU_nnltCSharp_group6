@@ -250,6 +250,70 @@ public sealed class StaffA123ApiTests(SqlServerFixture fixture) : IClassFixture<
         await AssertError(await NewClient().GetAsync("api/staff/shifts/current"), HttpStatusCode.Unauthorized, ApiErrorCodes.Unauthorized);
     }
 
+    // ---------------------------------------------------------------- Đóng đơn: thu đủ tiền và giao đủ ly
+
+    // Một nhân viên làm cả ba việc (tiếp nhận, thu tiền, pha chế) để các test đóng đơn chỉ lo thứ tự thao tác.
+    private async Task<(HttpClient Client, string Token, long OrderId, List<long> Units)> ServeOrderAsync(Data d)
+    {
+        var name = await SeedStaffAsync(Factory.Services, d.Suffix, "closer", Permissions.PaymentCollect, Permissions.OrderReceive, Permissions.PreparationWork);
+        var counter = await SeedCounterAsync(Factory.Services, "C-" + d.Suffix);
+        var (client, token) = await StaffClientAsync(name);
+        Assert.Equal(HttpStatusCode.Created, (await Send(client, HttpMethod.Post, "api/staff/shifts", token, new OpenShiftRequest(counter, 0))).StatusCode);
+        var (_, order) = await PlaceOrderAsync(d);
+        Assert.Equal(HttpStatusCode.OK, (await Send(client, HttpMethod.Post, $"api/staff/orders/{order.OrderId}/accept", token)).StatusCode);
+        var units = (await client.GetFromJsonAsync<List<PreparationUnitDto>>("api/staff/preparation"))!
+            .Where(u => u.OrderId == order.OrderId).OrderBy(u => u.UnitNumber).Select(u => u.UnitId).ToList();
+        Assert.Equal(2, units.Count);
+        return (client, token, order.OrderId, units);
+    }
+
+    private static async Task PrepareAndDeliverAsync(HttpClient client, string token, long unitId)
+    {
+        foreach (var step in new[] { "start", "ready", "deliver" })
+            Assert.Equal(HttpStatusCode.NoContent, (await Send(client, HttpMethod.Post, $"api/staff/preparation/{unitId}/{step}", token)).StatusCode);
+    }
+
+    private static async Task PayCashAsync(HttpClient client, string token, long orderId) =>
+        Assert.Equal(HttpStatusCode.Created, (await Send(client, HttpMethod.Post, "api/staff/payments/cash", token, new CashPaymentRequest(Guid.NewGuid(), orderId, 100000))).StatusCode);
+
+    private Task<string> OrderStatusAsync(long orderId) =>
+        ReadDbAsync(db => db.SalesOrder.AsNoTracking().Where(o => o.OrderId == orderId).Select(o => o.Status).SingleAsync());
+
+    [SqlServerFact]
+    public async Task Order_closes_when_cash_is_collected_after_every_cup_was_delivered()
+    {
+        var d = await SeedAsync(Factory.Services);
+        var (client, token, orderId, units) = await ServeOrderAsync(d);
+        foreach (var unit in units) await PrepareAndDeliverAsync(client, token, unit);
+        Assert.Equal("Serving", await OrderStatusAsync(orderId));   // giao xong nhưng chưa trả tiền thì chưa đóng
+
+        await PayCashAsync(client, token, orderId);
+        Assert.Equal("Closed", await OrderStatusAsync(orderId));
+    }
+
+    [SqlServerFact]
+    public async Task Order_closes_when_the_last_cup_is_delivered_after_payment()
+    {
+        var d = await SeedAsync(Factory.Services);
+        var (client, token, orderId, units) = await ServeOrderAsync(d);
+        await PayCashAsync(client, token, orderId);
+        await PrepareAndDeliverAsync(client, token, units[0]);
+        Assert.Equal("Serving", await OrderStatusAsync(orderId));   // còn một ly chưa giao
+
+        await PrepareAndDeliverAsync(client, token, units[1]);
+        Assert.Equal("Closed", await OrderStatusAsync(orderId));
+    }
+
+    [SqlServerFact]
+    public async Task Paid_order_stays_serving_while_a_cup_is_not_delivered()
+    {
+        var d = await SeedAsync(Factory.Services);
+        var (client, token, orderId, units) = await ServeOrderAsync(d);
+        Assert.Equal(HttpStatusCode.NoContent, (await Send(client, HttpMethod.Post, $"api/staff/preparation/{units[0]}/start", token)).StatusCode);   // ly 2 vẫn chờ, ly 1 đang pha
+        await PayCashAsync(client, token, orderId);
+        Assert.Equal("Serving", await OrderStatusAsync(orderId));
+    }
+
     // ---------------------------------------------------------------- A3: pha chế
 
     [SqlServerFact]

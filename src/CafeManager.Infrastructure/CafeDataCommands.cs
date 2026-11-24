@@ -209,7 +209,9 @@ IF @r < 0 THROW 51000, 'Cannot acquire operation lock', 1;", ct);
             Amount = due, Method = "Cash", Status = "Succeeded", PaidAt = DateTime.UtcNow, RequestId = requestId, CreatedBy = staffId };
         db.Add(payment); await db.SaveChangesAsync(ct);
         request.ResultReference = payment.PaymentId.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        await db.SaveChangesAsync(ct); await tx.CommitAsync(ct);
+        await db.SaveChangesAsync(ct);
+        await OrderClosing.TryCloseAsync(db, orderId, ct);   // đã thu đủ và đã giao đủ ly thì đóng đơn, cùng giao dịch với việc thu tiền
+        await tx.CommitAsync(ct);
         return new CashCollection(payment.PaymentId, due, amountReceived, amountReceived - due);
     }
 
