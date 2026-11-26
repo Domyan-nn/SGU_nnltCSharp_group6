@@ -66,6 +66,28 @@ public sealed class StaffApi(ApiClient api)
     public Task<ApiResult<Empty>> DeleteIngredientAsync(long ingredientId, CancellationToken ct = default) =>
         api.DeleteAsync($"api/staff/ingredients/{ingredientId}", ct);
 
+    // --- UC13: kho nguyên liệu (màn hình Kho nguyên liệu), quyền INVENTORY_WORK; duyệt/từ chối cần thêm INVENTORY_APPROVE ---
+    public Task<ApiResult<List<InventoryItemDto>>> InventoryAsync(string? search = null, CancellationToken ct = default) =>
+        api.GetAsync<List<InventoryItemDto>>("api/staff/inventory" + Search(search), ct);
+
+    // Nhập kho. Khi kết quả Unknown (mất phản hồi), gửi lại đúng RequestId cũ để không cộng tồn hai lần.
+    public Task<ApiResult<StockReceiptResponse>> ReceiveStockAsync(long ingredientId, StockReceiptRequest request, CancellationToken ct = default) =>
+        api.PostAsync<StockReceiptResponse>($"api/staff/inventory/{ingredientId}/receipts", request, ct);
+
+    // 409 CONFLICT khi nguyên liệu đã có phiếu chờ duyệt.
+    public Task<ApiResult<StockCountDto>> CreateStockCountAsync(long ingredientId, CreateStockCountRequest request, CancellationToken ct = default) =>
+        api.PostAsync<StockCountDto>($"api/staff/inventory/{ingredientId}/counts", request, ct);
+
+    public Task<ApiResult<List<StockCountDto>>> StockCountsAsync(string? status = null, CancellationToken ct = default) =>
+        api.GetAsync<List<StockCountDto>>("api/staff/inventory/counts" + (string.IsNullOrEmpty(status) ? "" : "?status=" + Uri.EscapeDataString(status)), ct);
+
+    // 409 INVALID_STATE khi phiếu đã xử lý, người duyệt là người lập phiếu, hoặc điều chỉnh làm tồn thấp hơn lượng đang giữ.
+    public Task<ApiResult<StockCountDto>> ApproveStockCountAsync(long countId, CancellationToken ct = default) =>
+        api.PostAsync<StockCountDto>($"api/staff/inventory/counts/{countId}/approve", null, ct);
+
+    public Task<ApiResult<StockCountDto>> RejectStockCountAsync(long countId, string reason, CancellationToken ct = default) =>
+        api.PostAsync<StockCountDto>($"api/staff/inventory/counts/{countId}/reject", new RejectStockCountRequest(reason), ct);
+
     // --- A2: ca và thu tiền mặt (màn hình Thu ngân), quyền PAYMENT_COLLECT ---
     public Task<ApiResult<List<CounterDto>>> CountersAsync(CancellationToken ct = default) =>
         api.GetAsync<List<CounterDto>>("api/staff/counters", ct);

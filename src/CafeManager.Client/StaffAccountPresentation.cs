@@ -58,6 +58,8 @@ public static class StaffAccountText
         Permissions.PaymentCollect => "Thu ngân",
         Permissions.PreparationWork => "Pha chế",
         Permissions.StaffManage => "Quản lý nhân viên",
+        Permissions.InventoryWork => "Kho nguyên liệu",
+        Permissions.InventoryApprove => "Duyệt kiểm kê",
         _ => code,
     };
 

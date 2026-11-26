@@ -16,14 +16,18 @@ public static class DevelopmentAccountSeeder
     public static async Task<IReadOnlyList<SeededAccount>> SeedAsync(CafeDbContext db, UserManager<IdentityUser> users, CancellationToken ct = default)
     {
         await using var tx = await db.Database.BeginTransactionAsync(ct);
-        var manager = await RoleAsync(db, "Manager", [Permissions.MenuManage, Permissions.StaffManage], ct);
+        // Quản lý duyệt kiểm kê (INVENTORY_APPROVE) và cũng làm được việc kho; nhân viên kho nhập và kiểm kê nhưng không tự duyệt.
+        var manager = await RoleAsync(db, "Manager",
+            [Permissions.MenuManage, Permissions.StaffManage, Permissions.InventoryWork, Permissions.InventoryApprove], ct);
         var cashier = await RoleAsync(db, "Cashier", [Permissions.OrderReceive, Permissions.PaymentCollect], ct);
         var barista = await RoleAsync(db, "Barista", [Permissions.PreparationWork], ct);
+        var warehouse = await RoleAsync(db, "Warehouse", [Permissions.InventoryWork], ct);
         var result = new List<SeededAccount>
         {
             await StaffAsync(db, users, "dev.manager", "Quản lý thử", manager, ct),
             await StaffAsync(db, users, "dev.cashier", "Thu ngân thử", cashier, ct),
             await StaffAsync(db, users, "dev.barista", "Pha chế thử", barista, ct),
+            await StaffAsync(db, users, "dev.warehouse", "Nhân viên kho thử", warehouse, ct),
             await CustomerAsync(db, users, "dev.customer", "Khách thử", "0900000000", ct),
         };
         await tx.CommitAsync(ct);

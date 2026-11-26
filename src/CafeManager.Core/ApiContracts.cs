@@ -11,8 +11,10 @@ public static class Permissions
     public const string PaymentCollect = "PAYMENT_COLLECT";     // mở/đóng ca, thu tiền mặt (Thu ngân)
     public const string PreparationWork = "PREPARATION_WORK";   // màn hình Pha chế
     public const string StaffManage = "STAFF_MANAGE";           // quản lý nhân viên và gán vai trò (UC16)
+    public const string InventoryWork = "INVENTORY_WORK";       // kho nguyên liệu: xem tồn, nhập kho, lập phiếu kiểm kê (UC13)
+    public const string InventoryApprove = "INVENTORY_APPROVE"; // duyệt hoặc từ chối chênh lệch kiểm kê (UC13), cần kèm INVENTORY_WORK
 
-    public static readonly IReadOnlyList<string> All = [MenuManage, OrderReceive, PaymentCollect, PreparationWork, StaffManage];
+    public static readonly IReadOnlyList<string> All = [MenuManage, OrderReceive, PaymentCollect, PreparationWork, StaffManage, InventoryWork, InventoryApprove];
 }
 
 public static class UserKinds
@@ -125,6 +127,30 @@ public sealed record CategoryUpsertRequest(string CategoryName, bool IsActive);
 public sealed record IngredientDto(long IngredientId, string IngredientName, string UnitName, bool IsActive,
     decimal QuantityOnHand, decimal QuantityReserved, int RecipeCount);
 public sealed record IngredientUpsertRequest(string IngredientName, string UnitName, bool IsActive);
+
+// --- Kho nguyên liệu (UC13). Quyền INVENTORY_WORK; duyệt/từ chối kiểm kê cần thêm INVENTORY_APPROVE ---
+// Tồn khả dụng = tồn sổ − lượng đang giữ cho đơn đã tiếp nhận (BR08).
+public sealed record InventoryItemDto(long IngredientId, string IngredientName, string UnitName, bool IsActive,
+    decimal QuantityOnHand, decimal QuantityReserved, decimal QuantityAvailable, long? PendingCountId);
+
+// Nhập kho. RequestId sinh mới cho mỗi lần bấm Nhập; gửi lại cùng mã khi chưa biết kết quả thì máy chủ trả lại phiếu cũ,
+// không cộng tồn lần hai. Số lượng theo đơn vị tính của nguyên liệu, lớn hơn 0, tối đa 3 chữ số thập phân.
+public sealed record StockReceiptRequest(Guid RequestId, decimal Quantity, string? Note);
+public sealed record StockReceiptResponse(long BatchId, long MovementId, decimal QuantityOnHand);
+
+// Kiểm kê: lưu tồn sổ lúc đếm, lượng thực đếm và chênh lệch; tồn chỉ đổi khi người khác người lập phiếu duyệt.
+// Mỗi nguyên liệu chỉ có một phiếu chờ duyệt. Ghi chú (lý do chênh lệch) lưu ở nhật ký.
+public static class StockCountStatuses
+{
+    public const string Pending = "Pending";
+    public const string Approved = "Approved";
+    public const string Rejected = "Rejected";
+    public static readonly IReadOnlyList<string> All = [Pending, Approved, Rejected];
+}
+public sealed record CreateStockCountRequest(decimal CountedQty, string? Note);
+public sealed record RejectStockCountRequest(string Reason);
+public sealed record StockCountDto(long CountId, long IngredientId, string IngredientName, string UnitName, decimal BookQty, decimal CountedQty,
+    decimal Difference, DateTime CountedAt, string CountedByName, string Status, string? ApprovedByName, decimal CurrentOnHand);
 
 // --- Ca và thu tiền mặt (A2; Desktop A4 Thu ngân). Quyền PAYMENT_COLLECT ---
 // Thu tiền luôn ghi vào ca đang mở của chính nhân viên đăng nhập, nên client không gửi mã ca.

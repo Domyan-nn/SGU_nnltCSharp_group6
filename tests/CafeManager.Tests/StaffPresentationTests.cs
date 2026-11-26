@@ -57,6 +57,43 @@ public sealed class StaffPresentationTests
         Assert.False(StaffInput.TryParseQuantity(text, out _, out _));
 
     [Fact]
+    public void Stock_count_status_and_difference_are_shown_in_words_with_a_sign()
+    {
+        Assert.Equal("Chờ duyệt", InventoryText.Status(StockCountStatuses.Pending));
+        Assert.Equal("Đã duyệt", InventoryText.Status(StockCountStatuses.Approved));
+        Assert.Equal("Từ chối", InventoryText.Status(StockCountStatuses.Rejected));
+        Assert.Equal("+50", InventoryText.Difference(50m));
+        Assert.Equal("-12,5", InventoryText.Difference(-12.5m));
+        Assert.Equal("0", InventoryText.Difference(0m));
+    }
+
+    [Theory]
+    [InlineData("0", 0)]
+    [InlineData("1.240", 1240)]
+    [InlineData("12,5", 12.5)]
+    public void Counted_quantity_accepts_zero_and_normal_quantities(string text, double expected)
+    {
+        Assert.True(StaffInput.TryParseCountedQuantity(text, out var value, out var error), error);
+        Assert.Equal((decimal)expected, value);
+    }
+
+    [Fact]
+    public void Counted_quantity_rejects_empty_negative_and_ambiguous_values()
+    {
+        Assert.False(StaffInput.TryParseCountedQuantity("", out _, out var empty)); Assert.Equal("Nhập lượng thực đếm.", empty);
+        Assert.False(StaffInput.TryParseCountedQuantity("-1", out _, out _));
+        Assert.False(StaffInput.TryParseCountedQuantity("0.5", out _, out _));
+    }
+
+    [Fact]
+    public void Quantity_errors_use_the_label_of_the_field()
+    {
+        Assert.False(StaffInput.TryParseQuantity("", out _, out var empty, "số lượng nhập")); Assert.Equal("Nhập số lượng nhập.", empty);
+        Assert.False(StaffInput.TryParseQuantity("0", out _, out var zero, "số lượng nhập")); Assert.Equal("Số lượng nhập phải lớn hơn 0.", zero);
+        Assert.False(StaffInput.TryParseQuantity("", out _, out var recipe)); Assert.Equal("Nhập định lượng.", recipe);   // mặc định cho công thức giữ nguyên
+    }
+
+    [Fact]
     public void Names_and_reasons_are_trimmed_required_and_length_limited()
     {
         Assert.True(StaffInput.TryName("  Cà phê sữa ", "tên món", out var name, out _)); Assert.Equal("Cà phê sữa", name);

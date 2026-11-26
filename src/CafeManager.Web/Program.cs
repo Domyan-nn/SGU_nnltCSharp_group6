@@ -32,6 +32,7 @@ builder.Services.AddScoped<CustomerOrderService>();
 builder.Services.AddScoped<StaffOrderService>();
 builder.Services.AddScoped<StaffMenuService>();
 builder.Services.AddScoped<StaffCatalogService>();
+builder.Services.AddScoped<StaffInventoryService>();
 builder.Services.AddScoped<StaffCashierService>();
 builder.Services.AddScoped<StaffPreparationService>();
 builder.Services.AddScoped<StaffReportService>();
