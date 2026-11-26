@@ -54,6 +54,9 @@ public partial class Form1 : Form
             _actions.Controls.Add(CreateActionButton("Báo cáo doanh thu", OpenRevenueReport));
         }
 
+        if (user?.Permissions.Contains(Permissions.InventoryWork) == true)
+            _actions.Controls.Add(CreateActionButton("Kho nguyên liệu (nhập, kiểm kê)", OpenInventory));
+
         if (user?.Permissions.Contains(Permissions.StaffManage) == true)
             _actions.Controls.Add(CreateActionButton("Nhân viên và phân quyền", OpenStaffAccounts));
 
@@ -121,6 +124,13 @@ public partial class Form1 : Form
     {
         if (_api is null) return;
         using var form = new IngredientForm(_api);
+        form.ShowDialog(this);
+    }
+
+    private void OpenInventory(object? sender, EventArgs e)
+    {
+        if (_api is null) return;
+        using var form = new InventoryForm(_api);
         form.ShowDialog(this);
     }
 

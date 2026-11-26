@@ -77,6 +77,42 @@ public sealed class StaffApiClientA123Tests(SqlServerFixture fixture) : IClassFi
         Assert.Equal((0m, 0), (row.QuantityOnHand, row.RecipeCount));
         Assert.Equal(409, (await staff.DeleteIngredientAsync(d.Ingredient)).StatusCode);   // đang nằm trong công thức
         Assert.True((await staff.DeleteIngredientAsync(ingredient.Value!.Id)).Ok);
+
+    }
+
+    // UC13 qua máy khách thật: nhân viên kho nhập kho và lập phiếu kiểm kê, quản lý duyệt hoặc từ chối.
+    [SqlServerFact]
+    public async Task UC13_warehouse_receives_and_counts_manager_approves_through_the_desktop_client()
+    {
+        var d = await SeedAsync(Factory.Services);   // tồn 1000
+        var (warehouseApi, warehouse) = await LoginAsync(await SeedStaffAsync(Factory.Services, d.Suffix, "kho", Permissions.InventoryWork));
+        var (managerApi, manager) = await LoginAsync(await SeedStaffAsync(Factory.Services, d.Suffix, "ql", Permissions.InventoryWork, Permissions.InventoryApprove));
+        using var _1 = warehouseApi; using var _2 = managerApi;
+
+        var requestId = Guid.NewGuid();
+        var received = await warehouse.ReceiveStockAsync(d.Ingredient, new StockReceiptRequest(requestId, 250m, null));
+        Assert.True(received.Ok, received.Message);
+        Assert.Equal(1250m, received.Value!.QuantityOnHand);
+        Assert.Equal(received.Value.MovementId, (await warehouse.ReceiveStockAsync(d.Ingredient, new StockReceiptRequest(requestId, 250m, null))).Value!.MovementId);
+        var invalid = await warehouse.ReceiveStockAsync(d.Ingredient, new StockReceiptRequest(Guid.NewGuid(), 0m, null));
+        Assert.Equal((false, 400, ApiErrorCodes.Validation), (invalid.Ok, invalid.StatusCode, invalid.Error!.Code));
+
+        var item = (await warehouse.InventoryAsync("NL " + d.Suffix)).Value!.Single();
+        Assert.Equal((1250m, 1250m), (item.QuantityOnHand, item.QuantityAvailable));
+        var count = await warehouse.CreateStockCountAsync(d.Ingredient, new CreateStockCountRequest(1240m, "Hao hụt"));
+        Assert.True(count.Ok, count.Message);
+        Assert.Equal(-10m, count.Value!.Difference);
+        Assert.Equal(403, (await warehouse.ApproveStockCountAsync(count.Value.CountId)).StatusCode);
+        Assert.Contains((await manager.StockCountsAsync(StockCountStatuses.Pending)).Value!, c => c.CountId == count.Value.CountId);
+        var approved = await manager.ApproveStockCountAsync(count.Value.CountId);
+        Assert.True(approved.Ok, approved.Message);
+        Assert.Equal((StockCountStatuses.Approved, 1240m), (approved.Value!.Status, approved.Value.CurrentOnHand));
+
+        var second = (await warehouse.CreateStockCountAsync(d.Ingredient, new CreateStockCountRequest(1000m, null))).Value!;
+        var rejected = await manager.RejectStockCountAsync(second.CountId, "Đếm lại");
+        Assert.Equal(StockCountStatuses.Rejected, rejected.Value!.Status);
+        Assert.Equal(1240m, (await warehouse.InventoryAsync("NL " + d.Suffix)).Value!.Single().QuantityOnHand);
+        Assert.Equal(409, (await manager.RejectStockCountAsync(second.CountId, "Lần hai")).StatusCode);
     }
 
     [SqlServerFact]

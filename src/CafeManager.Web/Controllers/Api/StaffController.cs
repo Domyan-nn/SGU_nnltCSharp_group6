@@ -115,6 +115,39 @@ public sealed class StaffCatalogController(StaffCatalogService catalog) : Contro
     }
 }
 
+// Kho nguyên liệu (UC13; màn hình Kho nguyên liệu). Quyền INVENTORY_WORK cho xem tồn, nhập kho, lập phiếu kiểm kê;
+// duyệt hoặc từ chối phiếu cần thêm INVENTORY_APPROVE (hai chính sách cùng phải đạt). Người lập phiếu không tự duyệt.
+[ApiController]
+[Route("api/staff/inventory")]
+[Authorize(Policy = Permissions.InventoryWork)]
+public sealed class StaffInventoryController(StaffInventoryService inventory) : ApiBase
+{
+    [HttpGet]
+    public async Task<IReadOnlyList<InventoryItemDto>> Items(string? q, CancellationToken ct) => await inventory.ItemsAsync(q, ct);
+
+    // Nhập kho: cộng tồn, ghi lô và sổ kho; gửi lại cùng RequestId trả phiếu cũ.
+    [HttpPost("{ingredientId:long}/receipts")]
+    public async Task<ActionResult<StockReceiptResponse>> Receive(long ingredientId, StockReceiptRequest request, CancellationToken ct) =>
+        StatusCode(201, await inventory.ReceiveAsync(UserId, ingredientId, request, DateTime.UtcNow, ct));
+
+    [HttpPost("{ingredientId:long}/counts")]
+    public async Task<ActionResult<StockCountDto>> CreateCount(long ingredientId, CreateStockCountRequest request, CancellationToken ct) =>
+        StatusCode(201, await inventory.CreateCountAsync(UserId, ingredientId, request, DateTime.UtcNow, ct));
+
+    [HttpGet("counts")]
+    public async Task<IReadOnlyList<StockCountDto>> Counts(string? status, CancellationToken ct) => await inventory.CountsAsync(status, ct);
+
+    [HttpPost("counts/{countId:long}/approve")]
+    [Authorize(Policy = Permissions.InventoryApprove)]
+    public async Task<StockCountDto> Approve(long countId, CancellationToken ct) =>
+        await inventory.ApproveAsync(UserId, countId, DateTime.UtcNow, ct);
+
+    [HttpPost("counts/{countId:long}/reject")]
+    [Authorize(Policy = Permissions.InventoryApprove)]
+    public async Task<StockCountDto> Reject(long countId, RejectStockCountRequest request, CancellationToken ct) =>
+        await inventory.RejectAsync(UserId, countId, request, DateTime.UtcNow, ct);
+}
+
 // Ca và thu tiền mặt (A2; màn hình Thu ngân). Quyền PAYMENT_COLLECT. Thu tiền luôn ghi vào ca đang mở của người đăng nhập.
 [ApiController]
 [Route("api/staff")]

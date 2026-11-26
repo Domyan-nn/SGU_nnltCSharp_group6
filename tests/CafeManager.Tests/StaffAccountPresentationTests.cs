@@ -77,6 +77,8 @@ public sealed class StaffAccountPresentationTests
         Assert.Contains(Permissions.StaffManage, Permissions.All);
         Assert.All(Permissions.All, code => Assert.NotEqual(code, StaffAccountText.Permission(code)));
         Assert.Equal("Quản lý nhân viên", StaffAccountText.Permission(Permissions.StaffManage));
+        Assert.Equal("Kho nguyên liệu", StaffAccountText.Permission(Permissions.InventoryWork));
+        Assert.Equal("Duyệt kiểm kê", StaffAccountText.Permission(Permissions.InventoryApprove));
         Assert.Equal("QUYEN_LA", StaffAccountText.Permission("QUYEN_LA"));   // mã lạ hiện nguyên, không giấu
     }
 

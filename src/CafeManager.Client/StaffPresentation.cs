@@ -109,6 +109,20 @@ public static class StaffMessages
     };
 }
 
+// Chữ hiển thị cho màn hình Kho nguyên liệu (UC13): trạng thái phiếu kiểm kê bằng chữ, chênh lệch luôn có dấu.
+public static class InventoryText
+{
+    public static string Status(string status) => status switch
+    {
+        StockCountStatuses.Pending => "Chờ duyệt",
+        StockCountStatuses.Approved => "Đã duyệt",
+        StockCountStatuses.Rejected => "Từ chối",
+        _ => status,
+    };
+
+    public static string Difference(decimal value) => value > 0 ? "+" + Display.Number(value) : Display.Number(value);
+}
+
 // Kiểm tra đầu vào trước khi gọi API; máy chủ vẫn kiểm tra lại (đây chỉ để báo lỗi sớm, gần trường nhập).
 // Định dạng số theo cách viết Việt Nam: dấu chấm ngăn nghìn, dấu phẩy cho phần thập phân. Chuỗi mơ hồ (ví dụ "0.5") bị từ chối
 // thay vì đoán, để không âm thầm đổi 0,5 thành 5.
@@ -132,16 +146,26 @@ public static class StaffInput
         error = ""; return true;
     }
 
-    public static bool TryParseQuantity(string? text, out decimal value, out string error)
+    // label: tên trường trong thông báo lỗi ("định lượng" cho công thức, "số lượng nhập" cho nhập kho).
+    public static bool TryParseQuantity(string? text, out decimal value, out string error, string label = "định lượng")
     {
         value = 0; text = text?.Trim();
-        if (string.IsNullOrEmpty(text)) { error = "Nhập định lượng."; return false; }
-        if (text.StartsWith('-')) { error = "Định lượng phải lớn hơn 0."; return false; }
-        if (!QuantityShape.IsMatch(text)) { error = "Định lượng không hợp lệ: dùng dấu phẩy cho phần thập phân, tối đa 3 chữ số (ví dụ 12,5)."; return false; }
+        var title = char.ToUpper(label[0]) + label[1..];
+        if (string.IsNullOrEmpty(text)) { error = $"Nhập {label}."; return false; }
+        if (text.StartsWith('-')) { error = $"{title} phải lớn hơn 0."; return false; }
+        if (!QuantityShape.IsMatch(text)) { error = $"{title} không hợp lệ: dùng dấu phẩy cho phần thập phân, tối đa 3 chữ số (ví dụ 12,5)."; return false; }
         value = Parse(text);
-        if (value <= 0) { error = "Định lượng phải lớn hơn 0."; return false; }
-        if (value > MaxQuantity) { error = "Định lượng tối đa 1.000.000."; return false; }
+        if (value <= 0) { error = $"{title} phải lớn hơn 0."; return false; }
+        if (value > MaxQuantity) { error = $"{title} tối đa 1.000.000."; return false; }
         error = ""; return true;
+    }
+
+    // Lượng thực đếm khi kiểm kê: như định lượng nhưng cho phép 0 (đếm thấy hết sạch).
+    public static bool TryParseCountedQuantity(string? text, out decimal value, out string error)
+    {
+        var trimmed = text?.Trim();
+        if (trimmed is "0" or "0,0" or "0,00" or "0,000") { value = 0; error = ""; return true; }
+        return TryParseQuantity(trimmed, out value, out error, "lượng thực đếm");
     }
 
     public static bool TryName(string? text, string label, out string name, out string error)
