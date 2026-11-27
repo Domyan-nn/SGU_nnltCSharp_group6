@@ -7,3 +7,6 @@ TestResults/
 *.suo
 appsettings.Local.json
 
+
+# Du lieu demo (CSDL va mat khau tai khoan mau) do scripts/demo/tao-demo.ps1 tao
+scripts/demo/du-lieu/
