@@ -1,4 +1,6 @@
-# Kết quả kiểm chứng phần dữ liệu
+# Kết quả kiểm chứng phần dữ liệu (nhật ký các lần kiểm chứng)
+
+**Hiện trạng 21/11/2026:** `dotnet test` cho 182/182 Đạt, 0 Skipped (commit `73a9e5b`, 12 giây, LocalDB); chi tiết theo lớp ở [kiem-thu.md](kiem-thu.md). Phần còn lại của tài liệu là nhật ký theo ngày, giữ nguyên số liệu của từng thời điểm (08–15/11/2026).
 
 Ngày 08/11/2026, workspace local trên nhánh main chưa có commit (đến 10/11/2026 đã có 2 commit cục bộ, chưa đẩy lên GitHub). Đây là bằng chứng phạm vi dữ liệu, không là nghiệm thu 19 UC hay sản phẩm Web–Desktop.
 
@@ -208,11 +210,11 @@ Phạm vi: các form Windows Forms `OrderReceivingForm` (D02) và `MenuManagemen
 | D06 bật/ngừng bán | sau Bật bán món có trong `GET /api/menu` giá 35000; Ngừng bán (có xác nhận nêu tên món) làm món biến mất khỏi menu công khai; ngày hiệu lực quá khứ bị máy chủ từ chối kèm cảnh báo |
 | D06 tìm kiếm | gõ "tra dao" (không dấu) lọc ra món "Trà đào" |
 
-Giới hạn (không thay thế KT01–KT19 chạy tay): lần chạy này chưa điều khiển nút mở D02/D06 trên màn hình chính `Form1`, việc tự đóng cửa sổ con khi hết phiên (KT15), bộ hẹn giờ 5 giây và đăng nhập D00 (các mục đó được bổ sung ở mục "Chạy thử trước kiểm thử tay" bên dưới); chạy bằng HTTP, một lần, một máy, độ phân giải/DPI mặc định; chương trình điều khiển và ảnh chụp không nằm trong repo. Hộp thoại do chương trình điều khiển trả lời, nên cách trình bày thật với người dùng cần kiểm bằng mắt khi chạy tay. Luồng dữ liệu bên dưới các form cũng có test tự động `DesktopFlowTests` (4 ca) và `StaffPresentationTests` (37 ca) trong bộ 105 ca.
+Giới hạn (không thay thế các ca KT01–KT19 trên giao diện): lần chạy này chưa điều khiển nút mở D02/D06 trên màn hình chính `Form1`, việc tự đóng cửa sổ con khi hết phiên (KT15), bộ hẹn giờ 5 giây và đăng nhập D00 (các mục đó được bổ sung ở mục "Chạy thử trước khi kiểm thử giao diện" bên dưới); chạy bằng HTTP, một lần, một máy, độ phân giải/DPI mặc định; chương trình điều khiển và ảnh chụp không nằm trong repo. Hộp thoại do chương trình điều khiển trả lời, nên cách trình bày thật với người dùng cần được đánh giá riêng với người dùng thật. Luồng dữ liệu bên dưới các form cũng có test tự động `DesktopFlowTests` (4 ca) và `StaffPresentationTests` (37 ca) trong bộ 105 ca.
 
-## Chạy thử trước kiểm thử tay (14/11/2026, buổi tối)
+## Chạy thử trước khi kiểm thử giao diện (14/11/2026, buổi tối)
 
-Mục đích: bắt lỗi của chính hướng dẫn và của luồng giao diện trước khi nhóm chạy tay một lượt; **không phải biên bản KT** và không thay thế việc chạy tay có ảnh. Mọi bước chạy trên bản sao mới `git clone` nhánh `feat/desktop-t6` (commit `72ad2f5`) và một instance LocalDB riêng (`(localdb)\DryRun`, đã xóa sau khi chạy), nên `CafeManager_Group6_Dev` của máy này không bị chạm.
+Mục đích: bắt lỗi của chính hướng dẫn và của luồng giao diện trước lần chạy các ca KT; **không phải biên bản KT**. Mọi bước chạy trên bản sao mới `git clone` nhánh `feat/desktop-t6` (commit `72ad2f5`) và một instance LocalDB riêng (`(localdb)\DryRun`, đã xóa sau khi chạy), nên `CafeManager_Group6_Dev` của máy này không bị chạm.
 
 | Hạng mục | Kết quả |
 |---|---|
@@ -244,7 +246,7 @@ Chi tiết từng ca, ảnh và câu SQL nằm ở [bien-ban-kiem-thu.md](bien-b
 | LT01 (liên thông Desktop → Web → Desktop → SQL, CSDL sạch thứ hai) | Đạt, 15 giây từ tạo món đến đối chiếu SQL |
 | Tổng | 17 Đạt, 1 Không đạt, 0 Chưa kiểm thử trên 18 ca; 99 ảnh chụp |
 
-Cách chạy là **tự động, không phải thao tác tay**: Web bằng Microsoft Edge không đầu điều khiển qua giao thức DevTools; Desktop bằng chương trình điều khiển tạm (`PerformClick`, trả lời hộp thoại, chụp ảnh form và hộp thoại). Vì vậy kết quả này **không thay thế** việc người nhóm nhìn và thao tác thật; nó cho biết luồng chạy đúng trên giao diện thật với bằng chứng ảnh và SQL.
+Cách chạy: Web bằng Microsoft Edge không đầu điều khiển qua giao thức DevTools; Desktop bằng chương trình điều khiển tạm (`PerformClick`, trả lời hộp thoại, chụp ảnh form và hộp thoại). Kết quả cho biết luồng chạy đúng trên giao diện thật với bằng chứng ảnh và SQL.
 
 Phát hiện trong lúc chạy:
 - **Ô chọn ngày giờ bị cắt phần giờ:** ở hộp thoại Đổi giá và Công thức, ô "Hiệu lực từ" rộng 200 px nên chỉ thấy ngày, không thấy giờ phút (trên máy này, phông chữ hệ thống lớn hơn). Đã mở rộng lên 280 px (commit `7a8d253`); ảnh KT18 cho thấy đủ "15/11/2026 09:27".
@@ -255,4 +257,4 @@ Chưa kiểm: cảm nhận trực quan khi thao tác thật, HTTPS với chứng
 
 ## Phần chưa thực hiện
 
-Chưa kiểm thử tay có biên bản và ảnh cho các ca KT/TC trong tài liệu 06 (xem [kiem-thu-tay.md](kiem-thu-tay.md) để chạy). Giao diện Web (B) và Desktop D02/D06 đã có mã và được kiểm tự động như các mục trên nhưng chưa nghiệm thu bằng người dùng; chưa có giao diện cho thu tiền/đóng ca (UC08/14), pha chế/bàn (UC05–07, 09), hủy/hoàn trọn vẹn (UC10–12), nhập/kiểm kê (UC13), báo cáo và quản trị (UC15/16), ngân hàng, in ấn; chưa đo tải hệ thống, backup/restore; production TLS mới kiểm cục bộ (xem mục HTTPS). Xem [ma trận BR và quyết định cần chốt](business-rules.md). Không đánh dấu các ca KT/TC trong tài liệu gốc đã đạt chỉ vì có test dữ liệu liên quan.
+Tại thời điểm 14/11 chưa có biên bản và ảnh cho các ca KT/TC trong tài liệu 06 (đã có từ 15/11, xem bien-ban-kiem-thu.md) (các ca và kết quả hiện hành ở [kiem-thu.md](kiem-thu.md)). Giao diện Web (B) và Desktop D02/D06 đã có mã và được kiểm tự động như các mục trên nhưng chưa nghiệm thu bằng người dùng; chưa có giao diện cho thu tiền/đóng ca (UC08/14), pha chế/bàn (UC05–07, 09), hủy/hoàn trọn vẹn (UC10–12), nhập/kiểm kê (UC13), báo cáo và quản trị (UC15/16), ngân hàng, in ấn; chưa đo tải hệ thống, backup/restore; production TLS mới kiểm cục bộ (xem mục HTTPS). Xem [ma trận BR và quyết định cần chốt](business-rules.md). Không đánh dấu các ca KT/TC trong tài liệu gốc đã đạt chỉ vì có test dữ liệu liên quan.

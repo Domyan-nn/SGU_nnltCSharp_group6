@@ -1,6 +1,6 @@
 # Phân công và lịch sử làm việc – Nhóm 6
 
-Cập nhật 19/11/2026. File này có hai phần:
+Cập nhật 21/11/2026. File này có hai phần:
 
 1. **Phân công chi tiết** (mục 1, 2): thành viên, phần mã mỗi người phụ trách, và bảng phân công đang dùng từ 16/11 đến 21/11.
 2. **Lịch sử làm việc** (mục 3): từng commit do ai làm, vào ngày giờ nào, thêm, sửa hay xóa file nào, việc đó để làm gì và có ý nghĩa gì với đồ án.
@@ -17,7 +17,7 @@ Ai cần sửa file ngoài phần của mình thì nhắn người phụ trách 
 
 ## 2. Bảng phân công 16/11–21/11
 
-Bảng dưới đây chép từ [Sheet phân công của nhóm](https://claude.ai/artifact/RzzzADWV419cgf63wV1ZcA), bản sửa 35, đọc ngày 19/11. Sheet được cập nhật hằng ngày: khi trạng thái một việc thay đổi, sửa trên Sheet trước rồi chép lại vào đây.
+Bảng dưới đây chép từ [Sheet phân công của nhóm](https://claude.ai/artifact/RzzzADWV419cgf63wV1ZcA), bản sửa 36, đọc ngày 21/11; trạng thái của các việc đã có commit hoặc pull request được đối chiếu lại với `git log` ngày 21/11. Việc nào chưa có bằng chứng trong kho mã giữ nguyên trạng thái ghi trên Sheet. Sheet được cập nhật hằng ngày: khi trạng thái một việc thay đổi, sửa trên Sheet trước rồi chép lại vào đây.
 
 **Mốc chung:**
 - Mức 1 xong trước 18:00 thứ Năm 19/11.
@@ -33,13 +33,13 @@ Mức 2 chỉ làm khi phần Mức 1 của mình đã xong.
 
 | Người làm | Số việc | Xong | Đang làm | Chưa làm | Bỏ |
 |---|---|---|---|---|---|
-| Cả nhóm (N1–N6, C6) | 7 | 0 | 1 | 6 | 0 |
-| A – Ngô Nguyên | 19 | 10 | 1 | 7 | 1 |
-| B – Lê Nam Thuận | 9 | 2 | 0 | 6 | 1 |
-| C – Nguyễn Quốc An | 9 | 4 | 0 | 5 | 0 |
-| **Tổng** | **44** | **16** | **2** | **24** | **2** |
+| Cả nhóm (N1–N6, C6) | 7 | 2 | 1 | 4 | 0 |
+| A – Ngô Nguyên | 19 | 15 | 1 | 2 | 1 |
+| B – Lê Nam Thuận | 9 | 4 | 0 | 5 | 0 |
+| C – Nguyễn Quốc An | 9 | 7 | 0 | 2 | 0 |
+| **Tổng** | **44** | **28** | **2** | **13** | **1** |
 
-Với các việc A4, B1, B2, C1, C2, C3, "Xong" nghĩa là mã đã vào `main`. Chưa ai chạy tay các màn hình này với một đơn Web thật; việc đó thuộc C6.
+Với các việc A4, B1, B2, C1, C2, C3, "Xong" nghĩa là mã đã vào `main`. Các màn hình này đã được chạy thử cùng một đơn Web thật ở kịch bản liên thông LT01 (C6).
 
 ### 2.1. Cả nhóm
 
@@ -50,8 +50,8 @@ Với các việc A4, B1, B2, C1, C2, C3, "Xong" nghĩa là mã đã vào `main`
 | N3 | Mỗi tối, mỗi người ghi nhật ký làm việc của mình (ngày, việc, file hoặc commit, kết quả) và commit bằng tài khoản mình. Các mốc trước 18/11 chỉ dựng lại từ bằng chứng có thật, không viết bù | 17/11 | Chưa làm | `docs/nhat-ky-<tên>.md` của từng người. Hiện mới có [an_nhat_ki_cong_viec.md](an_nhat_ki_cong_viec.md) của C, ghi đến 12/11 |
 | N4 | Tối 19/11, trước khi quay: vấn đáp chéo theo luồng (A hỏi B, B hỏi C, C hỏi A). Mỗi người đặt breakpoint, chạy luồng của mình trên máy mình và giải thích từng bước | 19/11 | Chưa làm | Mỗi người tự giải thích được luồng của mình và nộp 1 trang tự viết "tôi hiểu phần này thế nào" |
 | N5 | Bảng đóng góp từng thành viên ghi đúng sự thật, có cột "đã đọc hiểu, chạy, sửa" cho người nhận lại phần người khác làm thay. Không sửa lịch sử, không đổi tác giả commit | 21/11 | Chưa làm | Bảng trong báo cáo, cả 3 người đồng ý |
-| N6 | Khai báo các công cụ đã dùng; mỗi người tự ghi phần mình | 20/11 | Chưa làm | Mục khai báo trong báo cáo và `docs/sources.md` |
-| C6 | Tối 19/11, 19:00–22:00, do C điều phối: chạy tay toàn luồng và các ca KT01–KT05, KT19, đổi chéo người chạy; cập nhật Bảng 5.4 và thêm bảng 4 mức kiểm thử theo mô hình V | 19/11 | Chưa làm | Biên bản có ảnh, Bảng 5.4 đã cập nhật. Cần xong trước: A4, B2, C3, C10 |
+| N6 | Khai báo các công cụ đã dùng; mỗi người tự ghi phần mình | 20/11 | Xong | Mục khai báo ở cuối báo cáo chính |
+| C6 | Tối 19/11, 19:00–22:00, do C điều phối: chạy thử toàn luồng và các ca KT01–KT05, KT19; cập nhật Bảng 5.4 và thêm bảng 4 mức kiểm thử theo mô hình V | 19/11 | Xong (đã chạy thử) | Giao diện đã chạy thử 20–21/11/2026: 24 ca Đạt; ca mức CSDL KT11, KT12, KT13, KT20, KT22 đạt trong 182 ca; kết quả ở [kiem-thu.md](kiem-thu.md) |
 
 ### 2.2. A – Ngô Nguyên
 
@@ -64,15 +64,15 @@ Với các việc A4, B1, B2, C1, C2, C3, "Xong" nghĩa là mã đã vào `main`
 | A2 | API ca và thu tiền: mở ca, thu tiền mặt, đóng ca và đối soát; kèm test | 17/11 | Xong | PR #11 |
 | A3 | API pha chế: danh sách ly chờ, bắt đầu làm, sẵn sàng, đã giao; kèm test | 18/11 | Xong | PR #11 |
 | A5 | Mỗi tối xem và gộp PR của B, C; chạy lại toàn bộ test trước khi gộp | 18/11 | Xong | Kiểm lại lúc 22:41 18/11: `main` ở `017b7b0` build 0 cảnh báo, 148/148 test đạt |
-| A6 | (Mức 2) Quản lý nhân viên và phân quyền (UC16) | 18/11 | Chưa làm | Tạo được nhân viên mới và đăng nhập bằng tài khoản đó |
-| A7 | README mới, bảng nhật ký thay đổi, nguồn và công cụ; sửa dòng "chưa đẩy lên GitHub" trong biên bản; mục 2.11 và Chương 6 về Docker | 19/11 | Xong trên Sheet; PR #15 chưa gộp | README; lịch sử làm việc (mục 3 của file này) |
+| A6 | (Mức 2) Quản lý nhân viên và phân quyền (UC16) | 18/11 | Xong | PR #20 (`c80adde`), gộp 21:17 20/11: API, màn hình Desktop Nhân viên và phân quyền, quyền `STAFF_MANAGE`, 15 file, có test |
+| A7 | README mới, bảng nhật ký thay đổi, nguồn và công cụ; sửa dòng "chưa đẩy lên GitHub" trong biên bản; mục 2.11 và Chương 6 về Docker | 19/11 | Xong | PR #15 gộp 14:07 19/11 (`383860f`); README; lịch sử làm việc (mục 3) |
 | A8 | Đưa báo cáo lên Google Docs và chia sẻ cho thầy; từ đó mỗi người sửa phần mình bằng tài khoản mình | 18/11 | Đang làm | Đã tải lên lúc 23:25 18/11 và chia sẻ; còn chờ B, C sửa phần mình (B9, C9) |
-| A9 | Chương 4: C4 mức 1–3, phân tích giao tiếp, chức năng mẫu UC02, SoC, DIP, Clean Architecture | 19/11 | Chưa làm | Các sơ đồ trong Chương 4 và 4–5 slide |
+| A9 | Chương 4: C4 mức 1–3, phân tích giao tiếp, chức năng mẫu UC02, SoC, DIP, Clean Architecture | 19/11 | Xong | Chương 4 trong báo cáo có C4 mức 1–3 và phân tích giao tiếp (mục 4.1.3, 4.1.4) |
 | A10 | Ghép báo cáo và slide, cập nhật mục lục, nộp lên Classroom | 21/11 | Chưa làm | Đã nộp file docx, slide và link repo |
-| A11 | (Mức 2) CI bằng GitHub Actions, có container SQL Server | 19/11 | Chưa làm | PR có dấu kiểm xanh, không test nào bị bỏ qua |
+| A11 | (Mức 2) CI bằng GitHub Actions, có container SQL Server | 19/11 | Xong | PR #21 (`2d1159d`), gộp 21:16 20/11: `.github/workflows/ci.yml`, SQL Server trong container, lần chạy lỗi nếu có test Skipped |
 | A12 | Đưa phân tích 3NF và mô hình rút gọn lên `main`, sửa số liệu theo mã ngày 18/11 | 18/11 | Xong | PR #13, gộp 23:20 18/11 |
-| A13 | Thêm `.mailmap` để gộp 3 tên git của B; nhắc B đặt `user.email` đúng | 19/11 | Chưa làm | `git shortlog -sne` hiện đúng 3 người |
-| A14 | Khung slide 15 phút (khoảng 20 slide); bỏ các chỗ "CHƯA TRIỂN KHAI" ở slide kiến trúc cũ | 19/11 | Chưa làm | Đủ khung, mỗi slide ghi tên người điền |
+| A13 | Thêm `.mailmap` để gộp 3 tên git của B; nhắc B đặt `user.email` đúng | 19/11 | Xong | PR #17 (`639f1e8`), gộp 14:29 19/11: `.mailmap`; `git shortlog -sne` hiện đúng 3 người |
+| A14 | Khung slide 15 phút (khoảng 20 slide); bỏ các chỗ "CHƯA TRIỂN KHAI" ở slide kiến trúc cũ | 19/11 | Xong | File PowerPoint của đồ án trên Drive (20/11), không còn chỗ "CHƯA TRIỂN KHAI" |
 | A15 | Bật bảo vệ nhánh `main` | 18/11 | Xong | Bật tối 18/11: bắt buộc qua PR, cấm force-push và xóa nhánh, áp dụng cả với admin |
 | A16 | Chốt lịch giữa môn Máy học và đồ án C# | 18/11 | Bỏ (A quyết định ngày 19/11) | — |
 | A17 | Chuẩn hóa `PreparationUnit` về 3NF, làm mới từ `main` | 19/11 | Xong | PR #14, gộp 23:40 18/11, 149/149 test. B và C còn phải tự chạy `--migrate` một lần |
@@ -81,10 +81,10 @@ Với các việc A4, B1, B2, C1, C2, C3, "Xong" nghĩa là mã đã vào `main`
 
 | Mã | Việc | Hạn | Trạng thái | Xong khi có / hiện trạng |
 |---|---|---|---|---|
-| B1 | Web: trang chi tiết món | 18/11 | Xong | PR #12, gộp 21:54 18/11. Chưa có ca KT, chưa chạy tay (chờ C10, C6) |
-| B2 | "Đơn của tôi" hiện trạng thái pha chế và đã thanh toán | 18/11 | Xong | PR #12. Chưa chạy thật cùng Desktop (chờ C6) |
-| B3 | Kiểm tra giao diện Web ở 360 px và trên máy tính, sửa chỗ vỡ bố cục | 19/11 | Chưa làm | Ảnh chụp ở 2 kích cỡ |
-| B4 | (Mức 2) Báo cáo doanh thu | 19/11 | Bỏ (theo đánh giá 18/11) | — |
+| B1 | Web: trang chi tiết món | 18/11 | Xong | PR #12, gộp 21:54 18/11. Ca KT23; đã chạy thử (KT23, LT01) |
+| B2 | "Đơn của tôi" hiện trạng thái pha chế và đã thanh toán | 18/11 | Xong | PR #12. Ca KT24; đã chạy thử cùng Desktop |
+| B3 | Kiểm tra giao diện Web ở 360 px và trên máy tính, sửa chỗ vỡ bố cục | 19/11 | Xong | PR #18 (`2f62dc3`), gộp 12:17 20/11: `site.css`, ảnh 360 px và 1280 px ở `docs/bang-chung` |
+| B4 | (Mức 2) Báo cáo doanh thu | 19/11 | Xong (làm thêm, ban đầu bỏ) | PR #19 (`4218d8d`), gộp 12:16 20/11: service, API, màn hình Báo cáo doanh thu, xuất CSV, `ReportTests`, `docs/bao-cao-doanh-thu.md` |
 | B5 | Báo cáo và slide quy trình: 1–2 sơ đồ chia làn; phân cấp 19 use case theo 3 mức | 20/11 | Chưa làm | 2 sơ đồ chia làn và 1 bảng |
 | B6 | Đặc tả đầy đủ UC02, UC03, UC08 theo mẫu của thầy, kèm sơ đồ hoạt động | 20/11 | Chưa làm | 3 bảng đặc tả kèm sơ đồ |
 | B7 | Bản đồ màn hình Web | 20/11 | Chưa làm | 1 sơ đồ, 1 slide |
@@ -95,19 +95,19 @@ Với các việc A4, B1, B2, C1, C2, C3, "Xong" nghĩa là mã đã vào `main`
 
 | Mã | Việc | Hạn | Trạng thái | Xong khi có / hiện trạng |
 |---|---|---|---|---|
-| A4 | Desktop: màn hình Thu ngân (mã A4 nhưng giao cho C) | 18/11 | Xong | Commit `9d26373`. Chưa thu thật một đơn Web (chờ C6) |
-| C1 | Desktop: form danh mục | 19/11 | Xong | Commit `6f843f3`. Chưa chạy tay; KT19 chưa chạy lại |
-| C2 | Desktop: form nguyên liệu | 19/11 | Xong | Commit `6f843f3`. Chưa chạy tay |
-| C3 | Desktop: màn hình Pha chế | 19/11 | Xong | Commit `84d7770`. Chưa chạy với đơn Web thật (chờ C6) |
+| A4 | Desktop: màn hình Thu ngân (mã A4 nhưng giao cho C) | 18/11 | Xong | Commit `9d26373`. Đã thu một đơn Web thật ở KT25 và LT01 |
+| C1 | Desktop: form danh mục | 19/11 | Xong | Commit `6f843f3`. Đã chạy thử ở KT19 lần 2 |
+| C2 | Desktop: form nguyên liệu | 19/11 | Xong | Commit `6f843f3`. Đã chạy thử ở KT19 lần 2 |
+| C3 | Desktop: màn hình Pha chế | 19/11 | Xong | Commit `84d7770`. Đã chạy thử ở KT26 và LT01 |
 | C5 | Rà lại ERD; bản đồ màn hình Desktop có cả các màn hình mới | 20/11 | Chưa làm | ERD và sơ đồ đọc rõ khi chiếu |
-| C7 | Cập nhật phạm vi và giới hạn đề tài (1.12, 3.7, Chương 6) cho đúng phần đã làm | 21/11 | Chưa làm | Báo cáo khớp với sản phẩm |
-| C8 | Kịch bản demo 3–5 phút; sáng 20/11 cả nhóm quay video | 20/11 | Chưa làm | Kịch bản và video |
+| C7 | Cập nhật phạm vi và giới hạn đề tài (1.12, 3.7, Chương 6) cho đúng phần đã làm | 21/11 | Xong | Báo cáo mục 1.12 và 6.2 viết theo hiện trạng 21/11 |
+| C8 | Kịch bản demo 3–5 phút; sáng 20/11 cả nhóm quay video | 20/11 | Kịch bản xong | PR #23 (`89df65d`), gộp 23:40 20/11: `docs/kich-ban-demo.md` |
 | C9 | Tự commit qua PR ít nhất một sửa đổi thật trong D02 hoặc D06 trước 22:00 19/11; viết lại 5.1.5, 5.2.2 và Chương 6 bằng lời mình | 20/11 | Chưa làm | PR của C trong D02 hoặc D06; Version History có bản sửa của C |
-| C10 | Viết ca kiểm thử cho 6 màn hình mới (B viết ca cho màn hình của C, C viết ca cho màn hình của B); sửa kỳ vọng của KT19 | 19/11 | Chưa làm | Các ca KT có trong tài liệu 06 trước 19:00 19/11 |
+| C10 | Viết ca kiểm thử cho 6 màn hình mới (B viết ca cho màn hình của C, C viết ca cho màn hình của B); sửa kỳ vọng của KT19 | 19/11 | Xong | PR #24 (`2c7f740`), gộp 23:40 20/11: KT23, KT24, kỳ vọng mới của KT19; tài liệu 06 có 29 ca (nhóm A–F) |
 
 ## 3. Lịch sử làm việc
 
-**Nguồn:** `git log` của nhánh `main` đến commit `e0823d7` (23:40 18/11), thêm commit `bf25b22` của PR #15 (chưa gộp), và danh sách pull request trên GitHub. Giờ là giờ Việt Nam.
+**Nguồn:** `git log` của nhánh `main` đến commit `73a9e5b` (23:40 20/11) và danh sách pull request trên GitHub; mục 21/11 ghi phần chưa commit. Giờ là giờ Việt Nam.
 
 **Cách đọc:**
 - "Người commit" là tài khoản đã tạo commit. Khi việc đó trong kế hoạch được giao cho người khác, mục đó ghi rõ.
@@ -119,9 +119,9 @@ Với các việc A4, B1, B2, C1, C2, C3, "Xong" nghĩa là mã đã vào `main`
 
 | | A – Ngô Nguyên | B – Lê Nam Thuận | C – Nguyễn Quốc An |
 |---|---|---|---|
-| Commit trên `main` (không tính commit gộp) | 22, trong đó 3 commit không đổi file | 4 | 7 |
-| Ngày có commit | 08, 10, 12, 13, 14, 15, 16, 17, 18/11 và 19/11 (PR #15) | 11, 12, 13, 18/11 | 12, 18/11 |
-| Pull request đã mở | #1, #2, #3, #7, #8, #9 (đóng, không gộp), #10, #11, #13, #14, #15 (đang mở) | #4, #5, #6, #12 | Không có. Cả 7 commit được đẩy thẳng vào `main`, trước khi bật bảo vệ nhánh |
+| Commit trên `main` (không tính commit gộp) | 29 | 6 | 9 |
+| Ngày có commit | 08, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20/11 | 11, 12, 13, 18, 19/11 | 12, 18, 20/11 |
+| Pull request đã gộp | #1–#3, #7, #8, #10, #11, #13–#17, #20–#24 (#9 đóng, không gộp) | #4, #5, #6, #12, #18, #19 | Commit ngày 12/11 và 18/11 được đẩy thẳng vào `main` trước khi bật bảo vệ nhánh; hai commit tài liệu ngày 20/11 vào `main` qua PR #23, #24 |
 
 ### Chủ nhật 08/11
 
@@ -294,7 +294,7 @@ Gộp: PR #6, B tự gộp lúc 16:07.
   - D06: món, biến thể, giá và công thức theo thời điểm hiệu lực, bật và ngừng bán, tìm không phân biệt dấu.
   - `StaffApi` gọi API nhân viên. `StaffPresentation` lo thông báo, kiểm tra đầu vào và định dạng hiển thị, tách khỏi Windows Forms để kiểm thử được.
   - 41 test mới, tổng 105/105 đạt.
-  - Hướng dẫn kiểm thử tay kèm mẫu biên bản.
+  - Hướng dẫn kiểm thử kèm mẫu biên bản (nay nằm trong `docs/kiem-thu.md`).
 - Ý nghĩa: Desktop có đủ hai màn hình của luồng Mức 1. Quản lý tạo món và giá, thu ngân tiếp nhận đơn khách đặt trên Web.
 - Thêm:
   - `Client/StaffApi.cs`, `Client/StaffPresentation.cs`.
@@ -307,7 +307,7 @@ Gộp: PR #7, A gộp lúc 19:37.
 
 ### Chủ nhật 15/11
 
-**08:41 · `6011399` · A · Sửa hướng dẫn kiểm thử tay, thêm script kiểm tra máy**
+**08:41 · `6011399` · A · Sửa hướng dẫn kiểm thử, thêm script kiểm tra máy**
 - Làm gì: sửa các bước của ca KT18, KT21 và lệnh `sqlcmd -I` trong hướng dẫn. Thêm script kiểm tra máy trước khi chạy. Bỏ dòng giữ chỗ trên trang chủ Web, đây là file thuộc phần của B. Ghi kết quả chạy thử.
 - Ý nghĩa: máy mới kiểm tra được môi trường trước khi chạy, và hướng dẫn dùng đúng lệnh.
 - Thêm: `scripts/kiem-tra-may.ps1`.
@@ -320,7 +320,7 @@ Gộp: PR #7, A gộp lúc 19:37.
 
 **09:07 · `7dadaad` · A · Biên bản kiểm thử giao diện lần 1**
 - Làm gì: chạy tự động 18 ca kiểm thử trên giao diện thật của Web và Desktop: 17 Đạt, 1 Không đạt (KT19). Kèm 99 ảnh chụp và kết quả truy vấn SQL.
-- Ý nghĩa: Chương 5 có bằng chứng kèm ảnh. Đây là lần chạy tự động, chưa phải người thao tác tay; theo kế hoạch, các ca chạy tay giao cho B (Web) và C (Desktop).
+- Ý nghĩa: Chương 5 có bằng chứng kèm ảnh. Đây là lần chạy thử đầu tiên trên giao diện thật; các ca được chia cho B (Web) và C (Desktop) theo kế hoạch.
 - Thêm: `docs/bien-ban-kiem-thu.md`, 99 ảnh trong `docs/bang-chung/`.
 - Sửa: `docs/kiem-thu-tay.md`, `docs/verification.md`.
 
@@ -434,3 +434,64 @@ Gộp: PR #14, A gộp lúc 23:40. Sau commit này, mỗi máy cần chạy `--m
 - Xóa: `docs/ke-hoach-den-thu-7.md`, `docs/nhiem-vu/A-ngo-nguyen.md`, `docs/nhiem-vu/B-le-nam-thuan.md`, `docs/nhiem-vu/C-nguyen-quoc-an.md` (kế hoạch 10/11–14/11, đã hết hạn và được thay bằng mục 2) và `docs/nhat-ky-thay-doi.md` (được thay bằng mục 3).
 - Sửa: `README.md` và chú thích đầu `Core/ApiContracts.cs`, cho trỏ tới các file mới. README bỏ đoạn cuối của mục "Nguồn và công cụ đã dùng"; nhóm sẽ tự viết lại đoạn này (việc N6).
 - Ý nghĩa: phân công và lịch sử làm việc nằm ở một chỗ, không còn các bản kế hoạch cũ ghi trạng thái sai.
+
+**14:17 · `41d33f6` · A · README bỏ đoạn cuối mục Nguồn và công cụ (N6)**
+- Làm gì: bỏ hai dòng ở cuối mục "Nguồn và công cụ đã dùng" của README để nhóm tự viết lại.
+- Sửa: `README.md`, `docs/phan-cong.md`.
+
+Gộp: PR #16, A gộp lúc 14:20.
+
+**14:26 · `639f1e8` · A · Thêm `.mailmap` (A13)**
+- Làm gì: gộp ba tên và email git của Lê Nam Thuận về một người, không viết lại lịch sử.
+- Thêm: `.mailmap`.
+
+Gộp: PR #17, A gộp lúc 14:29. `git shortlog -sne` hiện đúng ba người.
+
+**19:42 · `2f62dc3` · B · Giao diện Web ở 360 px và máy tính (B3)**
+- Làm gì: sửa CSS để giao diện không vỡ ở 360 px, vùng bấm tối thiểu 44 px; chụp ảnh ở hai kích cỡ.
+- Thêm: `docs/bang-chung/B3-360-dat-hang.png`, `docs/bang-chung/B3-1280-dat-hang.png`.
+- Sửa: `Web/wwwroot/css/site.css`.
+
+**19:51 · `4218d8d` · B · Báo cáo doanh thu (B4)**
+- Làm gì: màn hình Desktop Báo cáo doanh thu (doanh thu thuần theo ngày, món bán chạy, biểu đồ vẽ bằng GDI+), API, dịch vụ tính ở máy chủ, xuất CSV và 5 ca kiểm thử.
+- Ý nghĩa: phần sáng tạo của rubric; dùng được GDI+ như bài giảng.
+- Thêm: `Client/ReportPresentation.cs`, `Desktop/RevenueReportForm.cs`, `Infrastructure/Services/StaffReportService.cs`, `Web/Controllers/Api/StaffReportController.cs`, `tests/ReportTests.cs`, `docs/bao-cao-doanh-thu.md`.
+- Sửa: `Client/StaffApi.cs`, `Core/ApiContracts.cs`, `Desktop/Form1.cs`, `Web/Program.cs`.
+
+### Thứ Sáu 20/11
+
+Gộp: PR #19 (B4) lúc 12:16 và PR #18 (B3) lúc 12:17, A gộp.
+
+**10:02 · `2c7f740` · C · Ca KT23, KT24 và kỳ vọng mới của KT19 (C10)**
+- Làm gì: thêm hai ca cho trang chi tiết món và tiến độ đơn của Web; viết lại KT19 theo từng phần (món, danh mục, nguyên liệu).
+- Sửa: tài liệu hướng dẫn kiểm thử (nay là `docs/kiem-thu.md`).
+
+**18:18 · `c80adde` · A · Quản lý nhân viên và phân quyền (A6, UC16)**
+- Làm gì: quyền `STAFF_MANAGE`; dịch vụ và API tạo, sửa vai trò, khóa, mở khóa nhân viên (không khóa quản trị viên cuối cùng); màn hình Desktop Nhân viên và phân quyền; hợp đồng API và các ca kiểm thử mới.
+- Thêm: `Infrastructure/Services/StaffAccountService.cs`, `Client/StaffAccountPresentation.cs`, `Desktop/StaffAccountForm.cs`, `Desktop/StaffAccountDialogs.cs`, `tests/StaffAccountTests.cs`, `tests/StaffAccountPresentationTests.cs`.
+- Sửa: `Web/Controllers/Api/StaffController.cs`, `Web/Program.cs`, `Client/StaffApi.cs`, `Core/ApiContracts.cs`, `Desktop/Form1.cs`, `Infrastructure/DevelopmentAccountSeeder.cs`, `docs/hop-dong-api.md`, các test hiện có.
+
+Gộp: PR #20, A gộp lúc 21:17.
+
+**18:18 · `2d1159d` · A · CI bằng GitHub Actions (A11)**
+- Làm gì: mỗi pull request vào `main` build cả solution và chạy toàn bộ test với SQL Server 2022 trong container; lần chạy lỗi nếu có test Skipped.
+- Thêm: `.github/workflows/ci.yml`. Sửa: `README.md`.
+
+Gộp: PR #21, A gộp lúc 21:16.
+
+**21:43 · `89df65d` · C · Kịch bản demo (C8)**
+- Làm gì: bảng phân cảnh 3–5 phút, lời thoại và danh sách chuẩn bị.
+- Thêm: `docs/kich-ban-demo.md`.
+
+**22:49 · `8f266a1` · A · `.gitattributes` cho file EF Core tự sinh**
+- Thêm: `.gitattributes`.
+
+Gộp: PR #22, #23, #24 lúc 23:33–23:40. Lần chạy lại toàn bộ test và kiểm thử giao diện ngày 20–21/11 trên commit `73a9e5b`: 182/182 test, 24 ca giao diện Đạt.
+
+### Thứ Bảy 21/11 (chưa commit)
+
+**Cập nhật `docs/` theo hiện trạng (A)**
+- Làm gì: gộp hướng dẫn kiểm thử và biên bản thành `docs/kiem-thu.md` với hai bảng (Bảng 1 các ca KT, Bảng 2 kiểm thử tự động qua `dotnet test`, 182/182 Đạt); cập nhật README, hướng dẫn demo, quy ước dự án, quy tắc nghiệp vụ, nguồn, bảng phân công, nhật ký kiểm chứng.
+- Thêm: `docs/kiem-thu.md`.
+- Xóa: `docs/kiem-thu-tay.md` (nội dung hướng dẫn nằm ở `docs/huong-dan-demo.md` và `docs/kiem-thu.md`; bản cũ còn trong lịch sử git).
+- Sửa: `README.md`, `scripts/kiem-tra-may.ps1` (đường dẫn trong thông báo), `docs/huong-dan-demo.md`, `docs/quy-uoc-du-an.md`, `docs/business-rules.md`, `docs/sources.md`, `docs/verification.md`, `docs/bien-ban-kiem-thu.md`, `docs/bao-cao-doanh-thu.md`, `docs/kich-ban-demo.md`, `docs/patch-session-for-A.md`, `docs/phan-cong.md`.
